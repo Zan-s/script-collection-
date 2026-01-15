@@ -1,7 +1,10 @@
+--[[ 
+    LUA CODE SCHOOL - MAIN LOADER 
+    Created by: Zan-s
+]]
+
 local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
-
--- PASTE URL RAW ANDA DI SINI
 local RAW_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/For%20Code%20School"
 
 local sg = Instance.new("ScreenGui", targetParent)
@@ -11,25 +14,26 @@ main.Position = UDim2.new(0.5, -225, 0.3, 0)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Instance.new("UICorner", main)
 
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 35); title.Text = "LUA CODE SCHOOL IDE"; title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundColor3 = Color3.fromRGB(45, 45, 45); title.Font = Enum.Font.SourceSansBold
+
 local sidebar = Instance.new("ScrollingFrame", main)
-sidebar.Size = UDim2.new(0, 140, 1, -85)
-sidebar.Position = UDim2.new(0, 5, 0, 40)
+sidebar.Size = UDim2.new(0, 140, 1, -85); sidebar.Position = UDim2.new(0, 5, 0, 40)
 sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Instance.new("UIListLayout", sidebar).Padding = UDim.new(0, 2)
 
 local editor = Instance.new("TextBox", main)
-editor.Size = UDim2.new(1, -160, 1, -85)
-editor.Position = UDim2.new(0, 150, 0, 40)
-editor.MultiLine = true; editor.Text = "-- Sila pilih kod --"
-editor.TextColor3 = Color3.new(1, 1, 1); editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
+editor.Size = UDim2.new(1, -160, 1, -85); editor.Position = UDim2.new(0, 150, 0, 40)
+editor.MultiLine = true; editor.Text = "-- Sila pilih kod --"; editor.TextColor3 = Color3.new(1, 1, 1)
+editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15); editor.ClearTextOnFocus = false
+editor.TextXAlignment = 0; editor.TextYAlignment = 0
 
 local launch = Instance.new("TextButton", main)
 launch.Size = UDim2.new(0, 120, 0, 35); launch.Position = UDim2.new(0.5, -60, 1, -40)
 launch.Text = "RUN CODE"; launch.BackgroundColor3 = Color3.fromRGB(0, 160, 80); launch.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", launch)
 
--- Fungsi Fetch Data
 local function FetchData()
     local success, content = pcall(function() return game:HttpGet(RAW_URL) end)
     if success then
@@ -41,7 +45,7 @@ local function FetchData()
             btn.MouseButton1Click:Connect(function() editor.Text = code end)
         end
     else
-        editor.Text = "Ralat: Pastikan URL Raw betul dan Repo adalah Public!"
+        editor.Text = "Ralat Sync! Sila pastikan Repo adalah PUBLIC."
     end
 end
 
