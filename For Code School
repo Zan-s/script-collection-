@@ -92,7 +92,7 @@ Instance.new("UICorner", titleBar)
 local powerText = Instance.new("TextLabel", main)
 powerText.Size = UDim2.new(0, 150, 0, 20)
 powerText.Position = UDim2.new(1, -160, 0, 35)
-powerText.Text = "Powered by Geminis AI"
+powerText.Text = ""
 powerText.TextColor3 = Color3.fromRGB(100, 150, 255)
 powerText.BackgroundTransparency = 1
 powerText.Font = Enum.Font.Code
