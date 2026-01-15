@@ -1,1 +1,6 @@
+return {
+    ["Auto_Speed"] = "game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100",
+    ["Infinite_Jump"] = "game:GetService('UserInputService').JumpRequest:Connect(function() game.Players.LocalPlayer.Character.Humanoid:ChangeState(3) end)",
+    ["Fullbright"] = "game:GetService('Lighting').Brightness = 2; game:GetService('Lighting').ClockTime = 14"
+}
 
