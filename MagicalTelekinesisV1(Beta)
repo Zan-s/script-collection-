@@ -1,0 +1,240 @@
+--[[
+    TeleMaster V12 - Enhanced Mobile Edition
+    Features: Ultra Physics, Anti-Drop, Mobile Draggable UI
+]]
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Stats = game:GetService("Stats")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local safeParent = (gethui and gethui()) or CoreGui or player:WaitForChild("PlayerGui")
+
+-- --- CONFIGURATION ---
+local DEFAULT_DIST = 15
+local DEFAULT_HEIGHT = 0
+local DEFAULT_SIDE = 0
+local movingPart = nil
+local followDistance = DEFAULT_DIST
+local heightOffset = DEFAULT_HEIGHT
+local sideOffset = DEFAULT_SIDE
+local walkSpeedActive = false
+local rotationActive = true
+local shiftLockActive = false 
+local rotationX, rotationY, rotationZ = 0, 0, 0
+
+-- High-Power Physics Constraints
+local alignPos = Instance.new("AlignPosition")
+alignPos.MaxForce = math.huge -- Kekuatan Infiniti
+alignPos.MaxVelocity = math.huge
+alignPos.Responsiveness = 200 -- Sangat laju mengikut target
+alignPos.Mode = Enum.PositionAlignmentMode.OneAttachment
+alignPos.ApplyAtCenterOfMass = true
+
+local alignOri = Instance.new("AlignOrientation")
+alignOri.MaxTorque = math.huge
+alignOri.Responsiveness = 200
+alignOri.Mode = Enum.OrientationAlignmentMode.OneAttachment
+
+local highlight = Instance.new("Highlight")
+highlight.Name = "TeleGlow"
+highlight.FillTransparency = 0.4
+highlight.OutlineTransparency = 0
+
+-- --- FUNCTIONS ---
+local function stopMoving()
+    if movingPart then 
+        movingPart.CanCollide = true 
+        for _, v in pairs(movingPart:GetChildren()) do
+            if v.Name == "TeleAtt" or v.Name == "AntiDropNoCollide" then v:Destroy() end
+        end
+    end
+    movingPart = nil
+    alignPos.Enabled = false; alignOri.Enabled = false
+    alignPos.Parent = nil; alignOri.Parent = nil
+    highlight.Adornee = nil
+    highlight.Parent = nil
+end
+
+local function togglePartMove(part)
+    if movingPart == part then stopMoving() return end
+    stopMoving() 
+    
+    if part and not part.Anchored then
+        local target = part
+        if part.Parent:FindFirstChild("Humanoid") then 
+            target = part.Parent:FindFirstChild("HumanoidRootPart") or part 
+        end
+        
+        -- Bypass Network Ownership (Jika Executor sokong)
+        if setnetworkowner then
+            pcall(function() setnetworkowner(target, player) end)
+        end
+
+        movingPart = target
+        movingPart.CanCollide = false -- Elak objek melanggar diri sendiri
+        
+        highlight.Adornee = movingPart
+        highlight.Parent = movingPart
+        
+        local att = Instance.new("Attachment", movingPart)
+        att.Name = "TeleAtt"
+        
+        alignPos.Attachment0 = att; alignOri.Attachment0 = att
+        alignPos.Parent = movingPart; alignOri.Parent = movingPart
+        alignPos.Enabled = true; alignOri.Enabled = rotationActive
+    end
+end
+
+-- --- UI DRAGGABLE (MOBILE IMPROVED) ---
+local function makeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+-- --- UI SYSTEM ---
+local function createUI()
+    if safeParent:FindFirstChild("TeleMasterV12") then safeParent.TeleMasterV12:Destroy() end
+    
+    local screenGui = Instance.new("ScreenGui", safeParent)
+    screenGui.Name = "TeleMasterV12"
+    screenGui.ResetOnSpawn = false
+    screenGui.IgnoreGuiInset = true
+
+    local main = Instance.new("Frame", screenGui)
+    main.Name = "Main"; main.Size = UDim2.new(0, 220, 0, 320); main.Position = UDim2.new(0.5, -110, 0.5, -160)
+    main.BackgroundColor3 = Color3.fromRGB(15, 15, 15); Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+    main.Visible = true; makeDraggable(main)
+
+    local function createBtn(name, text, pos, size, color, parent)
+        local b = Instance.new("TextButton", parent); b.Name = name; b.Size = size; b.Position = pos; b.Text = text
+        b.BackgroundColor3 = color; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 13
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6); return b
+    end
+
+    local title = createBtn("Title", "TGun V12 (GitHub)", UDim2.new(0,0,0,0), UDim2.new(1,0,0,40), Color3.fromRGB(30,30,30), main)
+    
+    local scroll = Instance.new("ScrollingFrame", main)
+    scroll.Size = UDim2.new(1, 0, 1, -45); scroll.Position = UDim2.new(0, 0, 0, 45)
+    scroll.BackgroundTransparency = 1; scroll.CanvasSize = UDim2.new(0, 0, 0, 500); scroll.ScrollBarThickness = 4
+
+    -- UI Buttons (HUp, HDown, etc - Sesuai kod asal anda)
+    local hUp = createBtn("HUp", "↑ TINGGI", UDim2.new(0.05,0,0.05,0), UDim2.new(0.43,0,0,35), Color3.fromRGB(45,45,45), scroll)
+    local hDown = createBtn("HDown", "↓ RENDAH", UDim2.new(0.52,0,0.05,0), UDim2.new(0.43,0,0,35), Color3.fromRGB(45,45,45), scroll)
+    local dPlus = createBtn("DPlus", "+ JARAK", UDim2.new(0.05,0,0.15,0), UDim2.new(0.43,0,0,35), Color3.fromRGB(30,55,85), scroll)
+    local dMinus = createBtn("DMinus", "- JARAK", UDim2.new(0.52,0,0.15,0), UDim2.new(0.43,0,0,35), Color3.fromRGB(30,55,85), scroll)
+    local rotBtn = createBtn("RotBtn", "⚙️ REMOTE ROTATION", UDim2.new(0.05,0,0.25,0), UDim2.new(0.9,0,0,40), Color3.fromRGB(70,35,110), scroll)
+    local sToggle = createBtn("SToggle", "WALKSPEED: OFF", UDim2.new(0.05,0,0.36,0), UDim2.new(0.9,0,0,35), Color3.fromRGB(40,40,40), scroll)
+    
+    local sInput = Instance.new("TextBox", scroll)
+    sInput.Size = UDim2.new(0.9,0,0,30); sInput.Position = UDim2.new(0.05,0,0.46,0); sInput.Text = "50"; sInput.BackgroundColor3 = Color3.fromRGB(5,5,5); sInput.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", sInput)
+
+    local resetBtn = createBtn("Reset", "♻️ RESET SEMUA", UDim2.new(0.05,0,0.56,0), UDim2.new(0.9,0,0,40), Color3.fromRGB(180,90,0), scroll)
+    local closeBtn = createBtn("Close", "❌ TUTUP UI", UDim2.new(0.05,0,0.66,0), UDim2.new(0.9,0,0,40), Color3.fromRGB(40,40,40), scroll)
+
+    -- LOGIC BINDING
+    hUp.MouseButton1Click:Connect(function() heightOffset += 2 end)
+    hDown.MouseButton1Click:Connect(function() heightOffset -= 2 end)
+    dPlus.MouseButton1Click:Connect(function() followDistance += 5 end)
+    dMinus.MouseButton1Click:Connect(function() followDistance = math.max(2, followDistance - 5) end)
+    
+    sToggle.MouseButton1Click:Connect(function() 
+        walkSpeedActive = not walkSpeedActive
+        sToggle.Text = "WALKSPEED: "..(walkSpeedActive and "ON" or "OFF")
+        sToggle.BackgroundColor3 = walkSpeedActive and Color3.fromRGB(40,150,40) or Color3.fromRGB(40,40,40)
+    end)
+
+    resetBtn.MouseButton1Click:Connect(function()
+        followDistance, heightOffset, sideOffset = DEFAULT_DIST, DEFAULT_HEIGHT, DEFAULT_SIDE
+        rotationX, rotationY, rotationZ = 0, 0, 0
+    end)
+    
+    closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
+
+    -- Floating Menu Button (Mobile Friendly)
+    local menu = createBtn("MENU", "☰", UDim2.new(0.02,0,0.4,0), UDim2.new(0,45,0,45), Color3.fromRGB(20,20,20), screenGui)
+    Instance.new("UICorner", menu).CornerRadius = UDim.new(0, 22); makeDraggable(menu)
+    menu.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
+end
+
+-- --- MAIN HEARTBEAT LOOP ---
+RunService.Heartbeat:Connect(function()
+    local char = player.Character; 
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
+    
+    if hum and walkSpeedActive then 
+        local gui = safeParent:FindFirstChild("TeleMasterV12")
+        if gui then 
+            local val = gui.Main.ContentScroll:FindFirstChild("SpeedVal")
+            if val then hum.WalkSpeed = tonumber(val.Text) or 50 end
+        end
+    end
+
+    if movingPart and root then
+        -- SISTEM ANTI-DROP & KUAT FIZIK
+        movingPart.CanCollide = false
+        
+        -- Memastikan Network Ownership kekal (Anti-Stutter)
+        pcall(function() movingPart.AssemblyLinearVelocity = movingPart.AssemblyLinearVelocity.Unit * 0.01 end)
+        
+        -- Target Position
+        local targetPos = root.CFrame * CFrame.new(sideOffset, heightOffset, -followDistance)
+        alignPos.Position = targetPos.Position
+        alignOri.CFrame = CFrame.Angles(math.rad(rotationX), math.rad(rotationY), math.rad(rotationZ))
+        
+        -- Glow Effect
+        highlight.FillColor = Color3.fromHSV(tick()%5/5, 0.8, 1)
+        
+        -- ANTI DROP: Paksa perlanggaran dengan pemain lain dimatikan
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character then
+                for _, part in pairs(p.Character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        -- Menggunakan Collision Groups (Jika disokong) atau Force Disable
+                        local ignore = Instance.new("NoCollisionConstraint", movingPart)
+                        ignore.Name = "AntiDropNoCollide"
+                        ignore.Part0 = movingPart
+                        ignore.Part1 = part
+                        game:GetService("Debris"):AddItem(ignore, 0.1)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- --- STARTUP ---
+local function start()
+    createUI()
+    local t = Instance.new("Tool", player.Backpack); t.Name = "Telekinesis V12"; t.RequiresHandle = false
+    t.Equipped:Connect(function(m) 
+        m.Button1Down:Connect(function() 
+            if m.Target then togglePartMove(m.Target) end 
+        end) 
+    end)
+    t.Unequipped:Connect(stopMoving)
+end
+
+start()
+player.CharacterAdded:Connect(function() task.wait(1.5); start() end)
