@@ -1,7 +1,7 @@
 local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
--- 1. PUSTAKA LUA (Tambah kod tetap anda di sini)
+-- 1. PUSTAKA LUA
 local PustakaLua = {
     ["Check System"] = "print('System Active!')",
     ["Speed 100"] = "game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100",
@@ -16,19 +16,64 @@ sg.ResetOnSpawn = false
 
 -- --- UI UTAMA ---
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 550, 0, 350) -- Lebarkan sikit untuk panel kanan
+main.Size = UDim2.new(0, 550, 0, 350) 
 main.Position = UDim2.new(0.5, -275, 0.4, -175)
 main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main)
 
--- TOMBOL DELETE (X) & MINIMIZE (-)
+-- ==========================================
+-- TOMBOL DELETE (X) & SEMBUNYI (-) BERSEBELAHAN
+-- ==========================================
+
+-- Tombol Padam Keseluruhan (X)
 local delBtn = Instance.new("TextButton", main)
-delBtn.Size = UDim2.new(0, 30, 0, 30); delBtn.Position = UDim2.new(1, -35, 0, 5)
-delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); delBtn.TextColor3 = Color3.new(1,1,1)
+delBtn.Size = UDim2.new(0, 30, 0, 30)
+delBtn.Position = UDim2.new(1, -35, 0, 5) -- Paling kanan
+delBtn.Text = "X"
+delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+delBtn.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", delBtn)
-delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- Tombol Sembunyi Frame (-)
+local hideBtn = Instance.new("TextButton", main)
+hideBtn.Size = UDim2.new(0, 30, 0, 30)
+hideBtn.Position = UDim2.new(1, -70, 0, 5) -- Di sebelah X
+hideBtn.Text = "-"
+hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+hideBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", hideBtn)
+
+-- Tombol Melayang untuk Munculkan Semula (IDE)
+local showBtn = Instance.new("TextButton", sg)
+showBtn.Size = UDim2.new(0, 50, 0, 50)
+showBtn.Position = UDim2.new(0, 10, 0.5, -25)
+showBtn.Text = "IDE"
+showBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+showBtn.TextColor3 = Color3.new(1, 1, 1)
+showBtn.Visible = false
+showBtn.Draggable = true -- Boleh gerakkan butang IDE ini
+Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
+
+-- Logik Butang
+delBtn.MouseButton1Click:Connect(function() 
+    sg:Destroy() 
+end)
+
+hideBtn.MouseButton1Click:Connect(function()
+    main.Visible = false
+    showBtn.Visible = true
+end)
+
+showBtn.MouseButton1Click:Connect(function()
+    main.Visible = true
+    showBtn.Visible = false
+end)
+
+-- ==========================================
+-- (BAHAGIAN LAIN KEKAL SAMA SEPERTI SEBELUM INI)
+-- ==========================================
 
 -- SIDEBAR KIRI (PUSTAKA LUA)
 local side = Instance.new("ScrollingFrame", main)
@@ -55,37 +100,20 @@ assistTitle.Size = UDim2.new(0, 110, 0, 20); assistTitle.Position = UDim2.new(1,
 assistTitle.Text = "ASSISTANT"; assistTitle.TextColor3 = Color3.fromRGB(0, 255, 150)
 assistTitle.BackgroundTransparency = 1; assistTitle.Font = Enum.Font.SourceSansBold
 
--- FUNGSI SCAN PEMBOLEHUBAH (LOGIK ASSISTANT)
+-- LOGIK ASSISTANT
 local keywords = {"game", "workspace", "wait", "local", "function", "if", "then", "else", "print"}
-
 editor:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(assistantPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    
     local txt = editor.Text
     local suggestions = {}
-    
-    -- 1. Scan variable ditaip user (Contoh: local player)
-    for var in txt:gmatch("local%s+([%w_]+)") do
-        if not table.find(suggestions, var) then table.insert(suggestions, var) end
-    end
-    
-    -- 2. Scan perkataan terakhir ditaip
+    for var in txt:gmatch("local%s+([%w_]+)") do if not table.find(suggestions, var) then table.insert(suggestions, var) end end
     local lastWord = txt:match("[%w_]+$")
-    
     if lastWord then
-        for _, word in pairs(keywords) do 
-            if word:find(lastWord:lower()) and not table.find(suggestions, word) then 
-                table.insert(suggestions, word) 
-            end 
-        end
-        
+        for _, word in pairs(keywords) do if word:find(lastWord:lower()) and not table.find(suggestions, word) then table.insert(suggestions, word) end end
         for _, word in pairs(suggestions) do
             local btn = Instance.new("TextButton", assistantPanel)
-            btn.Size = UDim2.new(1, -5, 0, 25)
-            btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50); btn.TextColor3 = Color3.new(0.8,0.8,0.8)
-            btn.TextSize = 12
+            btn.Size = UDim2.new(1, -5, 0, 25); btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50); btn.TextColor3 = Color3.new(0.8,0.8,0.8); btn.TextSize = 12
             Instance.new("UICorner", btn)
-            
             btn.MouseButton1Click:Connect(function()
                 local before = editor.Text:sub(1, #editor.Text - #lastWord)
                 editor.Text = before .. word .. " "
@@ -95,7 +123,7 @@ editor:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- SISTEM PUSTAKA & SAVE (Sama seperti sebelumnya)
+-- SISTEM PUSTAKA & SAVE
 local function buatButangPustaka(nama, kod)
     local b = Instance.new("TextButton", side)
     b.Size = UDim2.new(1, -10, 0, 30); b.Text = nama; b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -123,4 +151,7 @@ local runBtn = Instance.new("TextButton", main)
 runBtn.Size = UDim2.new(0, 280, 0, 45); runBtn.Position = UDim2.new(0, 140, 1, -55)
 runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127); runBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", runBtn)
-runBtn.MouseButton1Click:Connect(function() pcall(loadstring(editor.Text)) end)
+runBtn.MouseButton1Click:Connect(function() 
+    local f, e = loadstring(editor.Text)
+    if f then task.spawn(f) else warn(e) end
+end)
