@@ -1,147 +1,118 @@
---[[ 
-    LUA CODE SCHOOL - PRO IDE (FIXED VERSION)
-    - Auto-cleanup UI lama
-    - Stabilized Search & Autocomplete
-]]
-
 local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
--- 1. CLEANUP: Padam UI lama jika wujud supaya tidak bertindih
-if targetParent:FindFirstChild("CodeSchoolIDE_V2") then
-    targetParent:FindFirstChild("CodeSchoolIDE_V2"):Destroy()
-end
+-- 1. PUSTAKA LUA (TAMBAH KOD BARU DI SINI)
+-- Format: ["Nama"] = "Kod Lua"
+local PustakaLua = {
+    ["Check System"] = "print('System Active!')",
+    ["Speed 100"] = "game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100",
+    ["Infinite Jump"] = "game:GetService('UserInputService').JumpRequest:Connect(function() game.Players.LocalPlayer.Character.Humanoid:ChangeState(3) end)",
+    -- Tambah kod baru di bawah baris ini:
+    
+}
 
--- LINK GITHUB
-local RAW_DATA_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/For%20Code%20School"
-local RAW_KAMUS_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/Kamus.lua"
+-- AUTO-CLEANUP
+if targetParent:FindFirstChild("CodeSchool_Pro") then targetParent:FindFirstChild("CodeSchool_Pro"):Destroy() end
 
-local suggestions = {}
-
--- UI CONSTRUCTION
 local sg = Instance.new("ScreenGui", targetParent)
-sg.Name = "CodeSchoolIDE_V2"
+sg.Name = "CodeSchool_Pro"
 sg.ResetOnSpawn = false
 
+-- --- UI UTAMA ---
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 420, 0, 350)
-main.Position = UDim2.new(0.5, -210, 0.4, -175)
+main.Size = UDim2.new(0, 450, 0, 350)
+main.Position = UDim2.new(0.5, -225, 0.4, -175)
 main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main)
 
--- SEARCH BAR
-local searchBox = Instance.new("TextBox", main)
-searchBox.Size = UDim2.new(0, 130, 0, 30)
-searchBox.Position = UDim2.new(0, 10, 0, 10)
-searchBox.PlaceholderText = "Cari Skrip..."
-searchBox.Text = ""
-searchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-searchBox.TextColor3 = Color3.new(1, 1, 1)
-searchBox.ClearTextOnFocus = false
-Instance.new("UICorner", searchBox)
+-- TOMBOL DELETE (X)
+local delBtn = Instance.new("TextButton", main)
+delBtn.Size = UDim2.new(0, 30, 0, 30)
+delBtn.Position = UDim2.new(1, -35, 0, 5)
+delBtn.Text = "X"
+delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+delBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", delBtn)
+delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- SIDEBAR
-local sidebar = Instance.new("ScrollingFrame", main)
-sidebar.Size = UDim2.new(0, 130, 1, -60)
-sidebar.Position = UDim2.new(0, 10, 0, 50)
-sidebar.BackgroundTransparency = 1
-sidebar.CanvasSize = UDim2.new(0, 0, 0, 0) -- Akan auto-adjust
-sidebar.AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y
-local layout = Instance.new("UIListLayout", sidebar)
-layout.Padding = UDim.new(0, 5)
+-- TOMBOL MINIMIZE (-)
+local hideBtn = Instance.new("TextButton", main)
+hideBtn.Size = UDim2.new(0, 30, 0, 30)
+hideBtn.Position = UDim2.new(1, -70, 0, 5)
+hideBtn.Text = "-"
+hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+hideBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", hideBtn)
 
 -- EDITOR KOD
 local editor = Instance.new("TextBox", main)
-editor.Size = UDim2.new(1, -160, 1, -135)
-editor.Position = UDim2.new(0, 150, 0, 10)
-editor.MultiLine = true
-editor.Text = "-- Pilih skrip atau taip di sini --"
-editor.TextColor3 = Color3.new(1, 1, 1)
-editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-editor.Font = Enum.Font.Code
-editor.ClearTextOnFocus = false
-editor.TextXAlignment = 0; editor.TextYAlignment = 0
+editor.Size = UDim2.new(1, -160, 1, -150)
+editor.Position = UDim2.new(0, 150, 0, 45)
+editor.MultiLine = true; editor.Text = ""; editor.TextColor3 = Color3.new(1, 1, 1)
+editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15); editor.Font = Enum.Font.Code
+editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
 
--- AUTOCOMPLETE BAR
-local suggestPanel = Instance.new("Frame", main)
-suggestPanel.Size = UDim2.new(1, -160, 0, 30)
-suggestPanel.Position = UDim2.new(0, 150, 1, -115)
-suggestPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-local suggestLayout = Instance.new("UIListLayout", suggestPanel)
-suggestLayout.FillDirection = Enum.FillDirection.Horizontal
-suggestLayout.Padding = UDim.new(0, 5)
+-- SIDEBAR (PUSTAKA LUA)
+local side = Instance.new("ScrollingFrame", main)
+side.Size = UDim2.new(0, 130, 1, -60)
+side.Position = UDim2.new(0, 10, 0, 45)
+side.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+local layout = Instance.new("UIListLayout", side); layout.Padding = UDim.new(0, 5)
+
+local function buatButangPustaka(nama, kod)
+    local b = Instance.new("TextButton", side)
+    b.Size = UDim2.new(1, -10, 0, 30); b.Text = nama
+    b.BackgroundColor3 = Color3.fromRGB(45, 45, 45); b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() editor.Text = kod end)
+end
+
+for n, k in pairs(PustakaLua) do buatButangPustaka(n, k) end
+
+-- --- FUNGSI SAVE ---
+local saveInput = Instance.new("TextBox", main)
+saveInput.Size = UDim2.new(0, 120, 0, 30)
+saveInput.Position = UDim2.new(0, 150, 1, -95)
+saveInput.PlaceholderText = "Nama Kod..."
+saveInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40); saveInput.TextColor3 = Color3.new(1,1,1)
+
+local saveBtn = Instance.new("TextButton", main)
+saveBtn.Size = UDim2.new(0, 60, 0, 30)
+saveBtn.Position = UDim2.new(0, 280, 1, -95)
+saveBtn.Text = "SAVE"
+saveBtn.BackgroundColor3 = Color3.fromRGB(30, 100, 200); saveBtn.TextColor3 = Color3.new(1,1,1)
+
+saveBtn.MouseButton1Click:Connect(function()
+    local nama = saveInput.Text
+    if nama ~= "" and writefile then
+        writefile(nama..".lua", editor.Text)
+        buatButangPustaka("[SAVE] "..nama, editor.Text)
+        saveInput.Text = ""
+        print("Fail disimpan: "..nama..".lua")
+    else
+        warn("Gagal simpan! Pastikan ada nama & executor sokong writefile.")
+    end
+end)
 
 -- TOMBOL RUN
 local runBtn = Instance.new("TextButton", main)
-runBtn.Size = UDim2.new(1, -160, 0, 40)
-runBtn.Position = UDim2.new(0, 150, 1, -75)
-runBtn.Text = "EXECUTE CODE"
-runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-runBtn.TextColor3 = Color3.new(1, 1, 1)
-runBtn.Font = Enum.Font.SourceSansBold
+runBtn.Size = UDim2.new(1, -160, 0, 45)
+runBtn.Position = UDim2.new(0, 150, 1, -55)
+runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127); runBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", runBtn)
 
--- FUNGSI LOAD DATA & SEARCH
-local function LoadData()
-    local s1, c1 = pcall(function() return game:HttpGet(RAW_KAMUS_URL) end)
-    if s1 then suggestions = loadstring(c1)() end
-
-    local s2, c2 = pcall(function() return game:HttpGet(RAW_DATA_URL) end)
-    if s2 then
-        local data = loadstring(c2)()
-        local buttons = {}
-
-        for name, code in pairs(data) do
-            local btn = Instance.new("TextButton", sidebar)
-            btn.Size = UDim2.new(1, -5, 0, 30)
-            btn.Text = name
-            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            btn.TextColor3 = Color3.new(1, 1, 1)
-            Instance.new("UICorner", btn)
-            buttons[name] = btn
-            
-            btn.MouseButton1Click:Connect(function() editor.Text = code end)
-        end
-
-        -- Perbaikan Logik Carian: Hanya satu event listener
-        searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-            local query = searchBox.Text:lower()
-            for name, btn in pairs(buttons) do
-                btn.Visible = name:lower():find(query) ~= nil
-            end
-        end)
-    end
-end
-
--- LOGIK AUTOCOMPLETE (STABILIZED)
-editor:GetPropertyChangedSignal("Text"):Connect(function()
-    for _, v in pairs(suggestPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    local lastWord = editor.Text:match("[%w_]+$")
-    if lastWord and lastWord ~= "" and suggestions then
-        local count = 0
-        for _, word in pairs(suggestions) do
-            if word:lower():sub(1, #lastWord) == lastWord:lower() and count < 3 then
-                count = count + 1
-                local btn = Instance.new("TextButton", suggestPanel)
-                btn.Size = UDim2.new(0, 80, 1, 0)
-                btn.Text = word
-                btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-                btn.TextColor3 = Color3.new(1, 1, 1)
-                btn.MouseButton1Click:Connect(function()
-                    local before = editor.Text:sub(1, #editor.Text - #lastWord)
-                    editor.Text = before .. word
-                    editor:CaptureFocus()
-                end)
-            end
-        end
-    end
-end)
-
 runBtn.MouseButton1Click:Connect(function()
-    local f, err = loadstring(editor.Text)
-    if f then task.spawn(f) else warn("Ralat Kod: " .. err) end
+    local f, e = loadstring(editor.Text)
+    if f then task.spawn(f) else warn(e) end
 end)
 
-task.spawn(LoadData)
+-- LOGIK MINIMIZE
+local showBtn = Instance.new("TextButton", sg)
+showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
+showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true
+Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
+
+hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
+showBtn.MouseButton1Click:Connect(function() main.Visible = true; showBtn.Visible = false end)
