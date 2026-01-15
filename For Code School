@@ -1,6 +1,53 @@
-return {
-    ["Auto_Speed"] = "game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100",
-    ["Infinite_Jump"] = "game:GetService('UserInputService').JumpRequest:Connect(function() game.Players.LocalPlayer.Character.Humanoid:ChangeState(3) end)",
-    ["Fullbright"] = "game:GetService('Lighting').Brightness = 2; game:GetService('Lighting').ClockTime = 14"
-}
+local UIS = game:GetService("UserInputService")
+local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
+-- PASTE URL RAW ANDA DI SINI
+local RAW_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/For%20Code%20School"
+
+local sg = Instance.new("ScreenGui", targetParent)
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.new(0, 450, 0, 320)
+main.Position = UDim2.new(0.5, -225, 0.3, 0)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new("UICorner", main)
+
+local sidebar = Instance.new("ScrollingFrame", main)
+sidebar.Size = UDim2.new(0, 140, 1, -85)
+sidebar.Position = UDim2.new(0, 5, 0, 40)
+sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Instance.new("UIListLayout", sidebar).Padding = UDim.new(0, 2)
+
+local editor = Instance.new("TextBox", main)
+editor.Size = UDim2.new(1, -160, 1, -85)
+editor.Position = UDim2.new(0, 150, 0, 40)
+editor.MultiLine = true; editor.Text = "-- Sila pilih kod --"
+editor.TextColor3 = Color3.new(1, 1, 1); editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
+
+local launch = Instance.new("TextButton", main)
+launch.Size = UDim2.new(0, 120, 0, 35); launch.Position = UDim2.new(0.5, -60, 1, -40)
+launch.Text = "RUN CODE"; launch.BackgroundColor3 = Color3.fromRGB(0, 160, 80); launch.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", launch)
+
+-- Fungsi Fetch Data
+local function FetchData()
+    local success, content = pcall(function() return game:HttpGet(RAW_URL) end)
+    if success then
+        local data = loadstring(content)()
+        for name, code in pairs(data) do
+            local btn = Instance.new("TextButton", sidebar)
+            btn.Size = UDim2.new(1, 0, 0, 30); btn.Text = name
+            btn.BackgroundColor3 = Color3.fromRGB(55, 55, 55); btn.TextColor3 = Color3.new(1, 1, 1)
+            btn.MouseButton1Click:Connect(function() editor.Text = code end)
+        end
+    else
+        editor.Text = "Ralat: Pastikan URL Raw betul dan Repo adalah Public!"
+    end
+end
+
+launch.MouseButton1Click:Connect(function()
+    local f, err = loadstring(editor.Text)
+    if f then task.spawn(f) else warn(err) end
+end)
+
+task.spawn(FetchData)
