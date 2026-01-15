@@ -1,9 +1,8 @@
 local UIS = game:GetService("UserInputService")
-local TS = game:GetService("TweenService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
 -- ==========================================================
--- 1. CODE LIBRARY (ENGLISH)
+-- 1. CODE LIBRARY (ENGLISH CATEGORIES)
 -- ==========================================================
 local Library = {
     ["1. GUI Startup"] = [[local sg = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
@@ -25,20 +24,38 @@ btn.Text = "CLICK ME"
 btn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 Instance.new("UICorner", btn)]],
 
-    ["4. Teleport System"] = [[local target = Vector3.new(0, 100, 0)
+    ["4. Teleport (CFrame)"] = [[local target = Vector3.new(0, 100, 0)
 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(target)]],
 
-    ["5. Player Stats"] = [[local hum = game.Players.LocalPlayer.Character.Humanoid
+    ["5. UI (TextLabel)"] = [[local lbl = Instance.new("TextLabel", frame)
+lbl.Size = UDim2.new(1, 0, 0, 40)
+lbl.Text = "Status: Active"
+lbl.TextColor3 = Color3.new(1,1,1)
+lbl.BackgroundTransparency = 1]],
+
+    ["6. Active Trigger"] = [[btn.MouseButton1Click:Connect(function()
+    print("Action Executed!")
+end)]],
+
+    ["7. Visual/Graphics"] = [[local light = game:GetService("Lighting")
+light.Brightness = 3
+light.ClockTime = 12
+light.OutdoorAmbient = Color3.fromRGB(200, 200, 200)
+Instance.new("BloomEffect", light)]],
+
+    ["8. Player Stats"] = [[local hum = game.Players.LocalPlayer.Character.Humanoid
 hum.WalkSpeed = 60
 hum.JumpPower = 120]],
 
-    ["6. Fly / Tween"] = [[local ts = game:GetService("TweenService")
+    ["9. Platform Check"] = [[if UIS.TouchEnabled then print("Mobile") else print("PC") end]],
+
+    ["10. Fly / Tween"] = [[local ts = game:GetService("TweenService")
 local root = game.Players.LocalPlayer.Character.HumanoidRootPart
 ts:Create(root, TweenInfo.new(1), {CFrame = root.CFrame * CFrame.new(0,50,0)}):Play()]],
 }
 
 -- ==========================================================
--- 2. ULTRA INTELLISENSE (ADDED NEW FUNCTIONS)
+-- 2. INTELLISENSE (EXTENDED MEGA LIST)
 -- ==========================================================
 local keywords = {
     "abs", "acos", "and", "asin", "atan", "atan2", "Anchored", "AngularVelocity", "Animation", "AnimationId", "Archivable", "Attributes", "Active", "Adornee", "AlwaysOnTop", "AutoButtonColor", "AutomaticSize", "AutoRotate", "Ambient",
@@ -64,9 +81,7 @@ local keywords = {
     "until", "unpack", "UDim.new", "UDim2.new", "UDim2.fromScale", "UDim2.fromOffset", "UpperTorso", "UpVector", "UserInputService", "ui", "UIPageLayout", "UIListLayout", "UIGridLayout", "UICorner", "UIStroke", "UIPadding", "UIScale", "Unit", "UnitRay",
     "Vector2.new", "Vector3.new", "Vector3.zero", "Vector3.one", "Velocity", "Visible", "Value", "ViewportSize", "Volume",
     "wait", "warn", "while", "workspace", "WaitForChild", "WalkSpeed", "writefile", "WorldRoot", "WindowFocusReleased",
-    "xpcall", "yield", "zero", "ZIndex",
-    -- New learning keywords
-    "task.synchronize", "task.desynchronize", "debug.profilebegin", "debug.profileend", "debug.traceback", "bit32", "getrenv", "getreg", "getfenv", "setfenv"
+    "xpcall", "yield", "zero", "ZIndex"
 }
 
 -- CLEANUP
@@ -76,49 +91,7 @@ local sg = Instance.new("ScreenGui", targetParent)
 sg.Name = "LUA_CodeSchool_EN"
 
 -- ==========================================================
--- 3. ANIMATED INTRO (SPLASH SCREEN)
--- ==========================================================
-local splash = Instance.new("Frame", sg)
-splash.Size = UDim2.new(1, 0, 1, 0)
-splash.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-splash.ZIndex = 10
-
-local introText = Instance.new("TextLabel", splash)
-introText.Size = UDim2.new(0, 400, 0, 100)
-introText.Position = UDim2.new(0.5, -200, 0.5, -50)
-introText.Text = "LUA CODE SCHOOL"
-introText.TextColor3 = Color3.fromRGB(255, 255, 255)
-introText.Font = Enum.Font.SourceSansBold
-introText.TextSize = 40
-introText.TextTransparency = 1
-introText.BackgroundTransparency = 1
-
-local creditText = Instance.new("TextLabel", splash)
-creditText.Size = UDim2.new(0, 400, 0, 50)
-creditText.Position = UDim2.new(0.5, -200, 0.5, 20)
-creditText.Text = "by Dianozan & Gemini"
-creditText.TextColor3 = Color3.fromRGB(100, 150, 255)
-creditText.Font = Enum.Font.Code
-creditText.TextSize = 18
-creditText.TextTransparency = 1
-creditText.BackgroundTransparency = 1
-
--- Intro Animation Logic
-task.spawn(function()
-    TS:Create(introText, TweenInfo.new(1), {TextTransparency = 0}):Play()
-    task.wait(0.5)
-    TS:Create(creditText, TweenInfo.new(1), {TextTransparency = 0}):Play()
-    task.wait(2)
-    TS:Create(introText, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    TS:Create(creditText, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    task.wait(1)
-    TS:Create(splash, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
-    task.wait(1)
-    splash:Destroy()
-end)
-
--- ==========================================================
--- 4. MAIN UI DESIGN
+-- 3. MAIN UI DESIGN
 -- ==========================================================
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 560, 0, 390) 
@@ -127,14 +100,13 @@ main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
-main.ClipsDescendants = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
--- TITLE BAR
+-- TITLE BAR & CREDITS
 local titleBar = Instance.new("TextLabel", main)
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleBar.Text = "  LUA CODE SCHOOL PRO | Credit: Dianozan"
+titleBar.Text = "  LUA CODE SCHOOL Pro | Credit: Dianozan"
 titleBar.TextColor3 = Color3.fromRGB(200, 200, 200)
 titleBar.Font = Enum.Font.SourceSansBold
 titleBar.TextSize = 16
@@ -148,9 +120,9 @@ powerText.Text = "Powered by Gemini AI"
 powerText.TextColor3 = Color3.fromRGB(100, 150, 255)
 powerText.BackgroundTransparency = 1
 powerText.Font = Enum.Font.Code
-powerText.TextSize = 11
+powerText.TextSize = 12
 
--- BUTTONS
+-- BUTTONS: X and -
 local delBtn = Instance.new("TextButton", main)
 delBtn.Size = UDim2.new(0, 28, 0, 28); delBtn.Position = UDim2.new(1, -33, 0, 4)
 delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); delBtn.TextColor3 = Color3.new(1,1,1)
@@ -161,12 +133,14 @@ hideBtn.Size = UDim2.new(0, 28, 0, 28); hideBtn.Position = UDim2.new(1, -66, 0, 
 hideBtn.Text = "-"; hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); hideBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", hideBtn)
 
--- COMPONENTS (SIDEBAR, EDITOR, ASSISTANT)
+-- SIDEBAR (LIBRARY)
 local side = Instance.new("ScrollingFrame", main)
 side.Size = UDim2.new(0, 130, 1, -110); side.Position = UDim2.new(0, 10, 0, 45)
-side.BackgroundColor3 = Color3.fromRGB(25, 25, 25); side.BorderSizePixel = 0
+side.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+side.BorderSizePixel = 0; side.ScrollBarThickness = 2
 local sideLayout = Instance.new("UIListLayout", side); sideLayout.Padding = UDim.new(0, 4)
 
+-- EDITOR
 local editor = Instance.new("TextBox", main)
 editor.Size = UDim2.new(0, 290, 1, -165); editor.Position = UDim2.new(0, 145, 0, 45)
 editor.MultiLine = true; editor.Text = ""; editor.TextColor3 = Color3.new(1, 1, 1)
@@ -174,12 +148,15 @@ editor.BackgroundColor3 = Color3.fromRGB(10, 10, 10); editor.Font = Enum.Font.Co
 editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
 editor.TextSize = 14
 
+-- ASSISTANT PANEL
 local assistantPanel = Instance.new("ScrollingFrame", main)
 assistantPanel.Size = UDim2.new(0, 110, 1, -110); assistantPanel.Position = UDim2.new(1, -120, 0, 45)
 assistantPanel.BackgroundColor3 = Color3.fromRGB(22, 22, 28); assistantPanel.BorderSizePixel = 0
 local assistLayout = Instance.new("UIListLayout", assistantPanel); assistLayout.Padding = UDim.new(0, 2)
 
--- SAVE & RUN SYSTEM
+-- ==========================================================
+-- 4. SAVE & EXECUTE SYSTEM
+-- ==========================================================
 local saveInput = Instance.new("TextBox", main)
 saveInput.Size = UDim2.new(0, 130, 0, 30); saveInput.Position = UDim2.new(0, 145, 1, -110)
 saveInput.PlaceholderText = "File Name..."; saveInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40); saveInput.TextColor3 = Color3.new(1,1,1)
@@ -192,22 +169,18 @@ Instance.new("UICorner", saveBtn)
 
 local runBtn = Instance.new("TextButton", main)
 runBtn.Size = UDim2.new(0, 290, 0, 50); runBtn.Position = UDim2.new(0, 145, 1, -70)
-runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); runBtn.TextColor3 = Color3.new(1,1,1)
+runBtn.Text = "EXECUTE"; runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); runBtn.TextColor3 = Color3.new(1,1,1)
 runBtn.Font = Enum.Font.SourceSansBold; runBtn.TextSize = 18
 Instance.new("UICorner", runBtn)
 
--- ==========================================================
--- 5. FUNCTIONAL LOGIC
--- ==========================================================
-
--- IntelliSense Logic
+-- LOGIC: INTELLISENSE
 editor:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(assistantPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     local lastWord = editor.Text:match("[%w_]+$")
     if lastWord then
         local count = 0
         for _, word in pairs(keywords) do
-            if word:lower():find(lastWord:lower()) and count < 20 then
+            if word:lower():find(lastWord:lower()) and count < 15 then
                 count = count + 1
                 local btn = Instance.new("TextButton", assistantPanel)
                 btn.Size = UDim2.new(1, -5, 0, 25); btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
@@ -223,7 +196,7 @@ editor:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- Library Loading
+-- LOGIC: LIBRARY
 for name, code in pairs(Library) do
     local b = Instance.new("TextButton", side)
     b.Size = UDim2.new(1, -10, 0, 35); b.Text = name; b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -231,20 +204,22 @@ for name, code in pairs(Library) do
     b.MouseButton1Click:Connect(function() editor.Text = editor.Text .. "\n" .. code end)
 end
 
--- Save/Run Functions
+-- LOGIC: SAVE & RUN
 saveBtn.MouseButton1Click:Connect(function()
     if saveInput.Text ~= "" and writefile then
         writefile(saveInput.Text..".lua", editor.Text)
-        saveBtn.Text = "SAVED!"; task.wait(1); saveBtn.Text = "SAVE"
+        saveBtn.Text = "SAVED!"
+        task.wait(1)
+        saveBtn.Text = "SAVE"
     end
 end)
 
 runBtn.MouseButton1Click:Connect(function()
     local f, e = loadstring(editor.Text)
-    if f then task.spawn(f) else warn("Execution Error: "..e) end
+    if f then task.spawn(f) else warn("Error: "..e) end
 end)
 
--- Minimize System
+-- MINIMIZE LOGIC
 local showBtn = Instance.new("TextButton", sg)
 showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
 showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
@@ -253,3 +228,6 @@ showBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); showBtn.TextColor3 = Co
 hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
 showBtn.MouseButton1Click:Connect(function() main.Visible = true; showBtn.Visible = false end)
 delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- INTRO MESSAGE
+print("LUA Code School Loaded. Developed by Dianozan & Powered by Gemini AI.")
