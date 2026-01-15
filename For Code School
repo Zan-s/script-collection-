@@ -81,7 +81,13 @@ local keywords = {
     "until", "unpack", "UDim.new", "UDim2.new", "UDim2.fromScale", "UDim2.fromOffset", "UpperTorso", "UpVector", "UserInputService", "ui", "UIPageLayout", "UIListLayout", "UIGridLayout", "UICorner", "UIStroke", "UIPadding", "UIScale", "Unit", "UnitRay",
     "Vector2.new", "Vector3.new", "Vector3.zero", "Vector3.one", "Velocity", "Visible", "Value", "ViewportSize", "Volume",
     "wait", "warn", "while", "workspace", "WaitForChild", "WalkSpeed", "writefile", "WorldRoot", "WindowFocusReleased",
-    "xpcall", "yield", "zero", "ZIndex"
+    "xpcall", "yield", "zero", "ZIndex"identifyexecutor", "getinstances", "getnilinstances", "getscripts", "hookmetamethod", "hookfunction", "checkcaller",
+    "UIAspectRatioConstraint", "UISizeConstraint", "UITextSizeConstraint", "FillDirection", "HorizontalAlignment", "VerticalAlignment",
+    "CameraType", "FieldOfView", "CFrame.lookAt", "ColorCorrectionEffect", "DepthOfFieldEffect", "SunRaysEffect",
+    "Highlight", "OutlineColor", "FillColor", "OutlineTransparency", "FillTransparency",
+    "TopVelocity", "Acceleration", "Deceleration", "TurnSpeed",
+    "OverlapParams.new", "RaycastParams.new", "WorldModel", "BulkMoveTo"
+
 }
 
 -- CLEANUP
