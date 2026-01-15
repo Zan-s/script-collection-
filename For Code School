@@ -7,98 +7,85 @@ local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 local RAW_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/For%20Code%20School"
 
--- UI Utama
-local sg = Instance.new("ScreenGui", targetParent)
-sg.Name = "CodeSchoolIDE"
-
-local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 400, 0, 280)
-main.Position = UDim2.new(0.5, -200, 0.4, -140)
-main.BackgroundColor3 = Color3.fromRGB(25, 25, 25) -- Hitam Kelabu (Lebih selesa mata)
-main.BorderSizePixel = 0
-main.Active = true
-main.Draggable = true -- Boleh gerakkan frame guna jari
-
-local corner = Instance.new("UICorner", main)
-corner.CornerRadius = UDim.new(0, 10)
-
--- Tajuk
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "  LUA CODE SCHOOL"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.TextSize = 18
-title.Font = Enum.Font.SourceSansBold
-title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-title.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", title)
-
--- Container untuk List (Kiri)
-local scrollFrame = Instance.new("ScrollingFrame", main)
-scrollFrame.Size = UDim2.new(0, 130, 1, -50)
-scrollFrame.Position = UDim2.new(0, 5, 0, 45)
-scrollFrame.BackgroundTransparency = 1
-scrollFrame.CanvasSize = UDim2.new(0, 0, 2, 0) -- Boleh scroll ke bawah
-scrollFrame.ScrollBarThickness = 4
-
-local layout = Instance.new("UIListLayout", scrollFrame)
-layout.Padding = UDim.new(0, 5)
-
--- Editor Kotak Kod (Kanan)
-local editor = Instance.new("TextBox", main)
-editor.Size = UDim2.new(1, -150, 1, -95)
-editor.Position = UDim2.new(0, 140, 0, 45)
-editor.MultiLine = true
-editor.Text = "-- Pilih Kod Di Kiri --"
-editor.TextColor3 = Color3.fromRGB(200, 200, 200)
-editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-editor.Font = Enum.Font.Code
-editor.TextSize = 14
-editor.ClearTextOnFocus = false
-editor.TextXAlignment = 0
-editor.TextYAlignment = 0
-
--- Tombol RUN
-local runBtn = Instance.new("TextButton", main)
-runBtn.Size = UDim2.new(1, -150, 0, 35)
-runBtn.Position = UDim2.new(0, 140, 1, -45)
-runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- Hijau terang
-runBtn.Text = "EXECUTE CODE"
-runBtn.TextColor3 = Color3.new(1, 1, 1)
-runBtn.Font = Enum.Font.SourceSansBold
-runBtn.TextSize = 16
-Instance.new("UICorner", runBtn)
-
--- DATA SKRIP ANDA
-local myScripts = {
-    ["Check System"] = [[print("Sistem Berjalan!") print("User: "..game.Players.LocalPlayer.Name)]],
-    ["Speed 100"] = [[game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100]],
-    ["Jump Power"] = [[game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100]],
-    ["Infinite Jump"] = [[game:GetService("UserInputService").JumpRequest:Connect(function() game.Players.LocalPlayer.Character.Humanoid:ChangeState(3) end)]],
-    ["Full Bright"] = [[game:GetService("Lighting").Brightness = 2; game:GetService("Lighting").ClockTime = 14]]
+-- DAFTAR KATA KUNCI (AUTOCOMPLETE LIST)
+local suggestions = {
+    "game", "workspace", "Players", "LocalPlayer", "Character", "Humanoid", 
+    "WalkSpeed", "JumpPower", "Instance.new", "GetService", "WaitForChild", 
+    "Connect", "function", "local", "print", "wait", "task.wait", "Lighting"
 }
 
--- Bina Butang Secara Automatik
-for name, code in pairs(myScripts) do
-    local btn = Instance.new("TextButton", scrollFrame)
-    btn.Size = UDim2.new(1, -10, 0, 35)
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    btn.Text = name
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.SourceSans
-    btn.TextSize = 14
-    Instance.new("UICorner", btn)
+-- UI UTAMA
+local sg = Instance.new("ScreenGui", targetParent)
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.new(0, 400, 0, 320)
+main.Position = UDim2.new(0.5, -200, 0.4, -160)
+main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main)
 
-    btn.MouseButton1Click:Connect(function()
-        editor.Text = code
-    end)
-end
+-- EDITOR KOD
+local editor = Instance.new("TextBox", main)
+editor.Size = UDim2.new(1, -20, 1, -120)
+editor.Position = UDim2.new(0, 10, 0, 45)
+editor.MultiLine = true
+editor.Text = ""
+editor.TextColor3 = Color3.new(1, 1, 1)
+editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+editor.Font = Enum.Font.Code
+editor.TextXAlignment = 0
+editor.TextYAlignment = 0
+editor.ClearTextOnFocus = false
+
+-- PANEL CADANGAN (AUTOCOMPLETE BAR)
+local suggestPanel = Instance.new("Frame", main)
+suggestPanel.Size = UDim2.new(1, -20, 0, 30)
+suggestPanel.Position = UDim2.new(0, 10, 1, -85)
+suggestPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+local suggestLayout = Instance.new("UIListLayout", suggestPanel)
+suggestLayout.FillDirection = Enum.FillDirection.Horizontal
+suggestLayout.Padding = UDim.new(0, 5)
+
+-- FUNGSI MENGEMASKINI CADANGAN
+editor:GetPropertyChangedSignal("Text"):Connect(function()
+    -- Buang cadangan lama
+    for _, v in pairs(suggestPanel:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+
+    local currentText = editor.Text:match("[%w_]+$") -- Ambil perkataan terakhir ditaip
+    if currentText and currentText ~= "" then
+        local count = 0
+        for _, word in pairs(suggestions) do
+            if word:lower():sub(1, #currentText) == currentText:lower() and count < 4 then
+                count = count + 1
+                local btn = Instance.new("TextButton", suggestPanel)
+                btn.Size = UDim2.new(0, 80, 1, 0)
+                btn.Text = word
+                btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                btn.TextColor3 = Color3.new(1, 1, 1)
+                
+                btn.MouseButton1Click:Connect(function()
+                    local before = editor.Text:sub(1, #editor.Text - #currentText)
+                    editor.Text = before .. word
+                    editor:CaptureFocus() -- Fokus balik ke editor
+                end)
+            end
+        end
+    end
+end)
+
+-- TOMBOL RUN
+local runBtn = Instance.new("TextButton", main)
+runBtn.Size = UDim2.new(1, -20, 0, 40)
+runBtn.Position = UDim2.new(0, 10, 1, -50)
+runBtn.Text = "EXECUTE CODE"
+runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+runBtn.TextColor3 = Color3.new(1, 1, 1)
+runBtn.Font = Enum.Font.SourceSansBold
+Instance.new("UICorner", runBtn)
 
 runBtn.MouseButton1Click:Connect(function()
-    local func, err = loadstring(editor.Text)
-    if func then
-        task.spawn(func)
-    else
-        warn("Error: " .. err)
-    end
+    local f, err = loadstring(editor.Text)
+    if f then task.spawn(f) else warn(err) end
 end)
