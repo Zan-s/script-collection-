@@ -1,89 +1,128 @@
 --[[ 
-    LUA CODE SCHOOL - MAIN LOADER 
-    Created by: Zan-s
+    LUA CODE SCHOOL - PRO IDE (MOBILE VERSION)
+    Features: Autocomplete (from GitHub), Auto-Sync, Search System
 ]]
 
 local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
-local RAW_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/For%20Code%20School"
 
--- DAFTAR KATA KUNCI (AUTOCOMPLETE LIST)
-local suggestions = {
-    "game", "workspace", "Players", "LocalPlayer", "Character", "Humanoid", 
-    "WalkSpeed", "JumpPower", "Instance.new", "GetService", "WaitForChild", 
-    "Connect", "function", "local", "print", "wait", "task.wait", "Lighting"
-}
+-- LINK GITHUB ANDA
+local RAW_DATA_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/For%20Code%20School"
+local RAW_KAMUS_URL = "https://raw.githubusercontent.com/Zan-s/script-collection-/main/Kamus.lua"
 
--- UI UTAMA
+local suggestions = {} -- Akan dimuat turun dari Kamus.lua
+
+-- UI CONSTRUCTION
 local sg = Instance.new("ScreenGui", targetParent)
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 400, 0, 320)
-main.Position = UDim2.new(0.5, -200, 0.4, -160)
+main.Size = UDim2.new(0, 420, 0, 350)
+main.Position = UDim2.new(0.5, -210, 0.4, -175)
 main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main)
 
+-- SEARCH BAR (Sistem Carian)
+local searchBox = Instance.new("TextBox", main)
+searchBox.Size = UDim2.new(0, 130, 0, 30)
+searchBox.Position = UDim2.new(0, 10, 0, 10)
+searchBox.PlaceholderText = "Cari Skrip..."
+searchBox.Text = ""
+searchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+searchBox.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", searchBox)
+
+-- SIDEBAR (LIST SKRIP)
+local sidebar = Instance.new("ScrollingFrame", main)
+sidebar.Size = UDim2.new(0, 130, 1, -60)
+sidebar.Position = UDim2.new(0, 10, 0, 50)
+sidebar.BackgroundTransparency = 1
+sidebar.CanvasSize = UDim2.new(0, 0, 5, 0)
+local layout = Instance.new("UIListLayout", sidebar)
+layout.Padding = UDim.new(0, 5)
+
 -- EDITOR KOD
 local editor = Instance.new("TextBox", main)
-editor.Size = UDim2.new(1, -20, 1, -120)
-editor.Position = UDim2.new(0, 10, 0, 45)
+editor.Size = UDim2.new(1, -160, 1, -135)
+editor.Position = UDim2.new(0, 150, 0, 10)
 editor.MultiLine = true
-editor.Text = ""
+editor.Text = "-- Sila pilih kod atau taip di sini --"
 editor.TextColor3 = Color3.new(1, 1, 1)
 editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 editor.Font = Enum.Font.Code
-editor.TextXAlignment = 0
-editor.TextYAlignment = 0
 editor.ClearTextOnFocus = false
+editor.TextXAlignment = 0; editor.TextYAlignment = 0
 
--- PANEL CADANGAN (AUTOCOMPLETE BAR)
+-- AUTOCOMPLETE BAR
 local suggestPanel = Instance.new("Frame", main)
-suggestPanel.Size = UDim2.new(1, -20, 0, 30)
-suggestPanel.Position = UDim2.new(0, 10, 1, -85)
+suggestPanel.Size = UDim2.new(1, -160, 0, 30)
+suggestPanel.Position = UDim2.new(0, 150, 1, -115)
 suggestPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 local suggestLayout = Instance.new("UIListLayout", suggestPanel)
 suggestLayout.FillDirection = Enum.FillDirection.Horizontal
 suggestLayout.Padding = UDim.new(0, 5)
 
--- FUNGSI MENGEMASKINI CADANGAN
-editor:GetPropertyChangedSignal("Text"):Connect(function()
-    -- Buang cadangan lama
-    for _, v in pairs(suggestPanel:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
-    end
+-- TOMBOL RUN
+local runBtn = Instance.new("TextButton", main)
+runBtn.Size = UDim2.new(1, -160, 0, 40)
+runBtn.Position = UDim2.new(0, 150, 1, -75)
+runBtn.Text = "EXECUTE CODE"
+runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+runBtn.TextColor3 = Color3.new(1, 1, 1)
+runBtn.Font = Enum.Font.SourceSansBold
+Instance.new("UICorner", runBtn)
 
-    local currentText = editor.Text:match("[%w_]+$") -- Ambil perkataan terakhir ditaip
+-- FUNGSI: MUAT TURUN KAMUS & DATA
+task.spawn(function()
+    -- Ambil Kamus Autocomplete
+    local s1, c1 = pcall(function() return game:HttpGet(RAW_KAMUS_URL) end)
+    if s1 then suggestions = loadstring(c1)() end
+
+    -- Ambil Data Skrip
+    local s2, c2 = pcall(function() return game:HttpGet(RAW_DATA_URL) end)
+    if s2 then
+        local data = loadstring(c2)()
+        for name, code in pairs(data) do
+            local btn = Instance.new("TextButton", sidebar)
+            btn.Size = UDim2.new(1, -5, 0, 30)
+            btn.Text = name
+            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            btn.TextColor3 = Color3.new(1, 1, 1)
+            Instance.new("UICorner", btn)
+            
+            btn.MouseButton1Click:Connect(function() editor.Text = code end)
+            
+            -- Logik Carian
+            searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                btn.Visible = name:lower():find(searchBox.Text:lower()) ~= nil
+            end)
+        end
+    end
+end)
+
+-- LOGIK AUTOCOMPLETE
+editor:GetPropertyChangedSignal("Text"):Connect(function()
+    for _, v in pairs(suggestPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    local currentText = editor.Text:match("[%w_]+$")
     if currentText and currentText ~= "" then
         local count = 0
         for _, word in pairs(suggestions) do
-            if word:lower():sub(1, #currentText) == currentText:lower() and count < 4 then
+            if word:lower():sub(1, #currentText) == currentText:lower() and count < 3 then
                 count = count + 1
                 local btn = Instance.new("TextButton", suggestPanel)
                 btn.Size = UDim2.new(0, 80, 1, 0)
                 btn.Text = word
                 btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
                 btn.TextColor3 = Color3.new(1, 1, 1)
-                
                 btn.MouseButton1Click:Connect(function()
                     local before = editor.Text:sub(1, #editor.Text - #currentText)
                     editor.Text = before .. word
-                    editor:CaptureFocus() -- Fokus balik ke editor
+                    editor:CaptureFocus()
                 end)
             end
         end
     end
 end)
-
--- TOMBOL RUN
-local runBtn = Instance.new("TextButton", main)
-runBtn.Size = UDim2.new(1, -20, 0, 40)
-runBtn.Position = UDim2.new(0, 10, 1, -50)
-runBtn.Text = "EXECUTE CODE"
-runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-runBtn.TextColor3 = Color3.new(1, 1, 1)
-runBtn.Font = Enum.Font.SourceSansBold
-Instance.new("UICorner", runBtn)
 
 runBtn.MouseButton1Click:Connect(function()
     local f, err = loadstring(editor.Text)
