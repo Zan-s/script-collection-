@@ -38,56 +38,154 @@ ts:Create(root, TweenInfo.new(1), {CFrame = root.CFrame * CFrame.new(0,50,0)}):P
 }
 
 -- ==========================================================
--- 2. ULTRA INTELLISENSE (7 PARTS SYSTEM)
+-- 2. ULTRA INTELLISENSE (ADDED NEW FUNCTIONS)
 -- ==========================================================
--- Nota: Masukkan 500-600 kata kunci dalam setiap bahagian.
+local keywords = {"load"}
 
-local part1 = {"abs", "acos", "and", "asin", "atan", "atan2", "Anchored", "AngularVelocity", "Animation", "Active", "Ambient"}
-local part2 = {"Backpack", "BasePart", "Beam", "BindableEvent", "BodyVelocity", "Brightness", "BackgroundColor3", "BillboardGui"}
-local part3 = {"CFrame", "CFrame.new", "CanCollide", "Character", "Color3.fromRGB", "Chat", "ClickDetector", "CurrentCamera"}
-local part4 = {"data", "delay", "Destroy", "Disconnect", "Debris", "DataStoreService", "DisplayName", "Draggable"}
-local part5 = {"else", "elseif", "end", "Enum", "error", "Enabled", "FireServer", "FindFirstChild", "format", "function"}
-local part6 = {"game", "getfenv", "getgenv", "GetChildren", "GetService", "GetMouse", "Health", "HttpService", "Humanoid"}
-local part7 = {"if", "in", "insert", "Instance.new", "ipairs", "isA", "JumpPower", "KeyCode", "local", "loadstring", "wait", "workspace"}
-
--- LOGIK PENGGABUNGAN (KEBAL RALAT)
-local keywords = {}
-local function SecureMerge(t)
-    if t and type(t) == "table" then
-        for _, v in ipairs(t) do table.insert(keywords, v) end
-    end
-end
-
-for i = 1, 7 do
-    local success, targetPart = pcall(function() return _G["part"..i] or getfenv()["part"..i] end)
-    if success then SecureMerge(targetPart) end
-end
-
--- ==========================================================
--- 3. CLEANUP & UI CORE
--- ==========================================================
-if targetParent:FindFirstChild("LUA_CodeSchool_PRO") then targetParent:FindFirstChild("LUA_CodeSchool_PRO"):Destroy() end
+-- CLEANUP
+if targetParent:FindFirstChild("LUA_CodeSchool_EN") then targetParent:FindFirstChild("LUA_CodeSchool_EN"):Destroy() end
 
 local sg = Instance.new("ScreenGui", targetParent)
-sg.Name = "LUA_CodeSchool_PRO"
-
--- (Animasi Splash Screen & Design UI Main tetap sama seperti kod anda)
--- Gunakan kod UI yang anda berikan sebelum ini di sini...
+sg.Name = "LUA_CodeSchool_EN"
 
 -- ==========================================================
--- 4. LOGIK SEARCH INTELLISENSE (OPTIMIZED)
+-- 3. ANIMATED INTRO (SPLASH SCREEN)
 -- ==========================================================
+local splash = Instance.new("Frame", sg)
+splash.Size = UDim2.new(1, 0, 1, 0)
+splash.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+splash.ZIndex = 10
+
+local introText = Instance.new("TextLabel", splash)
+introText.Size = UDim2.new(0, 400, 0, 100)
+introText.Position = UDim2.new(0.5, -200, 0.5, -50)
+introText.Text = "LUA CODE SCHOOL"
+introText.TextColor3 = Color3.fromRGB(255, 255, 255)
+introText.Font = Enum.Font.SourceSansBold
+introText.TextSize = 40
+introText.TextTransparency = 1
+introText.BackgroundTransparency = 1
+
+local creditText = Instance.new("TextLabel", splash)
+creditText.Size = UDim2.new(0, 400, 0, 50)
+creditText.Position = UDim2.new(0.5, -200, 0.5, 20)
+creditText.Text = "by Dianozan & Gemini"
+creditText.TextColor3 = Color3.fromRGB(100, 150, 255)
+creditText.Font = Enum.Font.Code
+creditText.TextSize = 18
+creditText.TextTransparency = 1
+creditText.BackgroundTransparency = 1
+
+-- Intro Animation Logic
+task.spawn(function()
+    TS:Create(introText, TweenInfo.new(1), {TextTransparency = 0}):Play()
+    task.wait(0.5)
+    TS:Create(creditText, TweenInfo.new(1), {TextTransparency = 0}):Play()
+    task.wait(2)
+    TS:Create(introText, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    TS:Create(creditText, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    task.wait(1)
+    TS:Create(splash, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
+    task.wait(1)
+    splash:Destroy()
+end)
+
+-- ==========================================================
+-- 4. MAIN UI DESIGN
+-- ==========================================================
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.new(0, 560, 0, 390) 
+main.Position = UDim2.new(0.5, -280, 0.4, -195)
+main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.ClipsDescendants = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+
+-- TITLE BAR
+local titleBar = Instance.new("TextLabel", main)
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleBar.Text = "  LUA CODE SCHOOL PRO | Credit: Dianozan"
+titleBar.TextColor3 = Color3.fromRGB(200, 200, 200)
+titleBar.Font = Enum.Font.SourceSansBold
+titleBar.TextSize = 16
+titleBar.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", titleBar)
+
+local powerText = Instance.new("TextLabel", main)
+powerText.Size = UDim2.new(0, 150, 0, 20)
+powerText.Position = UDim2.new(1, -160, 0, 35)
+powerText.Text = "Powered by Gemini AI"
+powerText.TextColor3 = Color3.fromRGB(100, 150, 255)
+powerText.BackgroundTransparency = 1
+powerText.Font = Enum.Font.Code
+powerText.TextSize = 11
+
+-- BUTTONS
+local delBtn = Instance.new("TextButton", main)
+delBtn.Size = UDim2.new(0, 28, 0, 28); delBtn.Position = UDim2.new(1, -33, 0, 4)
+delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); delBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", delBtn)
+
+local hideBtn = Instance.new("TextButton", main)
+hideBtn.Size = UDim2.new(0, 28, 0, 28); hideBtn.Position = UDim2.new(1, -66, 0, 4)
+hideBtn.Text = "-"; hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); hideBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", hideBtn)
+
+-- COMPONENTS (SIDEBAR, EDITOR, ASSISTANT)
+local side = Instance.new("ScrollingFrame", main)
+side.Size = UDim2.new(0, 130, 1, -110); side.Position = UDim2.new(0, 10, 0, 45)
+side.BackgroundColor3 = Color3.fromRGB(25, 25, 25); side.BorderSizePixel = 0
+local sideLayout = Instance.new("UIListLayout", side); sideLayout.Padding = UDim.new(0, 4)
+
+local editor = Instance.new("TextBox", main)
+editor.Size = UDim2.new(0, 290, 1, -165); editor.Position = UDim2.new(0, 145, 0, 45)
+editor.MultiLine = true; editor.Text = ""; editor.TextColor3 = Color3.new(1, 1, 1)
+editor.BackgroundColor3 = Color3.fromRGB(10, 10, 10); editor.Font = Enum.Font.Code
+editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
+editor.TextSize = 14
+
+local assistantPanel = Instance.new("ScrollingFrame", main)
+assistantPanel.Size = UDim2.new(0, 110, 1, -110); assistantPanel.Position = UDim2.new(1, -120, 0, 45)
+assistantPanel.BackgroundColor3 = Color3.fromRGB(22, 22, 28); assistantPanel.BorderSizePixel = 0
+local assistLayout = Instance.new("UIListLayout", assistantPanel); assistLayout.Padding = UDim.new(0, 2)
+
+-- SAVE & RUN SYSTEM
+local saveInput = Instance.new("TextBox", main)
+saveInput.Size = UDim2.new(0, 130, 0, 30); saveInput.Position = UDim2.new(0, 145, 1, -110)
+saveInput.PlaceholderText = "File Name..."; saveInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40); saveInput.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", saveInput)
+
+local saveBtn = Instance.new("TextButton", main)
+saveBtn.Size = UDim2.new(0, 60, 0, 30); saveBtn.Position = UDim2.new(0, 280, 1, -110)
+saveBtn.Text = "SAVE"; saveBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255); saveBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", saveBtn)
+
+local runBtn = Instance.new("TextButton", main)
+runBtn.Size = UDim2.new(0, 290, 0, 50); runBtn.Position = UDim2.new(0, 145, 1, -70)
+runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); runBtn.TextColor3 = Color3.new(1,1,1)
+runBtn.Font = Enum.Font.SourceSansBold; runBtn.TextSize = 18
+Instance.new("UICorner", runBtn)
+
+-- ==========================================================
+-- 5. FUNCTIONAL LOGIC
+-- ==========================================================
+
+-- IntelliSense Logic
 editor:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(assistantPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    local lastWord = editor.Text:match("[%w_%.]+$") -- Sokong titik seperti CFrame.new
-    
+    local lastWord = editor.Text:match("[%w_]+$")
     if lastWord then
-        local found = 0
+        local count = 0
         for _, word in pairs(keywords) do
-            if word:lower():find(lastWord:lower(), 1, true) and found < 25 then
-                found = found + 1
+            if word:lower():find(lastWord:lower()) and count < 20 then
+                count = count + 1
                 local btn = Instance.new("TextButton", assistantPanel)
-                -- ... (Design butang anda)
+                btn.Size = UDim2.new(1, -5, 0, 25); btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                btn.TextColor3 = Color3.fromRGB(0, 255, 150); btn.TextSize = 12; btn.Font = Enum.Font.Code
+                Instance.new("UICorner", btn)
                 btn.MouseButton1Click:Connect(function()
                     local before = editor.Text:sub(1, #editor.Text - #lastWord)
                     editor.Text = before .. word .. " "
@@ -98,4 +196,33 @@ editor:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- (Tamatkan dengan sistem Run/Execute dan Minimize anda)
+-- Library Loading
+for name, code in pairs(Library) do
+    local b = Instance.new("TextButton", side)
+    b.Size = UDim2.new(1, -10, 0, 35); b.Text = name; b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    b.TextColor3 = Color3.new(1,1,1); b.TextSize = 12; Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() editor.Text = editor.Text .. "\n" .. code end)
+end
+
+-- Save/Run Functions
+saveBtn.MouseButton1Click:Connect(function()
+    if saveInput.Text ~= "" and writefile then
+        writefile(saveInput.Text..".lua", editor.Text)
+        saveBtn.Text = "SAVED!"; task.wait(1); saveBtn.Text = "SAVE"
+    end
+end)
+
+runBtn.MouseButton1Click:Connect(function()
+    local f, e = loadstring(editor.Text)
+    if f then task.spawn(f) else warn("Execution Error: "..e) end
+end)
+
+-- Minimize System
+local showBtn = Instance.new("TextButton", sg)
+showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
+showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
+showBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); showBtn.TextColor3 = Color3.new(1,1,1)
+
+hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
+showBtn.MouseButton1Click:Connect(function() main.Visible = true; showBtn.Visible = false end)
+delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
