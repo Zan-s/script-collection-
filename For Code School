@@ -2,183 +2,178 @@ local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
 -- ==========================================================
--- 1. PUSTAKA LUA (KATEGORI BERASINGAN)
+-- 1. CODE LIBRARY (ENGLISH CATEGORIES)
 -- ==========================================================
-local PustakaLua = {
-    ["1. Permulaan (Frame)"] = [[local sg = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
+local Library = {
+    ["1. GUI Startup"] = [[local sg = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
 local frame = Instance.new("Frame", sg)
 frame.Size = UDim2.new(0, 200, 0, 200)
 frame.Position = UDim2.new(0.5, -100, 0.5, -100)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Instance.new("UICorner", frame)]],
 
-    ["2. Design Frame"] = [[frame.BorderSizePixel = 0
+    ["2. Frame Design"] = [[frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-local shadow = Instance.new("ImageLabel", frame) -- Tambah shadow di sini]],
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 10)]],
 
-    ["3. Bina Tombol"] = [[local btn = Instance.new("TextButton", frame)
-btn.Size = UDim2.new(0, 100, 0, 40)
-btn.Text = "KLIK SAYA"
-btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    ["3. Create Button"] = [[local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(0, 120, 0, 45)
+btn.Text = "CLICK ME"
+btn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 Instance.new("UICorner", btn)]],
 
-    ["4. Teleport (CFrame)"] = [[local targetPos = Vector3.new(100, 10, 100)
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos)]],
+    ["4. Teleport (CFrame)"] = [[local target = Vector3.new(0, 100, 0)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(target)]],
 
-    ["5. UI (TextLabel)"] = [[local label = Instance.new("TextLabel", frame)
-label.Size = UDim2.new(1, 0, 0, 30)
-label.Text = "HELLO WORLD"
-label.TextColor3 = Color3.new(1,1,1)
-label.BackgroundTransparency = 1]],
+    ["5. UI (TextLabel)"] = [[local lbl = Instance.new("TextLabel", frame)
+lbl.Size = UDim2.new(1, 0, 0, 40)
+lbl.Text = "Status: Active"
+lbl.TextColor3 = Color3.new(1,1,1)
+lbl.BackgroundTransparency = 1]],
 
-    ["6. Fungsi Aktif (Click)"] = [[btn.MouseButton1Click:Connect(function()
-    print("Tombol telah ditekan!")
+    ["6. Active Trigger"] = [[btn.MouseButton1Click:Connect(function()
+    print("Action Executed!")
 end)]],
 
-    ["7. Grafik/Pencahayaan"] = [[local light = game:GetService("Lighting")
-light.Brightness = 2
-light.ClockTime = 14
-light.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-local bloom = Instance.new("BloomEffect", light)]],
+    ["7. Visual/Graphics"] = [[local light = game:GetService("Lighting")
+light.Brightness = 3
+light.ClockTime = 12
+light.OutdoorAmbient = Color3.fromRGB(200, 200, 200)
+Instance.new("BloomEffect", light)]],
 
-    ["8. Optimize Watak"] = [[local hum = game.Players.LocalPlayer.Character.Humanoid
-hum.WalkSpeed = 50
-hum.JumpPower = 100
--- Shiftlock (Hanya script tertentu)]],
+    ["8. Player Stats"] = [[local hum = game.Players.LocalPlayer.Character.Humanoid
+hum.WalkSpeed = 60
+hum.JumpPower = 120]],
 
-    ["9. Cek Mobile/PC"] = [[if UIS.TouchEnabled then
-    print("Pengguna menggunakan Mobile")
-else
-    print("Pengguna menggunakan PC")
-end]],
+    ["9. Platform Check"] = [[if UIS.TouchEnabled then print("Mobile") else print("PC") end]],
 
-    ["10. Terbang/Tween/AirWalk"] = [[local ts = game:GetService("TweenService")
-local info = TweenInfo.new(2, Enum.EasingStyle.Linear)
-local tween = ts:Create(game.Players.LocalPlayer.Character.HumanoidRootPart, info, {CFrame = CFrame.new(0, 100, 0)})
-tween:Play()]],
-
-    ["11. Fly Script (Basic)"] = [[local bodyVel = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character.HumanoidRootPart)
-bodyVel.Velocity = Vector3.new(0, 50, 0)
-bodyVel.MaxForce = Vector3.new(4e6, 4e6, 4e6)]],
+    ["10. Fly / Tween"] = [[local ts = game:GetService("TweenService")
+local root = game.Players.LocalPlayer.Character.HumanoidRootPart
+ts:Create(root, TweenInfo.new(1), {CFrame = root.CFrame * CFrame.new(0,50,0)}):Play()]],
 }
 
 -- ==========================================================
--- 2. SENARAI INTELLISENSE (EDISI MEGA A-Z)
+-- 2. INTELLISENSE (EXTENDED MEGA LIST)
 -- ==========================================================
 local keywords = {
-    -- [ A ]
     "abs", "acos", "and", "asin", "atan", "atan2", "Anchored", "AngularVelocity", "Animation", "AnimationId", "Archivable", "Attributes", "Active", "Adornee", "AlwaysOnTop", "AutoButtonColor", "AutomaticSize", "AutoRotate", "Ambient",
-    
-    -- [ B ]
     "Backpack", "BasePart", "Beam", "BindableEvent", "BindableFunction", "BodyVelocity", "BodyThrust", "BodyGyro", "BodyPosition", "BodyAngularVelocity", "Brightness", "break", "BackgroundColor3", "BackgroundTransparency", "BorderColor3", "BorderSizePixel", "BillboardGui",
-    
-    -- [ C ]
     "CFrame", "CFrame.new", "CFrame.Angles", "CFrame.fromEulerAnglesXYZ", "CFrame.lookAt", "CanCollide", "CanTouch", "Character", "Changed", "ClassName", "Clone", "Connect", "Color3.fromRGB", "Color3.new", "Color3.fromHex", "ClearAllChildren", "ClockTime", "CharacterAppearanceId", "Chat", "ClickDetector", "CastShadow", "CollisionGroupId", "CurrentCamera",
-    
-    -- [ D ]
     "data", "delay", "Destroy", "Disconnect", "do", "Debris", "DataStoreService", "DescendantAdded", "DescendantRemoving", "DisplayOrder", "DisplayName", "DistanceFromCharacter", "Draggable",
-    
-    -- [ E ]
     "else", "elseif", "end", "Enum", "Enum.KeyCode", "Enum.UserInputType", "Enum.EasingStyle", "Enum.EasingDirection", "Enum.Font", "Enum.Material", "Enum.HumanoidStateType", "error", "editor", "Enabled", "ExponentialCost", "ExposureCompensation", "ElasticBehavior",
-    
-    -- [ F ]
     "false", "find", "findall", "FindFirstChild", "FindFirstChildOfClass", "FindFirstChildWhichIsA", "FireServer", "FireClient", "FireAllClients", "format", "for", "function", "frame", "Floor", "FogEnd", "FogStart", "FogColor", "FocusLost", "FontFace", "Friction",
-    
-    -- [ G ]
     "game", "getfenv", "getgenv", "getrenv", "GetChildren", "GetDescendants", "GetFullName", "GetPropertyChangedSignal", "GetService", "GetMouse", "GetPivot", "GetAttribute", "gsub", "Gravity", "GlobalShadows", "GuiService",
-    
-    -- [ H ]
     "Health", "Head", "HttpService", "Humanoid", "HumanoidRootPart", "huge", "HipHeight", "Heartbeat", "HealthDisplayDistance", "HealthDisplayType", "Handle", "HapticService",
-    
-    -- [ I ]
     "if", "in", "insert", "Instance.new", "ipairs", "isA", "IsDescendantOf", "InputBegan", "InputEnded", "info", "Image", "ImageColor3", "ImageTransparency", "InitialPrompt", "InsertService",
-    
-    -- [ J - L ]
     "Jump", "JumpPower", "JumpHeight", "JumpRequest", "JointsService", "Joystick",
     "KeyCode", "keys", "Kick",
     "local", "loadstring", "Lighting", "LocalPlayer", "LogService", "LookVector", "LowerTorso", "len", "lower", "LinearVelocity", "LocalizationService", "LayoutOrder", "LightInfluence",
-    
-    -- [ M ]
     "math.abs", "math.ceil", "math.clamp", "math.cos", "math.deg", "math.floor", "math.huge", "math.max", "math.min", "math.pi", "math.rad", "math.random", "math.sin", "math.sqrt", "math.atan2", "math.noise", "MarketplaceService", "MaxHealth", "MouseButton1Click", "MouseButton2Click", "MouseButton1Down", "MouseButton1Up", "MoveTo", "Material", "MultiLine", "MeshPart", "Model", "MouseIcon",
-    
-    -- [ N - O ]
     "Name", "nil", "not", "new", "NetworkClient", "NumberValue", "NumberRange", "NextSelectionDown", "NameOcclusion",
     "or", "os.time", "os.date", "os.difftime", "owner", "Orientation", "OnClientEvent", "OnServerEvent", "OnInvoke", "Once", "OutdoorAmbient", "ObjectValue",
-    
-    -- [ P ]
     "pairs", "parent", "print", "Players", "Position", "Part", "PathfindingService", "ProximityPrompt", "player", "pcall", "PivotTo", "PrimaryPart", "PhysicsService", "PointLight", "ParticleEmitter", "Play", "Pause",
-    
-    -- [ Q - R ]
     "quaternion", "QualityLevel",
     "return", "repeat", "require", "ReplicatedStorage", "RunService", "RenderStepped", "Raycast", "RaycastParams.new", "RootPart", "RightVector", "Reflectance", "runBtn", "Rotation", "RemoteEvent", "RemoteFunction", "RigidConstraint",
-    
-    -- [ S ]
     "script", "self", "setfenv", "spawn", "string.byte", "string.char", "string.find", "string.format", "string.gsub", "string.len", "string.lower", "string.match", "string.split", "string.sub", "string.upper", "Size", "SizeConstraint", "SoundService", "StarterGui", "StarterPack", "StarterPlayer", "Stepped", "saveBtn", "side", "Selection", "SelectionImageObject", "ShadowSoftness", "SurfaceGui", "SurfaceLight", "SoundId",
-    
-    -- [ T ]
     "table.insert", "table.remove", "table.sort", "table.concat", "table.find", "table.clear", "table.pack", "table.unpack", "task.wait", "task.spawn", "task.delay", "task.defer", "then", "true", "tick", "time", "Touched", "TouchEnded", "Transparency", "TweenService", "TweenInfo.new", "TeleportService", "Torso", "Text", "TextColor3", "TextSize", "TextStrokeTransparency", "TextWrapped", "TargetPoint", "TeamColor", "Teams",
-    
-    -- [ U - W ]
     "until", "unpack", "UDim.new", "UDim2.new", "UDim2.fromScale", "UDim2.fromOffset", "UpperTorso", "UpVector", "UserInputService", "ui", "UIPageLayout", "UIListLayout", "UIGridLayout", "UICorner", "UIStroke", "UIPadding", "UIScale", "Unit", "UnitRay",
     "Vector2.new", "Vector3.new", "Vector3.zero", "Vector3.one", "Velocity", "Visible", "Value", "ViewportSize", "Volume",
     "wait", "warn", "while", "workspace", "WaitForChild", "WalkSpeed", "writefile", "WorldRoot", "WindowFocusReleased",
-    
-    -- [ X - Z ]
     "xpcall", "yield", "zero", "ZIndex"
 }
 
--- AUTO-CLEANUP UI LAMA
-if targetParent:FindFirstChild("CodeSchool_Pro") then targetParent:FindFirstChild("CodeSchool_Pro"):Destroy() end
+-- CLEANUP
+if targetParent:FindFirstChild("LUA_CodeSchool_EN") then targetParent:FindFirstChild("LUA_CodeSchool_EN"):Destroy() end
 
 local sg = Instance.new("ScreenGui", targetParent)
-sg.Name = "CodeSchool_Pro"
-sg.ResetOnSpawn = false
+sg.Name = "LUA_CodeSchool_EN"
 
--- --- UI UTAMA ---
+-- ==========================================================
+-- 3. MAIN UI DESIGN
+-- ==========================================================
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 550, 0, 380) 
-main.Position = UDim2.new(0.5, -275, 0.4, -190)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.Size = UDim2.new(0, 560, 0, 390) 
+main.Position = UDim2.new(0.5, -280, 0.4, -195)
+main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
-Instance.new("UICorner", main)
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
--- TOMBOL X & -
+-- TITLE BAR & CREDITS
+local titleBar = Instance.new("TextLabel", main)
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleBar.Text = "  LUA CODE SCHOOL Pro | Credit: Dianozan"
+titleBar.TextColor3 = Color3.fromRGB(200, 200, 200)
+titleBar.Font = Enum.Font.SourceSansBold
+titleBar.TextSize = 16
+titleBar.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", titleBar)
+
+local powerText = Instance.new("TextLabel", main)
+powerText.Size = UDim2.new(0, 150, 0, 20)
+powerText.Position = UDim2.new(1, -160, 0, 35)
+powerText.Text = "Powered by Gemini AI"
+powerText.TextColor3 = Color3.fromRGB(100, 150, 255)
+powerText.BackgroundTransparency = 1
+powerText.Font = Enum.Font.Code
+powerText.TextSize = 12
+
+-- BUTTONS: X and -
 local delBtn = Instance.new("TextButton", main)
-delBtn.Size = UDim2.new(0, 30, 0, 30); delBtn.Position = UDim2.new(1, -35, 0, 5)
-delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40); delBtn.TextColor3 = Color3.new(1,1,1)
+delBtn.Size = UDim2.new(0, 28, 0, 28); delBtn.Position = UDim2.new(1, -33, 0, 4)
+delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); delBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", delBtn)
 
 local hideBtn = Instance.new("TextButton", main)
-hideBtn.Size = UDim2.new(0, 30, 0, 30); hideBtn.Position = UDim2.new(1, -70, 0, 5)
+hideBtn.Size = UDim2.new(0, 28, 0, 28); hideBtn.Position = UDim2.new(1, -66, 0, 4)
 hideBtn.Text = "-"; hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); hideBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", hideBtn)
 
--- SIDEBAR KIRI (PUSTAKA)
+-- SIDEBAR (LIBRARY)
 local side = Instance.new("ScrollingFrame", main)
-side.Size = UDim2.new(0, 130, 1, -60); side.Position = UDim2.new(0, 10, 0, 45)
-side.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-side.BorderSizePixel = 0
-side.CanvasSize = UDim2.new(0,0,3,0)
-local layout = Instance.new("UIListLayout", side); layout.Padding = UDim.new(0, 5)
+side.Size = UDim2.new(0, 130, 1, -110); side.Position = UDim2.new(0, 10, 0, 45)
+side.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+side.BorderSizePixel = 0; side.ScrollBarThickness = 2
+local sideLayout = Instance.new("UIListLayout", side); sideLayout.Padding = UDim.new(0, 4)
 
--- EDITOR KOD
+-- EDITOR
 local editor = Instance.new("TextBox", main)
-editor.Size = UDim2.new(0, 270, 1, -160); editor.Position = UDim2.new(0, 150, 0, 45)
+editor.Size = UDim2.new(0, 290, 1, -165); editor.Position = UDim2.new(0, 145, 0, 45)
 editor.MultiLine = true; editor.Text = ""; editor.TextColor3 = Color3.new(1, 1, 1)
 editor.BackgroundColor3 = Color3.fromRGB(10, 10, 10); editor.Font = Enum.Font.Code
 editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
 editor.TextSize = 14
 
--- PANEL ASSISTANT (KANAN)
+-- ASSISTANT PANEL
 local assistantPanel = Instance.new("ScrollingFrame", main)
-assistantPanel.Size = UDim2.new(0, 110, 1, -60); assistantPanel.Position = UDim2.new(1, -120, 0, 45)
-assistantPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-assistantPanel.CanvasSize = UDim2.new(0,0,4,0)
-local assistLayout = Instance.new("UIListLayout", assistantPanel); assistLayout.Padding = UDim.new(0, 3)
+assistantPanel.Size = UDim2.new(0, 110, 1, -110); assistantPanel.Position = UDim2.new(1, -120, 0, 45)
+assistantPanel.BackgroundColor3 = Color3.fromRGB(22, 22, 28); assistantPanel.BorderSizePixel = 0
+local assistLayout = Instance.new("UIListLayout", assistantPanel); assistLayout.Padding = UDim.new(0, 2)
 
--- LOGIK ASSISTANT (INTELLISENSE)
+-- ==========================================================
+-- 4. SAVE & EXECUTE SYSTEM
+-- ==========================================================
+local saveInput = Instance.new("TextBox", main)
+saveInput.Size = UDim2.new(0, 130, 0, 30); saveInput.Position = UDim2.new(0, 145, 1, -110)
+saveInput.PlaceholderText = "File Name..."; saveInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40); saveInput.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", saveInput)
+
+local saveBtn = Instance.new("TextButton", main)
+saveBtn.Size = UDim2.new(0, 60, 0, 30); saveBtn.Position = UDim2.new(0, 280, 1, -110)
+saveBtn.Text = "SAVE"; saveBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255); saveBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", saveBtn)
+
+local runBtn = Instance.new("TextButton", main)
+runBtn.Size = UDim2.new(0, 290, 0, 50); runBtn.Position = UDim2.new(0, 145, 1, -70)
+runBtn.Text = "EXECUTE"; runBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); runBtn.TextColor3 = Color3.new(1,1,1)
+runBtn.Font = Enum.Font.SourceSansBold; runBtn.TextSize = 18
+Instance.new("UICorner", runBtn)
+
+-- LOGIC: INTELLISENSE
 editor:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(assistantPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     local lastWord = editor.Text:match("[%w_]+$")
@@ -189,7 +184,7 @@ editor:GetPropertyChangedSignal("Text"):Connect(function()
                 count = count + 1
                 local btn = Instance.new("TextButton", assistantPanel)
                 btn.Size = UDim2.new(1, -5, 0, 25); btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-                btn.TextColor3 = Color3.fromRGB(0, 200, 255); btn.TextSize = 12
+                btn.TextColor3 = Color3.fromRGB(0, 255, 150); btn.TextSize = 12; btn.Font = Enum.Font.Code
                 Instance.new("UICorner", btn)
                 btn.MouseButton1Click:Connect(function()
                     local before = editor.Text:sub(1, #editor.Text - #lastWord)
@@ -201,34 +196,38 @@ editor:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- SISTEM PUSTAKA
-for n, k in pairs(PustakaLua) do
+-- LOGIC: LIBRARY
+for name, code in pairs(Library) do
     local b = Instance.new("TextButton", side)
-    b.Size = UDim2.new(1, -10, 0, 35); b.Text = n; b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    b.TextColor3 = Color3.new(1,1,1); b.TextSize = 11; Instance.new("UICorner", b)
-    b.MouseButton1Click:Connect(function() editor.Text = editor.Text .. "\n" .. k end)
+    b.Size = UDim2.new(1, -10, 0, 35); b.Text = name; b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    b.TextColor3 = Color3.new(1,1,1); b.TextSize = 12; Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() editor.Text = editor.Text .. "\n" .. code end)
 end
 
--- SISTEM SAVE & RUN (Sama seperti sebelumnya)
-local saveBtn = Instance.new("TextButton", main)
-saveBtn.Size = UDim2.new(0, 60, 0, 30); saveBtn.Position = UDim2.new(0, 150, 1, -100)
-saveBtn.Text = "SAVE"; saveBtn.BackgroundColor3 = Color3.fromRGB(0, 102, 204); saveBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", saveBtn)
-
-local runBtn = Instance.new("TextButton", main)
-runBtn.Size = UDim2.new(0, 270, 0, 50); runBtn.Position = UDim2.new(0, 150, 1, -60)
-runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100); runBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", runBtn)
-
--- Logik Tutup/Sembunyi
-delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
-local showBtn = Instance.new("TextButton", sg)
-showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
-showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
-hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
-showBtn.MouseButton1Click:Connect(function() main.Visible = true; showBtn.Visible = false end)
+-- LOGIC: SAVE & RUN
+saveBtn.MouseButton1Click:Connect(function()
+    if saveInput.Text ~= "" and writefile then
+        writefile(saveInput.Text..".lua", editor.Text)
+        saveBtn.Text = "SAVED!"
+        task.wait(1)
+        saveBtn.Text = "SAVE"
+    end
+end)
 
 runBtn.MouseButton1Click:Connect(function()
     local f, e = loadstring(editor.Text)
-    if f then task.spawn(f) else warn(e) end
+    if f then task.spawn(f) else warn("Error: "..e) end
 end)
+
+-- MINIMIZE LOGIC
+local showBtn = Instance.new("TextButton", sg)
+showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
+showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
+showBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); showBtn.TextColor3 = Color3.new(1,1,1)
+
+hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
+showBtn.MouseButton1Click:Connect(function() main.Visible = true; showBtn.Visible = false end)
+delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- INTRO MESSAGE
+print("LUA Code School Loaded. Developed by Dianozan & Powered by Gemini AI.")
