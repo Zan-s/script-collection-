@@ -1,13 +1,81 @@
 local UIS = game:GetService("UserInputService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
--- 1. PUSTAKA LUA
+-- ==========================================================
+-- 1. PUSTAKA LUA (KATEGORI BERASINGAN)
+-- ==========================================================
 local PustakaLua = {
-    ["Check System"] = "print('System Active!')",
-    ["Speed 100"] = "game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100",
+    ["1. Permulaan (Frame)"] = [[local sg = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
+local frame = Instance.new("Frame", sg)
+frame.Size = UDim2.new(0, 200, 0, 200)
+frame.Position = UDim2.new(0.5, -100, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new("UICorner", frame)]],
+
+    ["2. Design Frame"] = [[frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+local shadow = Instance.new("ImageLabel", frame) -- Tambah shadow di sini]],
+
+    ["3. Bina Tombol"] = [[local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(0, 100, 0, 40)
+btn.Text = "KLIK SAYA"
+btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+Instance.new("UICorner", btn)]],
+
+    ["4. Teleport (CFrame)"] = [[local targetPos = Vector3.new(100, 10, 100)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos)]],
+
+    ["5. UI (TextLabel)"] = [[local label = Instance.new("TextLabel", frame)
+label.Size = UDim2.new(1, 0, 0, 30)
+label.Text = "HELLO WORLD"
+label.TextColor3 = Color3.new(1,1,1)
+label.BackgroundTransparency = 1]],
+
+    ["6. Fungsi Aktif (Click)"] = [[btn.MouseButton1Click:Connect(function()
+    print("Tombol telah ditekan!")
+end)]],
+
+    ["7. Grafik/Pencahayaan"] = [[local light = game:GetService("Lighting")
+light.Brightness = 2
+light.ClockTime = 14
+light.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+local bloom = Instance.new("BloomEffect", light)]],
+
+    ["8. Optimize Watak"] = [[local hum = game.Players.LocalPlayer.Character.Humanoid
+hum.WalkSpeed = 50
+hum.JumpPower = 100
+-- Shiftlock (Hanya script tertentu)]],
+
+    ["9. Cek Mobile/PC"] = [[if UIS.TouchEnabled then
+    print("Pengguna menggunakan Mobile")
+else
+    print("Pengguna menggunakan PC")
+end]],
+
+    ["10. Terbang/Tween/AirWalk"] = [[local ts = game:GetService("TweenService")
+local info = TweenInfo.new(2, Enum.EasingStyle.Linear)
+local tween = ts:Create(game.Players.LocalPlayer.Character.HumanoidRootPart, info, {CFrame = CFrame.new(0, 100, 0)})
+tween:Play()]],
+
+    ["11. Fly Script (Basic)"] = [[local bodyVel = Instance.new("BodyVelocity", game.Players.LocalPlayer.Character.HumanoidRootPart)
+bodyVel.Velocity = Vector3.new(0, 50, 0)
+bodyVel.MaxForce = Vector3.new(4e6, 4e6, 4e6)]],
 }
 
--- AUTO-CLEANUP
+-- ==========================================================
+-- 2. SENARAI INTELLISENSE (LENGKAP)
+-- ==========================================================
+local keywords = {
+    "game", "workspace", "script", "local", "function", "if", "then", "else", "print", "wait", "task.wait",
+    "Instance.new", "GetService", "Players", "LocalPlayer", "Character", "Humanoid", "HumanoidRootPart",
+    "CFrame.new", "Vector3.new", "UDim2.new", "Color3.fromRGB", "Connect", "MouseButton1Click",
+    "WalkSpeed", "JumpPower", "Health", "MaxHealth", "Transparency", "Visible", "Destroy", "Clone",
+    "UserInputService", "TweenService", "Lighting", "ReplicatedStorage", "HttpService", "RunService",
+    "player", "runBtn", "saveBtn", "side", "editor", "frame", "label", "button"
+}
+
+-- AUTO-CLEANUP UI LAMA
 if targetParent:FindFirstChild("CodeSchool_Pro") then targetParent:FindFirstChild("CodeSchool_Pro"):Destroy() end
 
 local sg = Instance.new("ScreenGui", targetParent)
@@ -16,142 +84,98 @@ sg.ResetOnSpawn = false
 
 -- --- UI UTAMA ---
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 550, 0, 350) 
-main.Position = UDim2.new(0.5, -275, 0.4, -175)
-main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+main.Size = UDim2.new(0, 550, 0, 380) 
+main.Position = UDim2.new(0.5, -275, 0.4, -190)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main)
 
--- ==========================================
--- TOMBOL DELETE (X) & SEMBUNYI (-) BERSEBELAHAN
--- ==========================================
-
--- Tombol Padam Keseluruhan (X)
+-- TOMBOL X & -
 local delBtn = Instance.new("TextButton", main)
-delBtn.Size = UDim2.new(0, 30, 0, 30)
-delBtn.Position = UDim2.new(1, -35, 0, 5) -- Paling kanan
-delBtn.Text = "X"
-delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-delBtn.TextColor3 = Color3.new(1, 1, 1)
+delBtn.Size = UDim2.new(0, 30, 0, 30); delBtn.Position = UDim2.new(1, -35, 0, 5)
+delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40); delBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", delBtn)
 
--- Tombol Sembunyi Frame (-)
 local hideBtn = Instance.new("TextButton", main)
-hideBtn.Size = UDim2.new(0, 30, 0, 30)
-hideBtn.Position = UDim2.new(1, -70, 0, 5) -- Di sebelah X
-hideBtn.Text = "-"
-hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-hideBtn.TextColor3 = Color3.new(1, 1, 1)
+hideBtn.Size = UDim2.new(0, 30, 0, 30); hideBtn.Position = UDim2.new(1, -70, 0, 5)
+hideBtn.Text = "-"; hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); hideBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", hideBtn)
 
--- Tombol Melayang untuk Munculkan Semula (IDE)
-local showBtn = Instance.new("TextButton", sg)
-showBtn.Size = UDim2.new(0, 50, 0, 50)
-showBtn.Position = UDim2.new(0, 10, 0.5, -25)
-showBtn.Text = "IDE"
-showBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-showBtn.TextColor3 = Color3.new(1, 1, 1)
-showBtn.Visible = false
-showBtn.Draggable = true -- Boleh gerakkan butang IDE ini
-Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
-
--- Logik Butang
-delBtn.MouseButton1Click:Connect(function() 
-    sg:Destroy() 
-end)
-
-hideBtn.MouseButton1Click:Connect(function()
-    main.Visible = false
-    showBtn.Visible = true
-end)
-
-showBtn.MouseButton1Click:Connect(function()
-    main.Visible = true
-    showBtn.Visible = false
-end)
-
--- ==========================================
--- (BAHAGIAN LAIN KEKAL SAMA SEPERTI SEBELUM INI)
--- ==========================================
-
--- SIDEBAR KIRI (PUSTAKA LUA)
+-- SIDEBAR KIRI (PUSTAKA)
 local side = Instance.new("ScrollingFrame", main)
-side.Size = UDim2.new(0, 120, 1, -60); side.Position = UDim2.new(0, 10, 0, 45)
-side.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+side.Size = UDim2.new(0, 130, 1, -60); side.Position = UDim2.new(0, 10, 0, 45)
+side.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+side.BorderSizePixel = 0
+side.CanvasSize = UDim2.new(0,0,3,0)
 local layout = Instance.new("UIListLayout", side); layout.Padding = UDim.new(0, 5)
 
--- EDITOR KOD (TENGAH)
+-- EDITOR KOD
 local editor = Instance.new("TextBox", main)
-editor.Size = UDim2.new(0, 280, 1, -150); editor.Position = UDim2.new(0, 140, 0, 45)
+editor.Size = UDim2.new(0, 270, 1, -160); editor.Position = UDim2.new(0, 150, 0, 45)
 editor.MultiLine = true; editor.Text = ""; editor.TextColor3 = Color3.new(1, 1, 1)
-editor.BackgroundColor3 = Color3.fromRGB(15, 15, 15); editor.Font = Enum.Font.Code
+editor.BackgroundColor3 = Color3.fromRGB(10, 10, 10); editor.Font = Enum.Font.Code
 editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
+editor.TextSize = 14
 
 -- PANEL ASSISTANT (KANAN)
 local assistantPanel = Instance.new("ScrollingFrame", main)
 assistantPanel.Size = UDim2.new(0, 110, 1, -60); assistantPanel.Position = UDim2.new(1, -120, 0, 45)
-assistantPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-assistantPanel.CanvasSize = UDim2.new(0,0,2,0)
+assistantPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+assistantPanel.CanvasSize = UDim2.new(0,0,4,0)
 local assistLayout = Instance.new("UIListLayout", assistantPanel); assistLayout.Padding = UDim.new(0, 3)
 
-local assistTitle = Instance.new("TextLabel", main)
-assistTitle.Size = UDim2.new(0, 110, 0, 20); assistTitle.Position = UDim2.new(1, -120, 0, 25)
-assistTitle.Text = "ASSISTANT"; assistTitle.TextColor3 = Color3.fromRGB(0, 255, 150)
-assistTitle.BackgroundTransparency = 1; assistTitle.Font = Enum.Font.SourceSansBold
-
--- LOGIK ASSISTANT
-local keywords = {"game", "workspace", "wait", "local", "function", "if", "then", "else", "print"}
+-- LOGIK ASSISTANT (INTELLISENSE)
 editor:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(assistantPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    local txt = editor.Text
-    local suggestions = {}
-    for var in txt:gmatch("local%s+([%w_]+)") do if not table.find(suggestions, var) then table.insert(suggestions, var) end end
-    local lastWord = txt:match("[%w_]+$")
+    local lastWord = editor.Text:match("[%w_]+$")
     if lastWord then
-        for _, word in pairs(keywords) do if word:find(lastWord:lower()) and not table.find(suggestions, word) then table.insert(suggestions, word) end end
-        for _, word in pairs(suggestions) do
-            local btn = Instance.new("TextButton", assistantPanel)
-            btn.Size = UDim2.new(1, -5, 0, 25); btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50); btn.TextColor3 = Color3.new(0.8,0.8,0.8); btn.TextSize = 12
-            Instance.new("UICorner", btn)
-            btn.MouseButton1Click:Connect(function()
-                local before = editor.Text:sub(1, #editor.Text - #lastWord)
-                editor.Text = before .. word .. " "
-                editor:CaptureFocus()
-            end)
+        local count = 0
+        for _, word in pairs(keywords) do
+            if word:lower():find(lastWord:lower()) and count < 15 then
+                count = count + 1
+                local btn = Instance.new("TextButton", assistantPanel)
+                btn.Size = UDim2.new(1, -5, 0, 25); btn.Text = word; btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                btn.TextColor3 = Color3.fromRGB(0, 200, 255); btn.TextSize = 12
+                Instance.new("UICorner", btn)
+                btn.MouseButton1Click:Connect(function()
+                    local before = editor.Text:sub(1, #editor.Text - #lastWord)
+                    editor.Text = before .. word .. " "
+                    editor:CaptureFocus()
+                end)
+            end
         end
     end
 end)
 
--- SISTEM PUSTAKA & SAVE
-local function buatButangPustaka(nama, kod)
+-- SISTEM PUSTAKA
+for n, k in pairs(PustakaLua) do
     local b = Instance.new("TextButton", side)
-    b.Size = UDim2.new(1, -10, 0, 30); b.Text = nama; b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    b.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", b)
-    b.MouseButton1Click:Connect(function() editor.Text = kod end)
+    b.Size = UDim2.new(1, -10, 0, 35); b.Text = n; b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    b.TextColor3 = Color3.new(1,1,1); b.TextSize = 11; Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() editor.Text = editor.Text .. "\n" .. k end)
 end
-for n, k in pairs(PustakaLua) do buatButangPustaka(n, k) end
 
-local saveInput = Instance.new("TextBox", main)
-saveInput.Size = UDim2.new(0, 120, 0, 30); saveInput.Position = UDim2.new(0, 140, 1, -95)
-saveInput.PlaceholderText = "Nama Kod..."; saveInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40); saveInput.TextColor3 = Color3.new(1,1,1)
-
+-- SISTEM SAVE & RUN (Sama seperti sebelumnya)
 local saveBtn = Instance.new("TextButton", main)
-saveBtn.Size = UDim2.new(0, 60, 0, 30); saveBtn.Position = UDim2.new(0, 270, 1, -95)
-saveBtn.Text = "SAVE"; saveBtn.BackgroundColor3 = Color3.fromRGB(30, 100, 200); saveBtn.TextColor3 = Color3.new(1,1,1)
-
-saveBtn.MouseButton1Click:Connect(function()
-    if saveInput.Text ~= "" and writefile then
-        writefile(saveInput.Text..".lua", editor.Text)
-        buatButangPustaka("[SAVE] "..saveInput.Text, editor.Text)
-    end
-end)
+saveBtn.Size = UDim2.new(0, 60, 0, 30); saveBtn.Position = UDim2.new(0, 150, 1, -100)
+saveBtn.Text = "SAVE"; saveBtn.BackgroundColor3 = Color3.fromRGB(0, 102, 204); saveBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", saveBtn)
 
 local runBtn = Instance.new("TextButton", main)
-runBtn.Size = UDim2.new(0, 280, 0, 45); runBtn.Position = UDim2.new(0, 140, 1, -55)
-runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127); runBtn.TextColor3 = Color3.new(1,1,1)
+runBtn.Size = UDim2.new(0, 270, 0, 50); runBtn.Position = UDim2.new(0, 150, 1, -60)
+runBtn.Text = "EXECUTE CODE"; runBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100); runBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", runBtn)
-runBtn.MouseButton1Click:Connect(function() 
+
+-- Logik Tutup/Sembunyi
+delBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+local showBtn = Instance.new("TextButton", sg)
+showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
+showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
+hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
+showBtn.MouseButton1Click:Connect(function() main.Visible = true; showBtn.Visible = false end)
+
+runBtn.MouseButton1Click:Connect(function()
     local f, e = loadstring(editor.Text)
     if f then task.spawn(f) else warn(e) end
 end)
