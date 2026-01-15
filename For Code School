@@ -64,15 +64,68 @@ bodyVel.MaxForce = Vector3.new(4e6, 4e6, 4e6)]],
 }
 
 -- ==========================================================
--- 2. SENARAI INTELLISENSE (LENGKAP)
+-- 2. SENARAI INTELLISENSE (EDISI MEGA A-Z)
 -- ==========================================================
 local keywords = {
-    "game", "workspace", "script", "local", "function", "if", "then", "else", "print", "wait", "task.wait",
-    "Instance.new", "GetService", "Players", "LocalPlayer", "Character", "Humanoid", "HumanoidRootPart",
-    "CFrame.new", "Vector3.new", "UDim2.new", "Color3.fromRGB", "Connect", "MouseButton1Click",
-    "WalkSpeed", "JumpPower", "Health", "MaxHealth", "Transparency", "Visible", "Destroy", "Clone",
-    "UserInputService", "TweenService", "Lighting", "ReplicatedStorage", "HttpService", "RunService",
-    "player", "runBtn", "saveBtn", "side", "editor", "frame", "label", "button"
+    -- [ A ]
+    "abs", "acos", "and", "asin", "atan", "atan2", "Anchored", "AngularVelocity", "Animation", "AnimationId", "Archivable", "Attributes", "Active", "Adornee", "AlwaysOnTop", "AutoButtonColor", "AutomaticSize", "AutoRotate", "Ambient",
+    
+    -- [ B ]
+    "Backpack", "BasePart", "Beam", "BindableEvent", "BindableFunction", "BodyVelocity", "BodyThrust", "BodyGyro", "BodyPosition", "BodyAngularVelocity", "Brightness", "break", "BackgroundColor3", "BackgroundTransparency", "BorderColor3", "BorderSizePixel", "BillboardGui",
+    
+    -- [ C ]
+    "CFrame", "CFrame.new", "CFrame.Angles", "CFrame.fromEulerAnglesXYZ", "CFrame.lookAt", "CanCollide", "CanTouch", "Character", "Changed", "ClassName", "Clone", "Connect", "Color3.fromRGB", "Color3.new", "Color3.fromHex", "ClearAllChildren", "ClockTime", "CharacterAppearanceId", "Chat", "ClickDetector", "CastShadow", "CollisionGroupId", "CurrentCamera",
+    
+    -- [ D ]
+    "data", "delay", "Destroy", "Disconnect", "do", "Debris", "DataStoreService", "DescendantAdded", "DescendantRemoving", "DisplayOrder", "DisplayName", "DistanceFromCharacter", "Draggable",
+    
+    -- [ E ]
+    "else", "elseif", "end", "Enum", "Enum.KeyCode", "Enum.UserInputType", "Enum.EasingStyle", "Enum.EasingDirection", "Enum.Font", "Enum.Material", "Enum.HumanoidStateType", "error", "editor", "Enabled", "ExponentialCost", "ExposureCompensation", "ElasticBehavior",
+    
+    -- [ F ]
+    "false", "find", "findall", "FindFirstChild", "FindFirstChildOfClass", "FindFirstChildWhichIsA", "FireServer", "FireClient", "FireAllClients", "format", "for", "function", "frame", "Floor", "FogEnd", "FogStart", "FogColor", "FocusLost", "FontFace", "Friction",
+    
+    -- [ G ]
+    "game", "getfenv", "getgenv", "getrenv", "GetChildren", "GetDescendants", "GetFullName", "GetPropertyChangedSignal", "GetService", "GetMouse", "GetPivot", "GetAttribute", "gsub", "Gravity", "GlobalShadows", "GuiService",
+    
+    -- [ H ]
+    "Health", "Head", "HttpService", "Humanoid", "HumanoidRootPart", "huge", "HipHeight", "Heartbeat", "HealthDisplayDistance", "HealthDisplayType", "Handle", "HapticService",
+    
+    -- [ I ]
+    "if", "in", "insert", "Instance.new", "ipairs", "isA", "IsDescendantOf", "InputBegan", "InputEnded", "info", "Image", "ImageColor3", "ImageTransparency", "InitialPrompt", "InsertService",
+    
+    -- [ J - L ]
+    "Jump", "JumpPower", "JumpHeight", "JumpRequest", "JointsService", "Joystick",
+    "KeyCode", "keys", "Kick",
+    "local", "loadstring", "Lighting", "LocalPlayer", "LogService", "LookVector", "LowerTorso", "len", "lower", "LinearVelocity", "LocalizationService", "LayoutOrder", "LightInfluence",
+    
+    -- [ M ]
+    "math.abs", "math.ceil", "math.clamp", "math.cos", "math.deg", "math.floor", "math.huge", "math.max", "math.min", "math.pi", "math.rad", "math.random", "math.sin", "math.sqrt", "math.atan2", "math.noise", "MarketplaceService", "MaxHealth", "MouseButton1Click", "MouseButton2Click", "MouseButton1Down", "MouseButton1Up", "MoveTo", "Material", "MultiLine", "MeshPart", "Model", "MouseIcon",
+    
+    -- [ N - O ]
+    "Name", "nil", "not", "new", "NetworkClient", "NumberValue", "NumberRange", "NextSelectionDown", "NameOcclusion",
+    "or", "os.time", "os.date", "os.difftime", "owner", "Orientation", "OnClientEvent", "OnServerEvent", "OnInvoke", "Once", "OutdoorAmbient", "ObjectValue",
+    
+    -- [ P ]
+    "pairs", "parent", "print", "Players", "Position", "Part", "PathfindingService", "ProximityPrompt", "player", "pcall", "PivotTo", "PrimaryPart", "PhysicsService", "PointLight", "ParticleEmitter", "Play", "Pause",
+    
+    -- [ Q - R ]
+    "quaternion", "QualityLevel",
+    "return", "repeat", "require", "ReplicatedStorage", "RunService", "RenderStepped", "Raycast", "RaycastParams.new", "RootPart", "RightVector", "Reflectance", "runBtn", "Rotation", "RemoteEvent", "RemoteFunction", "RigidConstraint",
+    
+    -- [ S ]
+    "script", "self", "setfenv", "spawn", "string.byte", "string.char", "string.find", "string.format", "string.gsub", "string.len", "string.lower", "string.match", "string.split", "string.sub", "string.upper", "Size", "SizeConstraint", "SoundService", "StarterGui", "StarterPack", "StarterPlayer", "Stepped", "saveBtn", "side", "Selection", "SelectionImageObject", "ShadowSoftness", "SurfaceGui", "SurfaceLight", "SoundId",
+    
+    -- [ T ]
+    "table.insert", "table.remove", "table.sort", "table.concat", "table.find", "table.clear", "table.pack", "table.unpack", "task.wait", "task.spawn", "task.delay", "task.defer", "then", "true", "tick", "time", "Touched", "TouchEnded", "Transparency", "TweenService", "TweenInfo.new", "TeleportService", "Torso", "Text", "TextColor3", "TextSize", "TextStrokeTransparency", "TextWrapped", "TargetPoint", "TeamColor", "Teams",
+    
+    -- [ U - W ]
+    "until", "unpack", "UDim.new", "UDim2.new", "UDim2.fromScale", "UDim2.fromOffset", "UpperTorso", "UpVector", "UserInputService", "ui", "UIPageLayout", "UIListLayout", "UIGridLayout", "UICorner", "UIStroke", "UIPadding", "UIScale", "Unit", "UnitRay",
+    "Vector2.new", "Vector3.new", "Vector3.zero", "Vector3.one", "Velocity", "Visible", "Value", "ViewportSize", "Volume",
+    "wait", "warn", "while", "workspace", "WaitForChild", "WalkSpeed", "writefile", "WorldRoot", "WindowFocusReleased",
+    
+    -- [ X - Z ]
+    "xpcall", "yield", "zero", "ZIndex"
 }
 
 -- AUTO-CLEANUP UI LAMA
