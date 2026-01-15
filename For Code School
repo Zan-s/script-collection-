@@ -38,9 +38,26 @@ ts:Create(root, TweenInfo.new(1), {CFrame = root.CFrame * CFrame.new(0,50,0)}):P
 }
 
 -- ==========================================================
--- 2. ULTRA INTELLISENSE (ADDED NEW FUNCTIONS)
+-- 2. ULTRA INTELLISENSE (7 PARTS DATABASE)
 -- ==========================================================
-local keywords = {"load"}
+-- Sila masukkan database ribuan kata kunci anda di sini
+local part1 = {"abs", "acos", "and", "asin", "atan", "atan2", "Anchored", "AngularVelocity", "Animation", "Active", "Ambient"}
+local part2 = {"Backpack", "BasePart", "Beam", "BindableEvent", "BodyVelocity", "Brightness", "BackgroundColor3", "BillboardGui"}
+local part3 = {"CFrame", "CFrame.new", "CanCollide", "Character", "Color3.fromRGB", "Chat", "ClickDetector", "CurrentCamera"}
+local part4 = {"data", "delay", "Destroy", "Disconnect", "Debris", "DataStoreService", "DisplayName", "Draggable"}
+local part5 = {"else", "elseif", "end", "Enum", "error", "Enabled", "FireServer", "FindFirstChild", "format", "function"}
+local part6 = {"game", "getfenv", "getgenv", "GetChildren", "GetService", "GetMouse", "Health", "HttpService", "Humanoid"}
+local part7 = {"if", "in", "insert", "Instance.new", "ipairs", "isA", "JumpPower", "KeyCode", "local", "loadstring", "wait", "workspace"}
+
+local keywords = {}
+local allParts = {part1, part2, part3, part4, part5, part6, part7}
+
+for _, p in ipairs(allParts) do
+    for _, word in ipairs(p) do
+        table.insert(keywords, word)
+    end
+end
+table.sort(keywords)
 
 -- CLEANUP
 if targetParent:FindFirstChild("LUA_CodeSchool_EN") then targetParent:FindFirstChild("LUA_CodeSchool_EN"):Destroy() end
@@ -48,9 +65,8 @@ if targetParent:FindFirstChild("LUA_CodeSchool_EN") then targetParent:FindFirstC
 local sg = Instance.new("ScreenGui", targetParent)
 sg.Name = "LUA_CodeSchool_EN"
 
-
-creditText-- ==========================================================
--- 4. MAIN UI DESIGN
+-- ==========================================================
+-- 3. MAIN UI DESIGN (LANJUT KE SINI TANPA INTRO)
 -- ==========================================================
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 560, 0, 390) 
@@ -66,7 +82,7 @@ Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 local titleBar = Instance.new("TextLabel", main)
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleBar.Text = "  LUA CODE SCHOOL PRO | Credit: Dianozan | List Code by Gemini AI"
+titleBar.Text = "  LUA CODE SCHOOL PRO | Credit: Dianozan"
 titleBar.TextColor3 = Color3.fromRGB(200, 200, 200)
 titleBar.Font = Enum.Font.SourceSansBold
 titleBar.TextSize = 16
@@ -82,7 +98,7 @@ powerText.BackgroundTransparency = 1
 powerText.Font = Enum.Font.Code
 powerText.TextSize = 11
 
--- BUTTONS
+-- BUTTONS (X & -)
 local delBtn = Instance.new("TextButton", main)
 delBtn.Size = UDim2.new(0, 28, 0, 28); delBtn.Position = UDim2.new(1, -33, 0, 4)
 delBtn.Text = "X"; delBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); delBtn.TextColor3 = Color3.new(1,1,1)
@@ -93,7 +109,7 @@ hideBtn.Size = UDim2.new(0, 28, 0, 28); hideBtn.Position = UDim2.new(1, -66, 0, 
 hideBtn.Text = "-"; hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); hideBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", hideBtn)
 
--- COMPONENTS (SIDEBAR, EDITOR, ASSISTANT)
+-- COMPONENTS
 local side = Instance.new("ScrollingFrame", main)
 side.Size = UDim2.new(0, 130, 1, -110); side.Position = UDim2.new(0, 10, 0, 45)
 side.BackgroundColor3 = Color3.fromRGB(25, 25, 25); side.BorderSizePixel = 0
@@ -104,7 +120,7 @@ editor.Size = UDim2.new(0, 290, 1, -165); editor.Position = UDim2.new(0, 145, 0,
 editor.MultiLine = true; editor.Text = ""; editor.TextColor3 = Color3.new(1, 1, 1)
 editor.BackgroundColor3 = Color3.fromRGB(10, 10, 10); editor.Font = Enum.Font.Code
 editor.ClearTextOnFocus = false; editor.TextXAlignment = 0; editor.TextYAlignment = 0
-editor.TextSize = 14
+editor.TextSize = 14; editor.TextWrapped = false
 
 local assistantPanel = Instance.new("ScrollingFrame", main)
 assistantPanel.Size = UDim2.new(0, 110, 1, -110); assistantPanel.Position = UDim2.new(1, -120, 0, 45)
@@ -129,7 +145,7 @@ runBtn.Font = Enum.Font.SourceSansBold; runBtn.TextSize = 18
 Instance.new("UICorner", runBtn)
 
 -- ==========================================================
--- 5. FUNCTIONAL LOGIC
+-- 4. FUNCTIONAL LOGIC
 -- ==========================================================
 
 -- IntelliSense Logic
