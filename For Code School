@@ -1,9 +1,10 @@
+[This Function does not let this Frame not disappear anywhere in the game]
 local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
 local targetParent = (gethui and gethui()) or game:GetService("CoreGui")
 
 -- ==========================================================
--- 1. CODE LIBRARY (ENGLISH)
+-- 1. CODE FOR LIBRARY
 -- ==========================================================
 local Library = {
     ["1. GUI Startup"] = [[local sg = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
@@ -29,8 +30,7 @@ Instance.new("UICorner", btn)]],
 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(target)]],
 
     ["5. Player Stats"] = [[local hum = game.Players.LocalPlayer.Character.Humanoid
-hum.WalkSpeed = 60
-hum.JumpPower = 120]],
+hum.WalkSpeed = 35
 
     ["6. Fly / Tween"] = [[local ts = game:GetService("TweenService")
 local root = game.Players.LocalPlayer.Character.HumanoidRootPart
@@ -38,9 +38,9 @@ ts:Create(root, TweenInfo.new(1), {CFrame = root.CFrame * CFrame.new(0,50,0)}):P
 }
 
 -- ==========================================================
--- 2. ULTRA INTELLISENSE (7 PARTS DATABASE)
+-- 2.  BANK KEYWORDS LUA (SAVINGS 7 SECTION DATABASE)
 -- ==========================================================
--- Sila masukkan database ribuan kata kunci anda di sini
+-- [Special Markers to improve Lua library functionality]
 local part1 = {
     "abs", "acos", "and", "asin", "atan", "atan2", "assert", "Anchored", "AngularVelocity", "Animation", "AnimationId", "Archivable", "Attributes", "Active", "Adornee", "AlwaysOnTop", "AutoButtonColor", "AutomaticSize", "AutoRotate", "Ambient", "AssemblyLinearVelocity", "AssemblyAngularVelocity", "AutoJumpEnabled", "Activate", "Acceleration", "AccountService", "AdService", "AlignOrientation", "AlignPosition", "AngularResources", "AnimationTrack", "Animator", "AppStorageService", "AssetService", "Attachment", "AudioAnalyzer", "AudioChorus", "AudioDistortion", "AudioEcho", "AudioFlanger", "AudioPitchShifter", "AudioReverb", "AvatarEditorService", "Accessory", "Accoutrement", "AnalyticService", "AnimationPriority", "AnimationController", "ApplyImpulse", "ApplyAngularImpulse", "AreaLight", "Atmosphere", "AutoLocalize", "Axes", "AddTag", "AddAccessory", "AddSelection", "ApplyDescription", "AmbientReverb", "AbsolutePosition", "AbsoluteSize", "Abbreviate", "Accumulate", "Adaptive", "Adherent", "Adhesion", "Adjustment", "Admittance", "Advisory", "Aeronautical", "Affiliate", "Aggregator", "Aileron", "Airfoil", "Airstrike", "Alarm", "Alibi", "Alien", "Almanac", "Alphanumeric", "Alternator", "AmbientOcclusion", "Ambulance", "Ammunition", "Amplifier", "Amplitude", "Analog", "Analyzer", "Anatomy", "Android", "AngleOfAttack", "AngularImpulse", "Anomalous", "Anonymous", "Antenna", "Antibody", "Anticipation", "Antimatter", "Antivirus", "Aperture", "Apparatus", "Append", "Apprentice", "Approach", "Approval", "Approximation", "Aquarium", "Arbitrary", "Arcade", "Archery", "Architect", "AreaOfEffect", "Arena", "Armory", "Artifact", "Artillery", "Asphalt", "Assassin", "Assembly", "Assignment", "Assistant", "Asteroid", "Astronaut", "Asymmetric", "Atomic", "Attack", "Attenuate", "Attraction", "Attribute", "Auction", "Augmented", "Authentic", "Authority", "Authorize", "AutoConfig", "Automatic", "Autonomous", "Auxiliary", "Avalanche", "Aviation", "Avionics", "Avoidance",
     "Backpack", "BasePart", "Beam", "BindableEvent", "BindableFunction", "BodyVelocity", "BodyThrust", "BodyGyro", "BodyPosition", "BodyAngularVelocity", "Brightness", "break", "BackgroundColor3", "BackgroundTransparency", "BorderColor3", "BorderSizePixel", "BillboardGui", "BreakJointsOnDeath", "BottomParamA", "BottomParamB", "BackParamA", "BackParamB", "bit32", "BulkMoveTo", "BallSocketConstraint", "BadgeService", "BasePlayerGui", "BloomEffect", "BlurEffect", "BoxHandleAdornment", "BubbleChatConfiguration", "BodyForce", "BrickColor", "BrickColor.new", "BrickColor.random", "Bullseye", "Button", "Baggage", "Balance", "Ballistics", "Bandwidth", "Bankrupt", "Barometer", "Barrage", "Barrel", "Barrier", "Baseboard", "Baseline", "Basement", "Battery", "Battlefield", "Bayonet", "Beacon", "Beams", "Bearing", "Bedrock", "Behavior", "Benchmark", "Beneficiary", "Beryllium", "Besiege", "Bifrost", "Bilateral", "Billion", "Binary", "Binding", "Binomial", "Biochemistry", "Biodata", "Biological", "Biometric", "Bionics", "Biosphere", "Biplane", "Bipolar", "Bisect", "Bitrate", "Blackhole", "Blade", "Blast", "BleedingEdge", "Blimp", "Blizzard", "Blocking", "Blueprint", "Bluetooth", "Boarding", "Bodyguard", "Boilerplate", "Bolt", "Bombardment", "Bonanza", "Boolean", "Boost", "Bootloader", "Botnet", "Bottleneck", "Boundary", "Bounty", "Bracket", "Brainstorm", "Brake", "Branch", "Breach", "Breakdown", "Breakthrough", "Bridge", "Brigade", "Broker", "Bronze", "Bruteforce", "Bubble", "Bucket", "Budget", "Buffer", "Builder", "Bulletproof", "Bunker", "Buoyancy", "Bureau", "Burner", "Burst", "Bypass", "Byte"
@@ -158,7 +158,7 @@ local part6 = {
     "DEFER_TASK_EXECUTION_LATE_STAGE", "DELAY_FUNCTION_INVOCATION_SEC", "TICK_STAMP_UNIX_EPOCH_TIME"
 }
 local part6 = {
-    "AddTag", "ApplyDescription", "ApplyImpulse", "ApplyAngularImpulse", "BreakJoints", "CaptureFocus", "Changed", "ClearAllChildren", "Clone", "Connect", "Destroy", "Disconnect", "EquipTool", "FindPartOnRay", "FindFirstChild", "FindFirstChildOfClass", "FindFirstChildWhichIsA", "FindFirstDescendant", "GetAttribute", "GetAttributes", "GetChildren", "GetDescendants", "GetFullName", "GetMouse", "GetPivot", "GetPropertyChangedSignal", "GetService", "GetTags", "HasTag", "IsA", "IsAncestorOf", "IsDescendantOf", "IsLoaded", "Kick", "LoadAnimation", "LoadCharacter", "Move", "MoveTo", "Once", "PivotTo", "Play", "Raycast", "RemoveTag", "SetAttribute", "SetPivot", "SetPrimaryPartCFrame", "Stop", "Subtract", "Teleport", "Toggle", "Touched", "TouchEnded", "TweenPosition", "TweenSize", "TweenSizeAndPosition", "UnequipTools", "Wait", "WaitForChild", "OnClientEvent", "OnServerEvent", "OnInvoke", "FocusLost", "FocusGained", "InputBegan", "InputEnded", "InputChanged", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheel", "Activated", "Deactivated", "CharacterAdded", "CharacterRemoving", "PlayerAdded", "PlayerRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "AttributeChanged", "Heartbeat", "Stepped", "RenderStepped", "JSONEncode", "JSONDecode", "UrlEncode", "GenerateGUID", "WorldToScreenPoint", "WorldToViewportPoint", "ViewportPointToRay", "ScreenPointToRay", "GetPartsObscuringTarget", "GetPartBoundsInBox", "GetPartBoundsInRadius", "GetPartsInPart"
+    "AddTag", "ApplyDescription", "ApplyImpulse", "ApplyAngularImpulse", "BreakJoints", "CaptureFocus", "Changed", "ClearAllChildren", "Clone", "Connect", "Destroy", "Disconnect", "EquipTool", "FindPartOnRay", "FindFirstChild", "FindFirstChildOfClass", "FindFirstChildWhichIsA", "FindFirstDescendant", "GetAttribute", "GetAttributes", "GetChildren", "GetDescendants", "GetFullName", "GetMouse", "GetPivot", "GetPropertyChangedSignal", "GetService", "GetTags", "HasTag", "IsA", "IsAncestorOf", "IsDescendantOf", "IsLoaded", "Kick", "LoadAnimation", "LoadCharacter", "Move", "MoveTo", "Once", "PivotTo", "Play", "Raycast", "RemoveTag", "SetAttribute", "SetPivot", "SetPrimaryPartCFrame", "Stop", "Subtract", "Teleport", "Toggle", "TweenSizeAndPosition", "UnequipTools", "Wait", "WaitForChild", "OnClientEvent", "OnServerEvent", "OnInvoke", "FocusLost", "FocusGained", "InputBegan", "InputEnded", "InputChanged", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheel", "Activated", "Deactivated", "CharacterAdded", "CharacterRemoving", "PlayerAdded", "PlayerRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "AttributeChanged", "Heartbeat", "Stepped", "RenderStepped", "JSONEncode", "JSONDecode", "UrlEncode", "GenerateGUID", "WorldToScreenPoint", "WorldToViewportPoint", "ViewportPointToRay", "ScreenPointToRay", "GetPartsObscuringTarget", "GetPartBoundsInBox", "GetPartBoundsInRadius", "GetPartsInPart"
 }
 local part7 = {
     "table.insert", "table.remove", "table.sort", "table.concat", "table.find", "table.clear", "table.pack", "table.unpack", "task.wait", "task.spawn", "task.delay", "task.defer", "task.synchronize", "task.desynchronize", "then", "true", "tick", "time", "tonumber", "tostring", "Touched", "TouchEnded", "Transparency", "TweenService", "TweenInfo.new", "TeleportService", "Torso", "Text", "TextColor3", "TextSize", "TextStrokeTransparency", "TextWrapped", "TargetPoint", "TeamColor", "Teams", "TestService", "TextXAlignment", "TextYAlignment", "TextTruncate", "TextScaled", "TextFits", "Technology", "TimeLength", "TimePosition", "ToolTip", "TopParamA", "TopParamB", "TopVelocity", "TurnSpeed", "TorsionSpringConstraint", "TouchTransmitter", "Trail", "Translator", "TrussPart", "Tween", "Tag", "Target", "Task", "Team", "Teleport", "Temperature", "Terrain", "Test", "Texture", "Theme", "Thickness", "Thread", "Threshold", "Thumbnail", "Time", "Title", "Toggle", "Token", "Tool", "Top", "Torque", "Touch", "Trace", "Track", "Trail", "Transfer", "Transform", "Translate", "Tree", "Trigger", "Truss", "Type", "Table", "Tail", "Take", "Tall", "Tank", "Tech", "Temp", "Template", "Ten", "Tension", "Theory", "Thick", "Thin", "Thing", "Third", "Throat", "Through", "Throw", "Thumb", "Tick", "Ticket", "Tie", "Tier", "Tile", "Tilt", "Tin", "Tip", "Toast", "Tolerance", "Tone", "Total", "Tough", "Tour", "Tower", "Trade", "Traffic", "Train", "Transition", "Transmit", "Transport", "Trap", "Travel", "Tray", "Treasure", "Trend", "Trial", "Triangle", "Trigger", "Trim", "Trip", "Triple", "Trophy", "Tropical", "Trouble", "True", "Tube", "Tune", "Tunnel", "Turn", "Tutorial", "Twin", "Twist", "until", "unpack", "UDim.new", "UDim2.new", "UDim2.fromScale", "UDim2.fromOffset", "UpperTorso", "UpVector", "UserInputService", "ui", "UIPageLayout", "UIListLayout", "UIGridLayout", "UICorner", "UIStroke", "UIPadding", "UIScale", "Unit", "UnitRay", "Unequipped", "UIAspectRatioConstraint", "UISizeConstraint", "UITextSizeConstraint", "UnionOperation", "UserGameSettings", "UserService", "UGC", "UI", "Union", "Unit", "Universal", "Unlock", "Update", "Upload", "Url", "User", "UserFacing", "Utility", "Ugly", "Ultra", "Umbrella", "Unable", "Unbind", "Uncertain", "Uncle", "Under", "Understand", "Undo", "Unequal", "Unexpected", "Unfold", "Uniform", "Unique", "Universe", "Unknown", "Unpack", "Unreal", "Unsafe", "Unsigned", "Until", "Unused", "Upgrade", "Upper", "Upstream", "Upward", "Usage", "Use", "Vector2.new", "Vector3.new", "Vector3.zero", "Vector3.one", "Vector3.xAxis", "Vector3.yAxis", "Vector3.zAxis", "Vector3int16", "Velocity", "Visible", "Value", "ViewportSize", "Volume", "VirtualInputManager", "VoiceChatService", "VertexColor", "VerticalAlignment", "VectorForce", "VehicleSeat", "VideoFrame", "ViewportFrame", "Vector", "Vehicle", "Vertex", "Video", "View", "Viewport", "Voice", "Vague", "Valid", "Valley", "Value", "Valve", "Vanish", "Variable", "Variant", "Variety", "Vast", "Vault", "Vendor", "Vent", "Verbal", "Verify", "Version", "Vertex", "Vertical", "Very", "Vessel", "Vest", "Vex", "Via", "Vibrate", "Village", "Vine", "Virtual", "Vision", "Visit", "Visual", "Vital", "Void", "Vote", "Voxel", "wait", "warn", "while", "workspace", "WaitForChild", "WalkSpeed", "writefile", "WorldRoot", "WorldModel", "WindowFocusReleased", "WedgePart", "Weld", "WeldConstraint", "WireframeHandleAdornment", "Wait", "Walk", "Water", "Wave", "Weapon", "Weather", "Weight", "Width", "Window", "World", "Wrap", "Write", "Waist", "Wait", "Walk", "Wall", "Wander", "Want", "War", "Warm", "Warn", "Wash", "Waste", "Watch", "Way", "Weak", "Wealth", "Wear", "Web", "Wedge", "Week", "Weight", "Welcome", "Weld", "Well", "West", "Wet", "Wheel", "While", "White", "Wide", "Width", "Wild", "Win", "Wind", "Window", "Wing", "Winter", "Wire", "Wise", "Wish", "With", "Within", "Witness", "Wolf", "Wood", "Word", "Work", "World", "Worm", "Worry", "Worse", "Worth", "Wreck", "Wrong", "xpcall", "yield", "zero", "ZIndex", "X", "Y", "Z", "Zone", "Zoom", "Xenon", "Xray", "Yacht", "Yard", "Yarn", "Year", "Yellow", "Yield", "Yoga", "You", "Young", "Your", "Youth", "Zero", "Zest", "Zigzag", "Zinc", "Zip", "Zodiac", "Zoo",
@@ -195,7 +195,7 @@ local sg = Instance.new("ScreenGui", targetParent)
 sg.Name = "LUA_CodeSchool_EN"
 
 -- ==========================================================
--- 3. MAIN UI DESIGN (LANJUT KE SINI TANPA INTRO)
+-- 3. Where to Modify the Script window
 -- ==========================================================
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 560, 0, 390) 
@@ -207,14 +207,14 @@ main.Draggable = true
 main.ClipsDescendants = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
--- TITLE BAR
+-- [TITLE BAR]
 local titleBar = Instance.new("TextLabel", main)
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleBar.Text = "  LUA CODE SCHOOL | Credit: Dianozan"
+titleBar.Text = "  LUA CODE BANK🏦 | Credit: Dianozan"
 titleBar.TextColor3 = Color3.fromRGB(200, 200, 200)
 titleBar.Font = Enum.Font.SourceSansBold
-titleBar.TextSize = 16
+titleBar.TextSize = 20
 titleBar.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", titleBar)
 
@@ -274,10 +274,10 @@ runBtn.Font = Enum.Font.SourceSansBold; runBtn.TextSize = 18
 Instance.new("UICorner", runBtn)
 
 -- ==========================================================
--- 4. FUNCTIONAL LOGIC
+-- 4. FUNCTIONAL LOGIC Beta Version
 -- ==========================================================
 
--- IntelliSense Logic
+-- IntelliSense Logic But beta (V0.7)
 editor:GetPropertyChangedSignal("Text"):Connect(function()
     for _, v in pairs(assistantPanel:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     local lastWord = editor.Text:match("[%w_]+$")
@@ -300,7 +300,7 @@ editor:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- Library Loading
+-- Library Loading...
 for name, code in pairs(Library) do
     local b = Instance.new("TextButton", side)
     b.Size = UDim2.new(1, -10, 0, 35); b.Text = name; b.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -308,7 +308,7 @@ for name, code in pairs(Library) do
     b.MouseButton1Click:Connect(function() editor.Text = editor.Text .. "\n" .. code end)
 end
 
--- Save/Run Functions
+-- Save/Run Functions (may not work just decorative,Function need saving in file storage)
 saveBtn.MouseButton1Click:Connect(function()
     if saveInput.Text ~= "" and writefile then
         writefile(saveInput.Text..".lua", editor.Text)
@@ -321,10 +321,10 @@ runBtn.MouseButton1Click:Connect(function()
     if f then task.spawn(f) else warn("Execution Error: "..e) end
 end)
 
--- Minimize System
+-- Minimize System (Hide Frame function)
 local showBtn = Instance.new("TextButton", sg)
 showBtn.Size = UDim2.new(0, 50, 0, 50); showBtn.Position = UDim2.new(0, 10, 0.5, -25)
-showBtn.Text = "IDE"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
+showBtn.Text = "🔨"; showBtn.Visible = false; showBtn.Draggable = true; Instance.new("UICorner", showBtn).CornerRadius = UDim.new(1, 0)
 showBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113); showBtn.TextColor3 = Color3.new(1,1,1)
 
 hideBtn.MouseButton1Click:Connect(function() main.Visible = false; showBtn.Visible = true end)
