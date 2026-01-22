@@ -11,14 +11,10 @@ local camera = workspace.CurrentCamera
 -- ==========================================================
 -- 1. CUSTOM SCRIPT LIBRARY (SUNTING DI SINI)
 -- ==========================================================
--- Hanya perlu paste kod dalam format ini. Tombol akan jana automatik.
 local ScriptLibrary = {
     ["1. GUI Startup"] = [[print("GUI Started!")]],
-
-    ["2. Fly System"] = [[print("Paste kod Fly di sini")]],
-
+    ["2. Fly System"] = [[print("Paste Fly Script Here")]],
     ["3. Speed Boost"] = [[game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100]],
-
     ["4. Teleport System"] = [[
         local root = game.Players.LocalPlayer.Character.HumanoidRootPart
         root.CFrame = root.CFrame * CFrame.new(0, 50, 0)
@@ -31,21 +27,20 @@ local movingPart = nil
 local followDistance, heightOffset, sideOffset = DEFAULT_DIST, DEFAULT_HEIGHT, DEFAULT_SIDE
 local walkSpeedActive, rotationActive, shiftLockActive, orbitActive = false, true, false, false
 local rotationX, rotationY, rotationZ = 0, 0, 0
-local orbitParts = {}
-local maxPickupDistance = 65 
-local orbitInterval = 0.1    
-local isCollecting = false
 
--- Physics Constraints
-local alignPos = Instance.new("AlignPosition")
-alignPos.MaxForce = 1e12; alignPos.MaxVelocity = math.huge; alignPos.Responsiveness = 80 
-alignPos.Mode = Enum.PositionAlignmentMode.OneAttachment
-local alignOri = Instance.new("AlignOrientation")
-alignOri.MaxTorque = 1e12; alignOri.Responsiveness = 80
-alignOri.Mode = Enum.OrientationAlignmentMode.OneAttachment
+-- --- UPGRADED PHYSICS (FROM V5) ---
+local BP = Instance.new("BodyPosition")
+BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+BP.P = 15000
+BP.D = 1250
 
-local highlight = Instance.new("Highlight")
-highlight.Name = "TeleGlow"; highlight.FillTransparency = 0.5; highlight.OutlineTransparency = 0
+local BG = Instance.new("BodyGyro")
+BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+BG.D = 500
+
+local selectBox = Instance.new("SelectionBox")
+selectBox.LineThickness = 0.05
+selectBox.Color3 = Color3.fromRGB(255, 255, 255)
 
 -- --- UTILITY FUNCTIONS ---
 local function makeDraggable(frame)
@@ -58,6 +53,40 @@ local function makeDraggable(frame)
     end)
     frame.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
     UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+end
+
+local function stopMoving()
+    BP.Parent = nil
+    BG.Parent = nil
+    selectBox.Adornee = nil
+    if movingPart then movingPart.CanCollide = true end
+    movingPart = nil
+end
+
+local function togglePartMove(part)
+    if movingPart == part then stopMoving() return end
+    stopMoving()
+    if part and not part.Anchored then
+        movingPart = part.Parent:FindFirstChild("Humanoid") and (part.Parent:FindFirstChild("HumanoidRootPart") or part) or part
+        movingPart.CanCollide = false
+        
+        BP.Parent = movingPart
+        BG.Parent = movingPart
+        selectBox.Adornee = movingPart
+        selectBox.Parent = movingPart
+        
+        BP.Position = movingPart.Position
+    end
+end
+
+local function giveTool()
+    if player.Backpack:FindFirstChild("T.MAGIC GUN🪄") then return end
+    local t = Instance.new("Tool"); t.Name = "T.MAGIC GUN🪄"; t.RequiresHandle = false; t.Parent = player.Backpack
+    t.Equipped:Connect(function(mouse)
+        -- Support Mobile Touch
+        mouse.Button1Down:Connect(function() if mouse.Target then togglePartMove(mouse.Target) end end)
+    end)
+    t.Unequipped:Connect(stopMoving)
 end
 
 local function createBtn(name, text, pos, size, color, parent)
@@ -75,59 +104,25 @@ local function createSearchBox(parent)
     return s
 end
 
-local function stopMoving()
-    if movingPart then 
-        movingPart.CanCollide = true 
-        if movingPart:FindFirstChild("TeleAtt") then movingPart.TeleAtt:Destroy() end
-    end
-    movingPart = nil; alignPos.Enabled = false; alignOri.Enabled = false
-    alignPos.Parent = nil; alignOri.Parent = nil; highlight.Parent = nil
-end
-
-local function togglePartMove(part)
-    if movingPart == part then stopMoving() return end
-    stopMoving()
-    if part and not part.Anchored then
-        movingPart = part.Parent:FindFirstChild("Humanoid") and (part.Parent:FindFirstChild("HumanoidRootPart") or part) or part
-        highlight.Adornee = movingPart; highlight.Parent = movingPart
-        local att = Instance.new("Attachment", movingPart); att.Name = "TeleAtt"
-        alignPos.Attachment0 = att; alignOri.Attachment0 = att
-        alignPos.Parent = movingPart; alignOri.Parent = movingPart
-        alignPos.Enabled = true; alignOri.Enabled = rotationActive
-    end
-end
-
-local function giveTool()
-    if player.Backpack:FindFirstChild("T.MAGIC GUN🪄") then return end
-    local t = Instance.new("Tool"); t.Name = "T.MAGIC GUN🪄"; t.RequiresHandle = false; t.Parent = player.Backpack
-    t.Equipped:Connect(function(mouse) mouse.Button1Down:Connect(function() if mouse.Target then togglePartMove(mouse.Target) end end) end)
-    t.Unequipped:Connect(stopMoving)
-end
-
 -- --- UI SYSTEM ---
 local function createUI()
     if CoreGui:FindFirstChild("TeleMasterV12") then CoreGui.TeleMasterV12:Destroy() end
     local screenGui = Instance.new("ScreenGui", CoreGui); screenGui.Name = "TeleMasterV12"; screenGui.ResetOnSpawn = false
 
-    -- MAIN FRAME
     local main = Instance.new("Frame", screenGui); main.Name = "Main"; main.Size = UDim2.new(0, 240, 0, 400); main.Position = UDim2.new(0.05, 0, 0.2, 0); main.BackgroundColor3 = Color3.fromRGB(15, 15, 15); main.ZIndex = 10; Instance.new("UICorner", main); makeDraggable(main)
     local stroke = Instance.new("UIStroke", main); stroke.Color = Color3.fromRGB(255, 100, 4); stroke.Thickness = 1.5
 
-    -- HEADER
     createBtn("Header", "MAGICAL,TGUN BY:Dianozan", UDim2.new(0,0,0,0), UDim2.new(1,0,0,35), Color3.fromRGB(30,30,30), main)
     
     local fpsL = Instance.new("TextLabel", main); fpsL.Size = UDim2.new(0.5,0,0,20); fpsL.Position = UDim2.new(0,5,0,-25); fpsL.BackgroundTransparency = 1; fpsL.Font = Enum.Font.Code; fpsL.TextColor3 = Color3.new(1,1,1); fpsL.TextXAlignment = "Left"
     local pngL = Instance.new("TextLabel", main); pngL.Size = UDim2.new(0.5,0,0,20); pngL.Position = UDim2.new(0.5,-5,0,-25); pngL.BackgroundTransparency = 1; pngL.Font = Enum.Font.Code; pngL.TextColor3 = Color3.new(1,1,1); pngL.TextXAlignment = "Right"
 
-    -- --- SCROLLING CONTAINER ---
     local mainScroll = Instance.new("ScrollingFrame", main)
     mainScroll.Name = "MainScroll"; mainScroll.Size = UDim2.new(1, 0, 1, -40); mainScroll.Position = UDim2.new(0, 0, 0, 40); mainScroll.BackgroundTransparency = 1; mainScroll.BorderSizePixel = 0; mainScroll.ScrollBarThickness = 4; mainScroll.CanvasSize = UDim2.new(0, 0, 0, 620); mainScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 100, 4)
 
-    -- Susunan Butang
     local slBtn = createBtn("SL", "Lock: OFF", UDim2.new(0.05,0,0,10), UDim2.new(0.28,0,0,25), Color3.fromRGB(40,40,40), mainScroll)
     local pvpBtn = createBtn("PVPTab", "☯️ ORBIT", UDim2.new(0.35,0,0,10), UDim2.new(0.3,0,0,25), Color3.fromRGB(100, 30, 30), mainScroll)
     local customHubBtn = createBtn("HubBtn", "📜 HUB", UDim2.new(0.67,0,0,10), UDim2.new(0.28,0,0,25), Color3.fromRGB(120, 70, 0), mainScroll)
-
     local npcBtn = createBtn("NPCTab", "📞 NPC LIST", UDim2.new(0.05,0,0,45), UDim2.new(0.43,0,0,25), Color3.fromRGB(30,80,120), mainScroll)
     local blockBtn = createBtn("BlockTab", "🧱 BLOCK LIST", UDim2.new(0.52,0,0,45), UDim2.new(0.43,0,0,25), Color3.fromRGB(60,60,60), mainScroll)
 
@@ -147,8 +142,8 @@ local function createUI()
     local resBtn = createBtn("Res", "♻️ RESET", UDim2.new(0.05,0,0,385), UDim2.new(0.9,0,0,30), Color3.fromRGB(180,90,0), mainScroll)
     local cloBtn = createBtn("Clo", "❌ CLOSE UI", UDim2.new(0.05,0,0,425), UDim2.new(0.9,0,0,30), Color3.fromRGB(40,40,40), mainScroll)
 
-    -- --- SECONDARY FRAMES ---
-    local function createSubFrame(name, title)
+    -- --- SUB FRAMES ---
+    local function createSubFrame(name)
         local f = Instance.new("Frame", screenGui); f.Name = name; f.Size = UDim2.new(0, 200, 0, 320); f.Position = UDim2.new(0.7, 0, 0.2, 0); f.BackgroundColor3 = Color3.fromRGB(20, 20, 20); f.Visible = false; Instance.new("UICorner", f); makeDraggable(f)
         Instance.new("UIStroke", f).Color = Color3.fromRGB(255, 100, 4)
         local sBox = createSearchBox(f)
@@ -158,28 +153,24 @@ local function createUI()
         return f, scroll, sBox, ref
     end
 
-    local nFrame, nScroll, nSearch, nRef = createSubFrame("NPCFrame", "NPC")
-    local bFrame, bScroll, bSearch, bRef = createSubFrame("BlockFrame", "BLOCK")
-    
-    -- CUSTOM HUB FRAME (Auto Generator)
-    local cFrame = Instance.new("Frame", screenGui); cFrame.Name = "CustomFrame"; cFrame.Size = UDim2.new(0, 200, 0, 320); cFrame.Position = UDim2.new(0.7, 0, 0.2, 0); cFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20); cFrame.Visible = false; Instance.new("UICorner", cFrame); makeDraggable(cFrame)
-    Instance.new("UIStroke", cFrame).Color = Color3.fromRGB(255, 100, 4)
-    local cScroll = Instance.new("ScrollingFrame", cFrame); cScroll.Size = UDim2.new(0.9,0,0.85,0); cScroll.Position = UDim2.new(0.05,0,0.05,0); cScroll.BackgroundTransparency = 1; cScroll.CanvasSize = UDim2.new(0,0,0,0); cScroll.ScrollBarThickness = 3
-    local cList = Instance.new("UIListLayout", cScroll); cList.Padding = UDim.new(0,5)
+    local nFrame, nScroll, nSearch, nRef = createSubFrame("NPCFrame")
+    local bFrame, bScroll, bSearch, bRef = createSubFrame("BlockFrame")
+    local cFrame, cScroll, cSearch, cRef = createSubFrame("CustomHub")
+    cSearch:Destroy() -- Hub tak perlu search box
 
-    -- Sistem Auto-Generate Tombol dari Library
+    -- Auto Button Hub
     for name, code in pairs(ScriptLibrary) do
-        local b = createBtn("CustomScript", name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,30), Color3.fromRGB(45,45,45), cScroll)
+        local b = createBtn("Script", name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,30), Color3.fromRGB(45,45,45), cScroll)
         b.MouseButton1Click:Connect(function()
             local func = loadstring(code)
-            if func then func() else warn("Script Error: "..name) end
+            if func then func() end
         end)
     end
-    cScroll.CanvasSize = UDim2.new(0,0,0, cList.AbsoluteContentSize.Y)
+    cScroll.CanvasSize = UDim2.new(0,0,0, cScroll.UIListLayout.AbsoluteContentSize.Y)
 
     local remote = Instance.new("Frame", screenGui); remote.Name = "Remote"; remote.Size = UDim2.new(0, 150, 0, 180); remote.Position = UDim2.new(0.3, 0, 0.4, 0); remote.BackgroundColor3 = Color3.fromRGB(20, 20, 20); remote.Visible = false; Instance.new("UICorner", remote); makeDraggable(remote)
 
-    -- --- LOGIK KAWALAN ---
+    -- --- CONTROLS LOGIC ---
     hUp.MouseButton1Click:Connect(function() heightOffset += 2 end)
     hDn.MouseButton1Click:Connect(function() heightOffset -= 2 end)
     sLt.MouseButton1Click:Connect(function() sideOffset -= 2 end)
@@ -191,7 +182,6 @@ local function createUI()
         shiftLockActive = not shiftLockActive
         slBtn.Text = "Lock: " .. (shiftLockActive and "ON" or "OFF")
         slBtn.BackgroundColor3 = shiftLockActive and Color3.fromRGB(50, 100, 50) or Color3.fromRGB(40, 40, 40)
-        if not shiftLockActive then UserInputService.MouseBehavior = Enum.MouseBehavior.Default end
     end)
 
     pvpBtn.MouseButton1Click:Connect(function()
@@ -266,10 +256,9 @@ local function createUI()
         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if not root then return end
         if movingPart and not orbitActive then
-            movingPart.CanCollide = false
             local targetPos = root.Position + (root.CFrame.LookVector * followDistance) + (root.CFrame.UpVector * heightOffset) + (root.CFrame.RightVector * sideOffset)
-            alignPos.Position = targetPos
-            alignOri.CFrame = CFrame.Angles(math.rad(rotationX), math.rad(rotationY), math.rad(rotationZ))
+            BP.Position = targetPos
+            BG.CFrame = CFrame.Angles(math.rad(rotationX), math.rad(rotationY), math.rad(rotationZ))
         end
     end)
 
@@ -277,7 +266,7 @@ local function createUI()
         rotationActive = not rotationActive
         rotToggle.Text = "ROTATION: "..(rotationActive and "ON" or "OFF")
         rotToggle.BackgroundColor3 = rotationActive and Color3.fromRGB(50,100,50) or Color3.fromRGB(100,50,50)
-        alignOri.Enabled = rotationActive
+        BG.Enabled = rotationActive
     end)
 
     flBtn.MouseButton1Click:Connect(function() if movingPart then local p = movingPart; stopMoving(); p.AssemblyLinearVelocity = camera.CFrame.LookVector * 1000 end end)
