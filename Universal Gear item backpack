@@ -1,0 +1,213 @@
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui") -- Tambah CoreGui
+
+local player = Players.LocalPlayer
+local savedOrder = {} 
+local isSwapMode = false
+local firstSelection = nil
+local lastClickTime = 0
+
+-- 1. SOROK BACKPACK ASAL
+task.spawn(function()
+    while true do
+        pcall(function()
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+        end)
+        task.wait(2)
+    end
+end)
+
+-- 2. SETUP UI UTAMA (Guna CoreGui)
+-- Jika sudah ada UI lama, buang dulu supaya tak bertindih (anti-double run)
+if CoreGui:FindFirstChild("PersistentHotbar") then
+    CoreGui.PersistentHotbar:Destroy()
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "PersistentHotbar"
+gui.ResetOnSpawn = false 
+gui.DisplayOrder = 999 -- Pastikan hotbar sentiasa di atas UI lain
+gui.Parent = CoreGui -- <--- TUKAR KE CORE GUI
+
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Name = "MainScroll"
+scrollFrame.AutomaticSize = Enum.AutomaticSize.X
+scrollFrame.Size = UDim2.new(0, 0, 0, 75)
+scrollFrame.Position = UDim2.new(0.5, 0, 1, -100)
+scrollFrame.AnchorPoint = Vector2.new(0.5, 0)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+scrollFrame.BackgroundTransparency = 0.4
+scrollFrame.ScrollBarThickness = 0
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.Parent = gui
+
+Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 12)
+local layout = Instance.new("UIListLayout", scrollFrame)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.Padding = UDim.new(0, 8)
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+Instance.new("UIPadding", scrollFrame).PaddingLeft = UDim.new(0, 10)
+
+-- 3. FUNGSI PRIVATE RGB CHAT
+local function sendPrivateRGB(text)
+    pcall(function()
+        StarterGui:SetCore("ChatMakeSystemMessage", {
+            Text = "[SYSTEM]: " .. text;
+            Color = Color3.fromHSV(tick() % 3 / 3, 0.8, 1);
+            Font = Enum.Font.GothamBold;
+            FontSize = Enum.FontSize.Size18;
+        })
+    end)
+end
+
+-- 4. FUNGSI NOTIFIKASI
+local function notify(status)
+    local notifFrame = Instance.new("Frame")
+    notifFrame.Size = UDim2.fromOffset(220, 50)
+    notifFrame.Position = UDim2.new(1.2, 0, 0.1, 0)
+    notifFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    notifFrame.Parent = gui
+    Instance.new("UICorner", notifFrame).CornerRadius = UDim.new(0, 8)
+    
+    local stroke = Instance.new("UIStroke", notifFrame)
+    stroke.Thickness = 3
+    
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.fromScale(1, 1)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Text = status == "ON" and "SWAP MODE: ACTIVE" or "SWAP MODE: INACTIVE"
+    textLabel.Parent = notifFrame
+
+    local rgbConn = RunService.RenderStepped:Connect(function()
+        stroke.Color = Color3.fromHSV(tick() % 3 / 3, 1, 1)
+    end)
+
+    notifFrame:TweenPosition(UDim2.new(1, -240, 0.1, 0), "Out", "Back", 0.5, true)
+    task.delay(5, function()
+        if notifFrame and notifFrame.Parent then
+            notifFrame:TweenPosition(UDim2.new(1.2, 0, 0.1, 0), "In", "Quad", 0.5, true, function()
+                rgbConn:Disconnect()
+                notifFrame:Destroy()
+            end)
+        end
+    end)
+end
+
+-- 5. LOGIK UPDATE UI
+local function updateGearFrame()
+    local char = player.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local backpack = player:FindFirstChild("Backpack")
+    if not backpack then return end
+
+    local currentTools = {}
+    local foundNames = {}
+
+    local function collect(parent)
+        for _, t in pairs(parent:GetChildren()) do
+            if t:IsA("Tool") then 
+                currentTools[t.Name] = t 
+                table.insert(foundNames, t.Name)
+            end
+        end
+    end
+    collect(backpack)
+    collect(char)
+
+    -- Simpan tool baru ke order
+    for _, name in ipairs(foundNames) do
+        local exists = false
+        for _, savedName in ipairs(savedOrder) do if savedName == name then exists = true break end end
+        if not exists then table.insert(savedOrder, name) end
+    end
+
+    -- Buang tool yang sudah tiada
+    for i = #savedOrder, 1, -1 do
+        if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
+    end
+
+    -- Refresh UI Buttons
+    for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+
+    for index, toolName in ipairs(savedOrder) do
+        local tool = currentTools[toolName]
+        if not tool then continue end
+
+        local slot = Instance.new("TextButton")
+        slot.Size = UDim2.fromOffset(55, 55)
+        slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or ((tool.Parent == char) and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35))
+        slot.Text = ""
+        slot.Parent = scrollFrame
+        Instance.new("UICorner", slot).CornerRadius = UDim.new(0, 10)
+
+        local icon = Instance.new("ImageLabel")
+        icon.Size = UDim2.fromScale(0.7, 0.7)
+        icon.Position = UDim2.fromScale(0.5, 0.5)
+        icon.AnchorPoint = Vector2.new(0.5, 0.5)
+        icon.BackgroundTransparency = 1
+        icon.Image = (tool.TextureId ~= "") and tool.TextureId or "rbxassetid://12543411130"
+        icon.Parent = slot
+
+        slot.Activated:Connect(function()
+            local now = tick()
+            if (now - lastClickTime) < 0.25 then -- Double Tap detection
+                isSwapMode = not isSwapMode
+                firstSelection = nil
+                sendPrivateRGB(isSwapMode and "Swap Mode ON" or "Swap Mode OFF")
+                notify(isSwapMode and "ON" or "OFF")
+                updateGearFrame()
+                lastClickTime = 0
+            else
+                lastClickTime = now
+                task.delay(0.26, function()
+                    if tick() - lastClickTime >= 0.25 then
+                        if isSwapMode then
+                            if not firstSelection then
+                                firstSelection = index
+                                updateGearFrame()
+                            else
+                                local temp = savedOrder[firstSelection]
+                                savedOrder[firstSelection] = savedOrder[index]
+                                savedOrder[index] = temp
+                                firstSelection = nil
+                                updateGearFrame()
+                            end
+                        else
+                            if tool.Parent == char then hum:UnequipTools() else hum:EquipTool(tool) end
+                        end
+                    end
+                end)
+            end
+        end)
+    end
+end
+
+-- 6. PENGURUSAN RE-SPAWN & LISTENERS
+local function setupListeners()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local backpack = player:WaitForChild("Backpack")
+
+    -- Membersihkan sambungan lama jika karakter respawn
+    local connections = {}
+    
+    local function connect()
+        table.insert(connections, backpack.ChildAdded:Connect(updateGearFrame))
+        table.insert(connections, backpack.ChildRemoved:Connect(updateGearFrame))
+        table.insert(connections, character.ChildAdded:Connect(updateGearFrame))
+        table.insert(connections, character.ChildRemoved:Connect(updateGearFrame))
+    end
+    
+    connect()
+    updateGearFrame()
+end
+
+player.CharacterAdded:Connect(setupListeners)
+setupListeners()
+
+sendPrivateRGB("Hotbar CoreGui Loaded!")
