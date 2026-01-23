@@ -32,7 +32,7 @@ local rotationX, rotationY, rotationZ = 0, 0, 0
 -- --- UPGRADED PHYSICS (SUNTINGAN PADU) ---
 local BP = Instance.new("BodyPosition")
 BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-BP.P = 50000 -- Sangat kuat (melekat terus)
+BP.P = 50000000 -- Sangat kuat (melekat terus)
 BP.D = 300         -- Damping yang anda pilih (bagus untuk stabilkan getaran)
 
 local BG = Instance.new("BodyGyro")
@@ -85,7 +85,7 @@ local function togglePartMove(part)
         
         task.spawn(function()
             local currentPart = movingPart
-            task.wait(3) -- Bergetar selama 3 saat sahaj
+            task.wait(0.5) -- Bergetar selama 3 saat sahaj
             
             -- Jika masih memegang objek yang sama, stabilkan semula
             if movingPart == currentPart then
