@@ -166,33 +166,41 @@ local function createUI()
     local resBtn = createBtn("Res", "♻️ RESET", UDim2.new(0.05,0,0,385), UDim2.new(0.9,0,0,30), Color3.fromRGB(180,90,0), mainScroll)
     local cloBtn = createBtn("Clo", "❌ CLOSE UI", UDim2.new(0.05,0,0,425), UDim2.new(0.9,0,0,30), Color3.fromRGB(40,40,40), mainScroll)
 
-    -- --- SUB FRAMES ---
-    local function createSubFrame(name)
-        local f = Instance.new("Frame", screenGui); f.Name = name; f.Size = UDim2.new(0, 200, 0, 320); f.Position = UDim2.new(0.7, 0, 0.2, 0); f.BackgroundColor3 = Color3.fromRGB(20, 20, 20); f.Visible = false; Instance.new("UICorner", f); makeDraggable(f)
-        Instance.new("UIStroke", f).Color = Color3.fromRGB(255, 100, 4)
-        local sBox = createSearchBox(f)
-        local scroll = Instance.new("ScrollingFrame", f); scroll.Size = UDim2.new(0.9,0,0.75,0); scroll.Position = UDim2.new(0.05,0,0.15,0); scroll.BackgroundTransparency = 1; scroll.CanvasSize = UDim2.new(0,0,0,0); scroll.ScrollBarThickness = 3
-        local list = Instance.new("UIListLayout", scroll); list.Padding = UDim.new(0,5)
-        local ref = createBtn("Ref", "🔄 REFRESH", UDim2.new(0.05,0,0.91,0), UDim2.new(0.9,0,0,25), Color3.fromRGB(40,60,90), f)
-        return f, scroll, sBox, ref
-    end
+=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=-- --- SUB FRAMES (REVISED) --- --=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=
+local function createSubFrame(name)
+    local f = Instance.new("Frame", screenGui); f.Name = name; f.Size = UDim2.new(0, 200, 0, 320); f.Position = UDim2.new(0.7, 0, 0.2, 0); f.BackgroundColor3 = Color3.fromRGB(20, 20, 20); f.Visible = false; Instance.new("UICorner", f); makeDraggable(f)
+    Instance.new("UIStroke", f).Color = Color3.fromRGB(255, 100, 4)
+    local sBox = createSearchBox(f)
+    local scroll = Instance.new("ScrollingFrame", f); scroll.Size = UDim2.new(0.9,0,0.75,0); scroll.Position = UDim2.new(0.05,0,0.15,0); scroll.BackgroundTransparency = 1; scroll.ScrollBarThickness = 3
+    
+    -- Pastikan UIListLayout dicipta untuk menyusun tombol
+    local list = Instance.new("UIListLayout", scroll)
+    list.Padding = UDim.new(0, 5)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    local ref = createBtn("Ref", "🔄 REFRESH", UDim2.new(0.05,0,0.91,0), UDim2.new(0.9,0,0,25), Color3.fromRGB(40,60,90), f)
+    return f, scroll, sBox, ref
+end
 
-    local nFrame, nScroll, nSearch, nRef = createSubFrame("NPCFrame")
-    local bFrame, bScroll, bSearch, bRef = createSubFrame("BlockFrame")
-    local cFrame, cScroll, cSearch, cRef = createSubFrame("CustomHub")
-    cSearch:Destroy() -- Hub tak perlu search box
+local nFrame, nScroll, nSearch, nRef = createSubFrame("NPCFrame")
+local bFrame, bScroll, bSearch, bRef = createSubFrame("BlockFrame")
+local cFrame, cScroll, cSearch, cRef = createSubFrame("CustomHub")
+if cSearch then cSearch:Destroy() end
 
-    -- Auto Button Hub
-    for name, code in pairs(ScriptLibrary) do
-        local b = createBtn("Script", name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,30), Color3.fromRGB(45,45,45), cScroll)
-        b.MouseButton1Click:Connect(function()
-            local func = loadstring(code)
-            if func then func() end
-        end)
-    end
-    cScroll.CanvasSize = UDim2.new(0,0,0, cScroll.UIListLayout.AbsoluteContentSize.Y)
+-- Auto Button Hub dengan Error Handling
+for name, code in pairs(ScriptLibrary) do
+    local b = createBtn("Script", name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,30), Color3.fromRGB(45,45,45), cScroll)
+    b.MouseButton1Click:Connect(function()
+        local func, err = loadstring(code)
+        if func then func() else warn("Script Error: " .. tostring(err)) end
+    end)
+end
 
-    local remote = Instance.new("Frame", screenGui); remote.Name = "Remote"; remote.Size = UDim2.new(0, 150, 0, 180); remote.Position = UDim2.new(0.3, 0, 0.4, 0); remote.BackgroundColor3 = Color3.fromRGB(20, 20, 20); remote.Visible = false; Instance.new("UICorner", remote); makeDraggable(remote)
+-- Update CanvasSize selepas tombol dijana
+task.defer(function()
+    cScroll.CanvasSize = UDim2.new(0, 0, 0, cScroll.UIListLayout.AbsoluteContentSize.Y)
+end)
+
 
     -- --- CONTROLS LOGIC ---
     hUp.MouseButton1Click:Connect(function() heightOffset += 2 end)
