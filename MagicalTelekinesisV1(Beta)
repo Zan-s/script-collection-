@@ -9,7 +9,7 @@ local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
 -- ==========================================================
--- 1. CUSTOM SCRIPT LIBRARY
+-- 1. CUSTOM SCRIPT LIBRARY (SUNTING DI SINI)
 -- ==========================================================
 local ScriptLibrary = {
     ["1. GUI Startup"] = [[print("GUI Started!")]],
@@ -27,22 +27,23 @@ local movingPart = nil
 local followDistance, heightOffset, sideOffset = DEFAULT_DIST, DEFAULT_HEIGHT, DEFAULT_SIDE
 local walkSpeedActive, rotationActive, shiftLockActive, orbitActive = false, true, false, false
 local rotationX, rotationY, rotationZ = 0, 0, 0
-local customShakeValue = 10 -- <--- NILAI GEGARAN AWAL
 
--- --- UPGRADED PHYSICS ---
+
+-- --- UPGRADED PHYSICS (SUNTINGAN PADU) ---
 local BP = Instance.new("BodyPosition")
 BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-BP.P = 50000000 
-BP.D = 300        
+BP.P = 50000000 -- Sangat kuat (melekat terus)
+BP.D = 300         -- Damping yang anda pilih (bagus untuk stabilkan getaran)
 
 local BG = Instance.new("BodyGyro")
 BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-BG.P = 50000        
+BG.P = 50000        -- <--- TAMBAH INI: Supaya putaran objek tak "lembik"
 BG.D = 500
 
 local selectBox = Instance.new("SelectionBox")
 selectBox.LineThickness = 0.05
 selectBox.Color3 = Color3.fromRGB(255, 255, 255)
+
 
 -- --- UTILITY FUNCTIONS ---
 local function makeDraggable(frame)
@@ -77,16 +78,19 @@ local function togglePartMove(part)
         selectBox.Adornee = movingPart
         selectBox.Parent = movingPart
         
-        -- MENGGUNAKAN NILAI CUSTOM SHAKE DARI UI
-        BP.D = customShakeValue
-        BG.D = customShakeValue / 2
+        -- === LOGIK GETARAN (EFFEK BERAT) ===
+        -- Apabila mula angkat, kurangkan damping untuk cipta getaran kuat
+        BP.D = 10  -- Getaran posisi yang agresif
+        BG.D = 5  -- Getaran putaran (struggle)
         
         task.spawn(function()
             local currentPart = movingPart
-            task.wait(0.5) 
+            task.wait(0.5) -- Bergetar selama 3 saat sahaj
+            
+            -- Jika masih memegang objek yang sama, stabilkan semula
             if movingPart == currentPart then
-                BP.D = 820  -- Stabil semula
-                BG.D = 500  -- Stabil semula
+                BP.D = 820  -- Kembali stabil (normal)
+                BG.D = 500  -- Kembali stabil (normal)
             end
         end)
         
@@ -98,6 +102,7 @@ local function giveTool()
     if player.Backpack:FindFirstChild("T.MAGIC GUN🪄") then return end
     local t = Instance.new("Tool"); t.Name = "T.MAGIC GUN🪄"; t.RequiresHandle = false; t.Parent = player.Backpack
     t.Equipped:Connect(function(mouse)
+        -- Support Mobile Touch
         mouse.Button1Down:Connect(function() if mouse.Target then togglePartMove(mouse.Target) end end)
     end)
     t.Unequipped:Connect(stopMoving)
@@ -118,6 +123,7 @@ local function createSearchBox(parent)
     return s
 end
 
+
 -- --- UI SYSTEM ---
 local function createUI()
     if CoreGui:FindFirstChild("TeleMasterV12") then CoreGui.TeleMasterV12:Destroy() end
@@ -134,7 +140,6 @@ local function createUI()
     local mainScroll = Instance.new("ScrollingFrame", main)
     mainScroll.Name = "MainScroll"; mainScroll.Size = UDim2.new(1, 0, 1, -40); mainScroll.Position = UDim2.new(0, 0, 0, 40); mainScroll.BackgroundTransparency = 1; mainScroll.BorderSizePixel = 0; mainScroll.ScrollBarThickness = 4; mainScroll.CanvasSize = UDim2.new(0, 0, 0, 620); mainScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 100, 4)
 
-    -- MAIN BUTTONS
     local slBtn = createBtn("SL", "Lock: OFF", UDim2.new(0.05,0,0,10), UDim2.new(0.28,0,0,25), Color3.fromRGB(40,40,40), mainScroll)
     local pvpBtn = createBtn("PVPTab", "☯️ ORBIT", UDim2.new(0.35,0,0,10), UDim2.new(0.3,0,0,25), Color3.fromRGB(100, 30, 30), mainScroll)
     local customHubBtn = createBtn("HubBtn", "📜 HUB", UDim2.new(0.67,0,0,10), UDim2.new(0.28,0,0,25), Color3.fromRGB(120, 70, 0), mainScroll)
@@ -157,7 +162,7 @@ local function createUI()
     local resBtn = createBtn("Res", "♻️ RESET", UDim2.new(0.05,0,0,385), UDim2.new(0.9,0,0,30), Color3.fromRGB(180,90,0), mainScroll)
     local cloBtn = createBtn("Clo", "❌ CLOSE UI", UDim2.new(0.05,0,0,425), UDim2.new(0.9,0,0,30), Color3.fromRGB(40,40,40), mainScroll)
 
-    -- --- SUB FRAMES SETUP ---
+    -- --- SUB FRAMES ---
     local function createSubFrame(name)
         local f = Instance.new("Frame", screenGui); f.Name = name; f.Size = UDim2.new(0, 200, 0, 320); f.Position = UDim2.new(0.7, 0, 0.2, 0); f.BackgroundColor3 = Color3.fromRGB(20, 20, 20); f.Visible = false; Instance.new("UICorner", f); makeDraggable(f)
         Instance.new("UIStroke", f).Color = Color3.fromRGB(255, 100, 4)
@@ -171,41 +176,17 @@ local function createUI()
     local nFrame, nScroll, nSearch, nRef = createSubFrame("NPCFrame")
     local bFrame, bScroll, bSearch, bRef = createSubFrame("BlockFrame")
     local cFrame, cScroll, cSearch, cRef = createSubFrame("CustomHub")
-    cSearch:Destroy() 
+    cSearch:Destroy() -- Hub tak perlu search box
 
-    -- HUB SCRIPT LIST
+    -- Auto Button Hub
     for name, code in pairs(ScriptLibrary) do
         local b = createBtn("Script", name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,30), Color3.fromRGB(45,45,45), cScroll)
-        b.MouseButton1Click:Connect(function() local func = loadstring(code); if func then func() end end)
+        b.MouseButton1Click:Connect(function()
+            local func = loadstring(code)
+            if func then func() end
+        end)
     end
     cScroll.CanvasSize = UDim2.new(0,0,0, cScroll.UIListLayout.AbsoluteContentSize.Y)
-
-    -- === FITUR BARU: CUSTOM SHAKE VALUE (DI HUB) ===
-    local shakeLabel = Instance.new("TextLabel", cFrame)
-    shakeLabel.Size = UDim2.new(0.9, 0, 0, 20)
-    shakeLabel.Position = UDim2.new(0.05, 0, 0.73, 0)
-    shakeLabel.BackgroundTransparency = 1
-    shakeLabel.Text = "Costem shake value:"
-    shakeLabel.TextColor3 = Color3.new(1, 1, 1)
-    shakeLabel.Font = Enum.Font.Gotham
-    shakeLabel.TextSize = 10
-    shakeLabel.ZIndex = 55
-
-    local shakeInput = Instance.new("TextBox", cFrame)
-    shakeInput.Size = UDim2.new(0.9, 0, 0, 28)
-    shakeInput.Position = UDim2.new(0.05, 0, 0.81, 0)
-    shakeInput.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    shakeInput.TextColor3 = Color3.fromRGB(255, 100, 4)
-    shakeInput.Text = tostring(customShakeValue)
-    shakeInput.Font = Enum.Font.GothamBold
-    shakeInput.TextSize = 14
-    shakeInput.ZIndex = 55
-    Instance.new("UICorner", shakeInput)
-
-    shakeInput.FocusLost:Connect(function()
-        local n = tonumber(shakeInput.Text)
-        if n then customShakeValue = n else shakeInput.Text = tostring(customShakeValue) end
-    end)
 
     local remote = Instance.new("Frame", screenGui); remote.Name = "Remote"; remote.Size = UDim2.new(0, 150, 0, 180); remote.Position = UDim2.new(0.3, 0, 0.4, 0); remote.BackgroundColor3 = Color3.fromRGB(20, 20, 20); remote.Visible = false; Instance.new("UICorner", remote); makeDraggable(remote)
 
@@ -264,7 +245,7 @@ local function createUI()
     Instance.new("UICorner", menuToggle).CornerRadius = UDim.new(0, 22.5); makeDraggable(menuToggle)
     menuToggle.MouseButton1Click:Connect(function() main.Visible = not main.Visible; nFrame.Visible = false; bFrame.Visible = false; remote.Visible = false; cFrame.Visible = false end)
 
-    -- REMOTE ROTATE
+    -- Remote Control
     local rxP = createBtn("XP", "X+", UDim2.new(0.1,0,0.1,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
     local rxM = createBtn("XM", "X-", UDim2.new(0.55,0,0.1,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
     local ryP = createBtn("YP", "Y+", UDim2.new(0.1,0,0.4,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
