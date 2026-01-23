@@ -28,19 +28,22 @@ local followDistance, heightOffset, sideOffset = DEFAULT_DIST, DEFAULT_HEIGHT, D
 local walkSpeedActive, rotationActive, shiftLockActive, orbitActive = false, true, false, false
 local rotationX, rotationY, rotationZ = 0, 0, 0
 
--- --- UPGRADED PHYSICS (FROM V5) ---
+
+-- --- UPGRADED PHYSICS (SUNTINGAN PADU) ---
 local BP = Instance.new("BodyPosition")
 BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-BP.P = 15000
-BP.D = 1250
+BP.P = 999999999999 -- Sangat kuat (melekat terus)
+BP.D = 820          -- Damping yang anda pilih (bagus untuk stabilkan getaran)
 
 local BG = Instance.new("BodyGyro")
 BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+BG.P = 50000        -- <--- TAMBAH INI: Supaya putaran objek tak "lembik"
 BG.D = 500
 
 local selectBox = Instance.new("SelectionBox")
 selectBox.LineThickness = 0.05
 selectBox.Color3 = Color3.fromRGB(255, 255, 255)
+
 
 -- --- UTILITY FUNCTIONS ---
 local function makeDraggable(frame)
