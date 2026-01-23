@@ -33,7 +33,7 @@ local rotationX, rotationY, rotationZ = 0, 0, 0
 local BP = Instance.new("BodyPosition")
 BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
 BP.P = 50000 -- Sangat kuat (melekat terus)
-BP.D = 350          -- Damping yang anda pilih (bagus untuk stabilkan getaran)
+BP.D = 300         -- Damping yang anda pilih (bagus untuk stabilkan getaran)
 
 local BG = Instance.new("BodyGyro")
 BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
@@ -80,12 +80,12 @@ local function togglePartMove(part)
         
         -- === LOGIK GETARAN (EFFEK BERAT) ===
         -- Apabila mula angkat, kurangkan damping untuk cipta getaran kuat
-        BP.D = 20  -- Getaran posisi yang agresif
-        BG.D = 10  -- Getaran putaran (struggle)
+        BP.D = 10  -- Getaran posisi yang agresif
+        BG.D = 5  -- Getaran putaran (struggle)
         
         task.spawn(function()
             local currentPart = movingPart
-            task.wait(5) -- Bergetar selama 5 saat
+            task.wait(3) -- Bergetar selama 3 saat sahaj
             
             -- Jika masih memegang objek yang sama, stabilkan semula
             if movingPart == currentPart then
