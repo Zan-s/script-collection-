@@ -38,7 +38,7 @@ BP.D = 300          -- Damping yang anda pilih (bagus untuk stabilkan getaran)
 local BG = Instance.new("BodyGyro")
 BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
 BG.P = 50000        -- <--- TAMBAH INI: Supaya putaran objek tak "lembik"
-BG.D = 300
+BG.D = 500
 
 local selectBox = Instance.new("SelectionBox")
 selectBox.LineThickness = 0.05
