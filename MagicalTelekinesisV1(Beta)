@@ -31,13 +31,14 @@ local movingPart = nil
 local followDistance, heightOffset, sideOffset = DEFAULT_DIST, DEFAULT_HEIGHT, DEFAULT_SIDE
 local walkSpeedActive, rotationActive, shiftLockActive, orbitActive = false, true, false, false
 local rotationX, rotationY, rotationZ = 0, 0, 0
+local customShakeValue = 10  -- <--- Cukup tambah ini sahaja
 
 
 -- --- UPGRADED PHYSICS (SUNTINGAN PADU) ---
 local BP = Instance.new("BodyPosition")
 BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
 BP.P = 50000000 -- Sangat kuat (melekat terus)
-BP.D = 300         -- Damping yang anda pilih (bagus untuk stabilkan getaran)
+BP.D = 10         -- Damping yang anda pilih (bagus untuk stabilkan getaran)
 
 local BG = Instance.new("BodyGyro")
 BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
@@ -82,19 +83,19 @@ local function togglePartMove(part)
         selectBox.Adornee = movingPart
         selectBox.Parent = movingPart
         
-        -- === LOGIK GETARAN (EFFEK BERAT) ===
-        -- Apabila mula angkat, kurangkan damping untuk cipta getaran kuat
-        BP.D = 10  -- Getaran posisi yang agresif
-        BG.D = 5  -- Getaran putaran (struggle)
+        -- === LOGIK GETARAN COSTUM (EFFEK BERAT) ===
+        -- Sekarang menggunakan customShakeValue yang dilaras dari UI
+        BP.D = customShakeValue         -- Nilai Damping Posisi
+        BG.D = customShakeValue / 2     -- Nilai Damping Putaran (Dibuat lebih lembut sedikit)
         
         task.spawn(function()
             local currentPart = movingPart
-            task.wait(0.5) -- Bergetar selama 3 saat sahaj
+            task.wait(0.5) -- Bergetar sebentar mengikut masa yang ditetapkan
             
-            -- Jika masih memegang objek yang sama, stabilkan semula
+            -- Jika masih memegang objek yang sama, stabilkan semula secara automatik
             if movingPart == currentPart then
-                BP.D = 820  -- Kembali stabil (normal)
-                BG.D = 500  -- Kembali stabil (normal)
+                BP.D = 820  -- Nilai stabil Posisi
+                BG.D = 500  -- Nilai stabil Putaran
             end
         end)
         
@@ -126,6 +127,7 @@ local function createSearchBox(parent)
     s.ZIndex = 50; Instance.new("UICorner", s)
     return s
 end
+
 
 
 -- --- UI SYSTEM ---
