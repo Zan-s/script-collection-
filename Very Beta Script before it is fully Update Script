@@ -78,6 +78,22 @@ local function togglePartMove(part)
         selectBox.Adornee = movingPart
         selectBox.Parent = movingPart
         
+        -- === LOGIK GETARAN (EFFEK BERAT) ===
+        -- Apabila mula angkat, kurangkan damping untuk cipta getaran kuat
+        BP.D = 20  -- Getaran posisi yang agresif
+        BG.D = 10  -- Getaran putaran (struggle)
+        
+        task.spawn(function()
+            local currentPart = movingPart
+            task.wait(5) -- Bergetar selama 5 saat
+            
+            -- Jika masih memegang objek yang sama, stabilkan semula
+            if movingPart == currentPart then
+                BP.D = 820  -- Kembali stabil (normal)
+                BG.D = 500  -- Kembali stabil (normal)
+            end
+        end)
+        
         BP.Position = movingPart.Position
     end
 end
@@ -106,6 +122,7 @@ local function createSearchBox(parent)
     s.ZIndex = 50; Instance.new("UICorner", s)
     return s
 end
+
 
 -- --- UI SYSTEM ---
 local function createUI()
