@@ -1,0 +1,161 @@
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- 1. SETUP LIGHTING OBJECTS (RTX ENGINE)
+local function SetupRTX()
+    local bloom = Lighting:FindFirstChild("RTX_Bloom") or Instance.new("BloomEffect", Lighting)
+    bloom.Name = "RTX_Bloom"
+    
+    local sunRays = Lighting:FindFirstChild("RTX_SunRays") or Instance.new("SunRaysEffect", Lighting)
+    sunRays.Name = "RTX_SunRays"
+    
+    local color = Lighting:FindFirstChild("RTX_Color") or Instance.new("ColorCorrectionEffect", Lighting)
+    color.Name = "RTX_Color"
+    
+    local dof = Lighting:FindFirstChild("RTX_DOF") or Instance.new("DepthOfFieldEffect", Lighting)
+    dof.Name = "RTX_DOF"
+    dof.Enabled = false -- Default off
+
+    Lighting.GlobalShadows = true
+    Lighting.Technology = Enum.Technology.Future -- Teknologi grafik paling tinggi
+end
+
+SetupRTX()
+
+-- 2. SETUP UI SETTINGS
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "RTX_Settings_UI"
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 250, 0, 350)
+MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "✨ RTX GRAPHICS SETTINGS"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+
+local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
+ScrollingFrame.Size = UDim2.new(0.9, 0, 0.85, 0)
+ScrollingFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+ScrollingFrame.ScrollBarThickness = 4
+
+local UIList = Instance.new("UIListLayout", ScrollingFrame)
+UIList.Padding = UDim.new(0, 10)
+
+-- 3. HELPER FUNCTION UNTUK SLIDER/BUTTON
+local function CreateSlider(name, min, max, default, callback)
+    local frame = Instance.new("Frame", ScrollingFrame)
+    frame.Size = UDim2.new(0.95, 0, 0, 45)
+    frame.BackgroundTransparency = 0.8
+    frame.BackgroundColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", frame)
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, 0, 0.5, 0)
+    label.Text = name .. ": " .. default
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.BackgroundTransparency = 1
+    label.TextSize = 12
+
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(0.8, 0, 0.3, 0)
+    btn.Position = UDim2.new(0.1, 0, 0.6, 0)
+    btn.Text = ""
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    
+    btn.MouseButton1Click:Connect(function()
+        -- Logik ringkas: pusingan nilai (Cycle logic)
+        local newVal = default + ((max-min)/5)
+        if newVal > max then newVal = min end
+        default = math.floor(newVal * 100) / 100
+        label.Text = name .. ": " .. default
+        callback(default)
+    end)
+end
+
+-- 4. IMPLEMENTASI FUNGSI GRAFIK
+-- Kadar Kecerahan (Exposure)
+CreateSlider("Brightness", 0, 5, 1, function(v)
+    Lighting.ExposureCompensation = v
+end)
+
+-- Kadar Silauan (Bloom)
+CreateSlider("Glow/Bloom", 0, 10, 2, function(v)
+    Lighting.RTX_Bloom.Intensity = v
+end)
+
+-- Kualiti Bayangan (Shadow Softness)
+CreateSlider("Shadow Softness", 0, 1, 0.5, function(v)
+    Lighting.ShadowSoftness = v
+end)
+
+-- Gerakan Air (Wave Speed/Size)
+CreateSlider("Water Smoothness", 0, 1, 0.5, function(v)
+    if Terrain then
+        Terrain.WaterWaveSpeed = v * 20
+        Terrain.WaterWaveSize = v * 2
+        Terrain.WaterTransparency = 0.5
+    end
+end)
+
+-- Kesan Angin (Daun & Rumput)
+CreateSlider("Wind Strength", 0, 5, 1, function(v)
+    sethiddenproperty(workspace, "GlobalWind", Vector3.new(v * 10, 0, v * 5))
+end)
+
+-- Color Saturation (Vibrance)
+CreateSlider("Color Quality", 0, 2, 1, function(v)
+    Lighting.RTX_Color.Saturation = v - 1
+end)
+
+-- Toggle RTX Shadows (Teknologi Masa Depan)
+local ShadowBtn = Instance.new("TextButton", ScrollingFrame)
+ShadowBtn.Size = UDim2.new(0.95, 0, 0, 30)
+ShadowBtn.Text = "Switch to FUTURE (RTX ON)"
+ShadowBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+ShadowBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", ShadowBtn)
+
+ShadowBtn.MouseButton1Click:Connect(function()
+    Lighting.Technology = Enum.Technology.Future
+    print("RTX Future Lighting Activated")
+end)
+
+-- 5. KESAN DAUN GUGUR (PARTICLE EMITTER)
+local function CreateLeafEffect()
+    local p = Instance.new("Part", workspace)
+    p.Name = "LeafEmitter"
+    p.Anchored = true
+    p.CanCollide = false
+    p.Transparency = 1
+    p.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 50, 0)
+    
+    local emitter = Instance.new("ParticleEmitter", p)
+    emitter.Texture = "rbxassetid://242211703" -- Texture daun
+    emitter.Size = NumberSequence.new(0.5)
+    emitter.Lifetime = NumberRange.new(5, 10)
+    emitter.Rate = 0 -- Default off
+    emitter.Speed = NumberRange.new(5, 15)
+    emitter.VelocitySpread = 180
+    emitter.Acceleration = Vector3.new(0, -2, 0)
+    
+    return emitter
+end
+
+local leafEmitter = CreateLeafEffect()
+CreateSlider("Falling Leaves", 0, 50, 0, function(v)
+    leafEmitter.Rate = v
+end)
+
+print("RTX Shader Loaded!")
