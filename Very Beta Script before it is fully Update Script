@@ -1,300 +1,984 @@
+-- SHADERS COMPANY V0.5 - BAGIAN 1/8
+-- Setup GUI Utama + Frame Structure
+
+local LMG2L = {};
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- (1) Main ScreenGui
+LMG2L["ScreenGui_1"] = Instance.new("ScreenGui")
+LMG2L["ScreenGui_1"].Name = "ScreenGui"
+LMG2L["ScreenGui_1"].Parent = LocalPlayer:WaitForChild("PlayerGui")
+LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
+
+-- (2) Main draggable frame
+LMG2L["MainFrame"] = Instance.new("Frame")
+LMG2L["MainFrame"].Name = "MainFrame"
+LMG2L["MainFrame"].Parent = LMG2L["ScreenGui_1"]
+LMG2L["MainFrame"]["BorderSizePixel"] = 0
+LMG2L["MainFrame"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["MainFrame"]["Size"] = UDim2.new(0.50165, 0, 0.68941, 0)
+LMG2L["MainFrame"]["Position"] = UDim2.new(0.35232, 0, 0.06019, 0)
+
+-- (3) Script title
+LMG2L["script_title"] = Instance.new("TextLabel")
+LMG2L["script_title"].Name = "script title"
+LMG2L["script_title"].Parent = LMG2L["MainFrame"]
+LMG2L["script_title"]["TextWrapped"] = true
+LMG2L["script_title"]["BorderSizePixel"] = 0
+LMG2L["script_title"]["TextSize"] = 14
+LMG2L["script_title"]["TextScaled"] = true
+LMG2L["script_title"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["script_title"]["FontFace"] = Font.new("rbxasset://fonts/families/PressStart2P.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+LMG2L["script_title"]["Size"] = UDim2.new(0.9814, 0, 0.13492, 0)
+LMG2L["script_title"]["Text"] = "SHADERS COMPANY V0.5"
+LMG2L["script_title"]["TextColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["script_title"]["Position"] = UDim2.new(0.0093, 0, 0.00794, 0)
+
+-- (4) Title corner
+LMG2L["UICorner_4"] = Instance.new("UICorner")
+LMG2L["UICorner_4"].Parent = LMG2L["script_title"]
+LMG2L["UICorner_4"]["CornerRadius"] = UDim.new(0, 10)
+
+-- (5) Main frame corner
+LMG2L["UICorner_5"] = Instance.new("UICorner")
+LMG2L["UICorner_5"].Parent = LMG2L["MainFrame"]
+LMG2L["UICorner_5"]["CornerRadius"] = UDim.new(0.05, 0)
+
+-- (6) FPS display frame
+LMG2L["FPS_Frame"] = Instance.new("Frame")
+LMG2L["FPS_Frame"].Name = "FPS_Frame"
+LMG2L["FPS_Frame"].Parent = LMG2L["MainFrame"]
+LMG2L["FPS_Frame"]["BorderSizePixel"] = 0
+LMG2L["FPS_Frame"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["FPS_Frame"]["Size"] = UDim2.new(0.17674, 0, 0.07143, 0)
+LMG2L["FPS_Frame"]["Position"] = UDim2.new(0.74884, 0, 0.9127, 0)
+
+-- (7) Functions display frame
+LMG2L["Functions_Frame"] = Instance.new("Frame")
+LMG2L["Functions_Frame"].Name = "Functions_Frame"
+LMG2L["Functions_Frame"].Parent = LMG2L["MainFrame"]
+LMG2L["Functions_Frame"]["BorderSizePixel"] = 0
+LMG2L["Functions_Frame"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["Functions_Frame"]["Size"] = UDim2.new(0.77209, 0, 0.7381, 0)
+LMG2L["Functions_Frame"]["Position"] = UDim2.new(0.2093, 0, 0.16667, 0)
+
+-- (8) Functions frame corner
+LMG2L["UICorner_8"] = Instance.new("UICorner")
+LMG2L["UICorner_8"].Parent = LMG2L["Functions_Frame"]
+LMG2L["UICorner_8"]["CornerRadius"] = UDim.new(0, 12)
+
+-- (9) Side menu frame
+LMG2L["SideMenu"] = Instance.new("Frame")
+LMG2L["SideMenu"].Name = "SideMenu"
+LMG2L["SideMenu"].Parent = LMG2L["MainFrame"]
+LMG2L["SideMenu"]["BorderSizePixel"] = 0
+LMG2L["SideMenu"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["SideMenu"]["Size"] = UDim2.new(0.17674, 0, 0.81746, 0)
+LMG2L["SideMenu"]["Position"] = UDim2.new(0.0186, 0, 0.15079, 0)
+
+print("Part 1/8 Loaded - Copy Part 2...")
+
+-- SHADERS COMPANY V0.5 - BAGIAN 2/8
+-- Side Menu Buttons
+
+-- (10) Library button
+LMG2L["Library_Button"] = Instance.new("TextButton")
+LMG2L["Library_Button"].Name = "Library_Button"
+LMG2L["Library_Button"].Parent = LMG2L["SideMenu"]
+LMG2L["Library_Button"]["BorderSizePixel"] = 0
+LMG2L["Library_Button"]["TextSize"] = 13
+LMG2L["Library_Button"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["Library_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Library_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
+LMG2L["Library_Button"]["Text"] = "library"
+LMG2L["Library_Button"]["Position"] = UDim2.new(0.02632, 0, 0.68932, 0)
+
+-- (11) Visual type label
+LMG2L["Visual_Label"] = Instance.new("TextLabel")
+LMG2L["Visual_Label"].Name = "Visual_Label"
+LMG2L["Visual_Label"].Parent = LMG2L["SideMenu"]
+LMG2L["Visual_Label"]["BorderSizePixel"] = 0
+LMG2L["Visual_Label"]["TextSize"] = 14
+LMG2L["Visual_Label"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Visual_Label"]["FontFace"] = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+LMG2L["Visual_Label"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["Visual_Label"]["Size"] = UDim2.new(1, 0, 0.1165, 0)
+LMG2L["Visual_Label"]["Text"] = "↓visual type↓"
+
+-- (12) Side menu corner
+LMG2L["UICorner_12"] = Instance.new("UICorner")
+LMG2L["UICorner_12"].Parent = LMG2L["SideMenu"]
+LMG2L["UICorner_12"]["CornerRadius"] = UDim.new(0, 12)
+
+-- (13) Graphic button
+LMG2L["Graphic_Button"] = Instance.new("TextButton")
+LMG2L["Graphic_Button"].Name = "Graphic_Button"
+LMG2L["Graphic_Button"].Parent = LMG2L["SideMenu"]
+LMG2L["Graphic_Button"]["TextSize"] = 11
+LMG2L["Graphic_Button"]["TextColor3"] = Color3.fromRGB(0, 255, 84)
+LMG2L["Graphic_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Graphic_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
+LMG2L["Graphic_Button"]["Text"] = "Graphic"
+LMG2L["Graphic_Button"]["Position"] = UDim2.new(0.02632, 0, 0.13592, 0)
+
+-- (14) Credits button
+LMG2L["Credits_Button"] = Instance.new("TextButton")
+LMG2L["Credits_Button"].Name = "Credits_Button"
+LMG2L["Credits_Button"].Parent = LMG2L["SideMenu"]
+LMG2L["Credits_Button"]["BorderSizePixel"] = 0
+LMG2L["Credits_Button"]["TextSize"] = 9
+LMG2L["Credits_Button"]["TextColor3"] = Color3.fromRGB(28, 43, 54)
+LMG2L["Credits_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Credits_Button"]["Size"] = UDim2.new(0.89474, 0, 0.13592, 0)
+LMG2L["Credits_Button"]["Text"] = "Credits"
+LMG2L["Credits_Button"]["Position"] = UDim2.new(0.05263, 0, 0.85437, 0)
+
+-- (15) Credits button corner
+LMG2L["UICorner_15"] = Instance.new("UICorner")
+LMG2L["UICorner_15"].Parent = LMG2L["Credits_Button"]
+
+-- (16) Color button
+LMG2L["Color_Button"] = Instance.new("TextButton")
+LMG2L["Color_Button"].Name = "Color_Button"
+LMG2L["Color_Button"].Parent = LMG2L["SideMenu"]
+LMG2L["Color_Button"]["BorderSizePixel"] = 0
+LMG2L["Color_Button"]["TextColor3"] = Color3.fromRGB(255, 0, 0)
+LMG2L["Color_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Color_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
+LMG2L["Color_Button"]["Text"] = "Color (R,G,B)"
+LMG2L["Color_Button"]["Position"] = UDim2.new(0.02632, 0, 0.50485, 0)
+
+-- (17) Weather button
+LMG2L["Weather_Button"] = Instance.new("TextButton")
+LMG2L["Weather_Button"].Name = "Weather_Button"
+LMG2L["Weather_Button"].Parent = LMG2L["SideMenu"]
+LMG2L["Weather_Button"]["BorderSizePixel"] = 0
+LMG2L["Weather_Button"]["TextSize"] = 11
+LMG2L["Weather_Button"]["TextColor3"] = Color3.fromRGB(65, 237, 255)
+LMG2L["Weather_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Weather_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
+LMG2L["Weather_Button"]["Text"] = "Weather"
+LMG2L["Weather_Button"]["Position"] = UDim2.new(0.02632, 0, 0.32039, 0)
+
+-- (18) Ping display frame
+LMG2L["Ping_Frame"] = Instance.new("Frame")
+LMG2L["Ping_Frame"].Name = "Ping_Frame"
+LMG2L["Ping_Frame"].Parent = LMG2L["MainFrame"]
+LMG2L["Ping_Frame"]["BorderSizePixel"] = 0
+LMG2L["Ping_Frame"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["Ping_Frame"]["Size"] = UDim2.new(0.19535, 0, 0.07143, 0)
+LMG2L["Ping_Frame"]["Position"] = UDim2.new(0.24651, 0, 0.9127, 0)
+
+print("Part 2/8 Loaded - Copy Part 3...")
+
+-- SHADERS COMPANY V0.5 - BAGIAN 3/8
+-- Control Frame & Basic Functions
+
+-- (19) Control frame
+LMG2L["Control_Frame"] = Instance.new("Frame")
+LMG2L["Control_Frame"].Name = "Control_Frame"
+LMG2L["Control_Frame"].Parent = LMG2L["ScreenGui_1"]
+LMG2L["Control_Frame"]["BorderSizePixel"] = 0
+LMG2L["Control_Frame"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["Control_Frame"]["Size"] = UDim2.new(0.084, 0, 0.15867, 0)
+LMG2L["Control_Frame"]["Position"] = UDim2.new(0.03733, 0, 0.04924, 0)
+
+-- (20) Control frame corner
+LMG2L["UICorner_20"] = Instance.new("UICorner")
+LMG2L["UICorner_20"].Parent = LMG2L["Control_Frame"]
+LMG2L["UICorner_20"]["CornerRadius"] = UDim.new(0.2, 0)
+
+-- (21) GUI toggle button
+LMG2L["GUI_Toggle"] = Instance.new("TextButton")
+LMG2L["GUI_Toggle"].Name = "GUI_Toggle"
+LMG2L["GUI_Toggle"].Parent = LMG2L["Control_Frame"]
+LMG2L["GUI_Toggle"]["BorderSizePixel"] = 0
+LMG2L["GUI_Toggle"]["TextSize"] = 15
+LMG2L["GUI_Toggle"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["GUI_Toggle"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["GUI_Toggle"]["Size"] = UDim2.new(0.63889, 0, 0.68966, 0)
+LMG2L["GUI_Toggle"]["Text"] = "GUI"
+LMG2L["GUI_Toggle"]["Position"] = UDim2.new(0.02778, 0, 0.03448, 0)
+
+-- (22) GUI button corner
+LMG2L["UICorner_22"] = Instance.new("UICorner")
+LMG2L["UICorner_22"].Parent = LMG2L["GUI_Toggle"]
+
+-- (23) Shaders toggle button
+LMG2L["Shaders_Toggle"] = Instance.new("TextButton")
+LMG2L["Shaders_Toggle"].Name = "Shaders_Toggle"
+LMG2L["Shaders_Toggle"].Parent = LMG2L["Control_Frame"]
+LMG2L["Shaders_Toggle"]["TextWrapped"] = true
+LMG2L["Shaders_Toggle"]["BorderSizePixel"] = 0
+LMG2L["Shaders_Toggle"]["TextScaled"] = true
+LMG2L["Shaders_Toggle"]["TextDirection"] = Enum.TextDirection.LeftToRight
+LMG2L["Shaders_Toggle"]["BackgroundColor3"] = Color3.fromRGB(19, 199, 69)
+LMG2L["Shaders_Toggle"]["Size"] = UDim2.new(0.27778, 0, 0.65517, 0)
+LMG2L["Shaders_Toggle"]["Text"] = "ON"
+LMG2L["Shaders_Toggle"]["TextColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Shaders_Toggle"]["Position"] = UDim2.new(0.69444, 0, 0.06897, 0)
+
+-- (24) Shaders button corner
+LMG2L["UICorner_24"] = Instance.new("UICorner")
+LMG2L["UICorner_24"].Parent = LMG2L["Shaders_Toggle"]
+LMG2L["UICorner_24"]["CornerRadius"] = UDim.new(0, 4)
+
+-- (25) Delete button
+LMG2L["Delete_Button"] = Instance.new("TextButton")
+LMG2L["Delete_Button"].Name = "Delete_Button"
+LMG2L["Delete_Button"].Parent = LMG2L["Control_Frame"]
+LMG2L["Delete_Button"]["BorderSizePixel"] = 0
+LMG2L["Delete_Button"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+LMG2L["Delete_Button"]["BackgroundColor3"] = Color3.fromRGB(150, 0, 0)
+LMG2L["Delete_Button"]["Size"] = UDim2.new(0.88889, 0, 0.2069, 0)
+LMG2L["Delete_Button"]["Text"] = "DELETE"
+LMG2L["Delete_Button"]["Position"] = UDim2.new(0.05556, 0, 0.75862, 0)
+
+-- (26) Delete button corner
+LMG2L["UICorner_26"] = Instance.new("UICorner")
+LMG2L["UICorner_26"].Parent = LMG2L["Delete_Button"]
+
+-- ============================================
+-- BASIC FUNCTIONS
+-- ============================================
+
+-- Fungsi draggable untuk mobile support
+local function makeDraggable(frame)
+    local dragToggle = nil
+    local dragStart = nil
+    local startPos = nil
+    
+    local function updateInput(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X, 
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+    
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+            if dragToggle then
+                updateInput(input)
+            end
+        end
+    end)
+end
+
+-- Terapkan draggable
+makeDraggable(LMG2L["MainFrame"])
+
+-- Toggle GUI visibility
+LMG2L["GUI_Toggle"].MouseButton1Click:Connect(function()
+    LMG2L["MainFrame"].Visible = not LMG2L["MainFrame"].Visible
+end)
+
+-- Toggle shaders
+LMG2L["Shaders_Toggle"].MouseButton1Click:Connect(function()
+    if LMG2L["Shaders_Toggle"].Text == "ON" then
+        LMG2L["Shaders_Toggle"].Text = "OFF"
+        LMG2L["Shaders_Toggle"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    else
+        LMG2L["Shaders_Toggle"].Text = "ON"
+        LMG2L["Shaders_Toggle"].BackgroundColor3 = Color3.fromRGB(19, 199, 69)
+    end
+end)
+
+-- Delete GUI
+LMG2L["Delete_Button"].MouseButton1Click:Connect(function()
+    LMG2L["ScreenGui_1"]:Destroy()
+end)
+
+print("Part 3/8 Loaded - Copy Part 4...")
+
+-- SHADERS COMPANY V0.5 - BAGIAN 4/8
+-- Graphic Module Core Functions
+
+-- Services
+local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
-local Stats = game:GetService("Stats")
-local CoreGui = game:GetService("CoreGui")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
-local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
+-- Global variables
+local waterEffects = {}
+local fireflies = {}
+local footprintCache = {}
+local graphicSettings = {}
 
--- ==========================================================
--- 1. CUSTOM SCRIPT LIBRARY (SUNTING DI SINI)
--- ==========================================================
-local ScriptLibrary = {
-    ["1. GUI Startup"] = [[print("GUI Started!")]],
-    ["2. Fly System"] = [[print("Paste Fly Script Here")]],
-    ["3. Speed Boost"] = [[game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100]],
-    ["4. Teleport System"] = [[
-        local root = game.Players.LocalPlayer.Character.HumanoidRootPart
-        root.CFrame = root.CFrame * CFrame.new(0, 50, 0)
-    ]],
-}
-
--- --- CONFIGURATION ---
-local DEFAULT_DIST, DEFAULT_HEIGHT, DEFAULT_SIDE = 15, 0, 0
-local movingPart = nil
-local followDistance, heightOffset, sideOffset = DEFAULT_DIST, DEFAULT_HEIGHT, DEFAULT_SIDE
-local walkSpeedActive, rotationActive, shiftLockActive, orbitActive = false, true, false, false
-local rotationX, rotationY, rotationZ = 0, 0, 0
-
-
--- --- UPGRADED PHYSICS (SUNTINGAN PADU) ---
-local BP = Instance.new("BodyPosition")
-BP.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-BP.P = 50000000 -- Sangat kuat (melekat terus)
-BP.D = 300         -- Damping yang anda pilih (bagus untuk stabilkan getaran)
-
-local BG = Instance.new("BodyGyro")
-BG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-BG.P = 50000        -- <--- TAMBAH INI: Supaya putaran objek tak "lembik"
-BG.D = 500
-
-local selectBox = Instance.new("SelectionBox")
-selectBox.LineThickness = 0.05
-selectBox.Color3 = Color3.fromRGB(255, 255, 255)
-
-
--- --- UTILITY FUNCTIONS ---
-local function makeDraggable(frame)
-    local dragging, dragInput, dragStart, startPos
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = frame.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+-- Fungsi bersihkan content frame
+local function clearContentFrame(contentFrame)
+    for _, child in pairs(contentFrame:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("TextLabel") or child:IsA("ScrollingFrame") then 
+            child:Destroy() 
         end
-    end)
-    frame.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
-    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
-end
-
-local function stopMoving()
-    BP.Parent = nil
-    BG.Parent = nil
-    selectBox.Adornee = nil
-    if movingPart then movingPart.CanCollide = true end
-    movingPart = nil
-end
-
-local function togglePartMove(part)
-    if movingPart == part then stopMoving() return end
-    stopMoving()
-    if part and not part.Anchored then
-        movingPart = part.Parent:FindFirstChild("Humanoid") and (part.Parent:FindFirstChild("HumanoidRootPart") or part) or part
-        movingPart.CanCollide = false
-        
-        BP.Parent = movingPart
-        BG.Parent = movingPart
-        selectBox.Adornee = movingPart
-        selectBox.Parent = movingPart
-        
-        -- === LOGIK GETARAN (EFFEK BERAT) ===
-        -- Apabila mula angkat, kurangkan damping untuk cipta getaran kuat
-        BP.D = 10  -- Getaran posisi yang agresif
-        BG.D = 5  -- Getaran putaran (struggle)
-        
-        task.spawn(function()
-            local currentPart = movingPart
-            task.wait(0.5) -- Bergetar selama 3 saat sahaj
-            
-            -- Jika masih memegang objek yang sama, stabilkan semula
-            if movingPart == currentPart then
-                BP.D = 820  -- Kembali stabil (normal)
-                BG.D = 500  -- Kembali stabil (normal)
-            end
-        end)
-        
-        BP.Position = movingPart.Position
     end
 end
 
-local function giveTool()
-    if player.Backpack:FindFirstChild("T.MAGIC GUN🪄") then return end
-    local t = Instance.new("Tool"); t.Name = "T.MAGIC GUN🪄"; t.RequiresHandle = false; t.Parent = player.Backpack
-    t.Equipped:Connect(function(mouse)
-        -- Support Mobile Touch
-        mouse.Button1Down:Connect(function() if mouse.Target then togglePartMove(mouse.Target) end end)
+-- Fungsi kategori header
+local function createCategoryHeader(parent, title)
+    local Header = Instance.new("Frame")
+    Header.Name = title .. "_Header"
+    Header.Parent = parent
+    Header.Size = UDim2.new(0.95, 0, 0, 30)
+    Header.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Header.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Header
+    
+    local Label = Instance.new("TextLabel")
+    Label.Parent = Header
+    Label.Size = UDim2.new(1, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = title
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextSize = 16
+    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    
+    return Header
+end
+
+-- Fungsi Graphic Setting (0.1+/- system)
+local function CreateGraphicSetting(parent, title, startVal, step, min, max, callback)
+    local SettingRow = Instance.new("Frame")
+    SettingRow.Name = title .. "_Row"
+    SettingRow.Parent = parent
+    SettingRow.Size = UDim2.new(0.95, 0, 0, 45)
+    SettingRow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    SettingRow.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = SettingRow
+
+    -- Label
+    local Label = Instance.new("TextLabel")
+    Label.Parent = SettingRow
+    Label.Size = UDim2.new(0.5, 0, 1, 0)
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = title
+    Label.TextColor3 = Color3.fromRGB(30, 30, 30)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
+    Label.TextSize = 13
+    Label.TextWrapped = true
+
+    -- Value Display
+    local ValueFrame = Instance.new("Frame")
+    ValueFrame.Parent = SettingRow
+    ValueFrame.Size = UDim2.new(0.2, 0, 0.6, 0)
+    ValueFrame.Position = UDim2.new(0.55, 0, 0.2, 0)
+    ValueFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Instance.new("UICorner", ValueFrame).CornerRadius = UDim.new(0, 5)
+    
+    local ValueDisplay = Instance.new("TextLabel")
+    ValueDisplay.Parent = ValueFrame
+    ValueDisplay.Size = UDim2.new(1, 0, 1, 0)
+    ValueDisplay.BackgroundTransparency = 1
+    ValueDisplay.TextColor3 = Color3.fromRGB(0, 255, 84)
+    ValueDisplay.Text = string.format("%.1f", startVal)
+    ValueDisplay.TextSize = 14
+    ValueDisplay.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold)
+
+    local currentVal = startVal
+
+    -- Plus Button
+    local PlusBtn = Instance.new("TextButton")
+    PlusBtn.Parent = SettingRow
+    PlusBtn.Size = UDim2.new(0.08, 0, 0.7, 0)
+    PlusBtn.Position = UDim2.new(0.88, 0, 0.15, 0)
+    PlusBtn.Text = "+"
+    PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PlusBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    PlusBtn.AutoButtonColor = true
+    Instance.new("UICorner", PlusBtn).CornerRadius = UDim.new(0, 4)
+
+    -- Minus Button
+    local MinusBtn = Instance.new("TextButton")
+    MinusBtn.Parent = SettingRow
+    MinusBtn.Size = UDim2.new(0.08, 0, 0.7, 0)
+    MinusBtn.Position = UDim2.new(0.78, 0, 0.15, 0)
+    MinusBtn.Text = "-"
+    MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinusBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    MinusBtn.AutoButtonColor = true
+    Instance.new("UICorner", MinusBtn).CornerRadius = UDim.new(0, 4)
+
+    -- Click Logic
+    PlusBtn.MouseButton1Click:Connect(function()
+        currentVal = math.clamp(currentVal + step, min, max)
+        ValueDisplay.Text = string.format("%.1f", currentVal)
+        callback(currentVal)
     end)
-    t.Unequipped:Connect(stopMoving)
+
+    MinusBtn.MouseButton1Click:Connect(function()
+        currentVal = math.clamp(currentVal - step, min, max)
+        ValueDisplay.Text = string.format("%.1f", currentVal)
+        callback(currentVal)
+    end)
+    
+    return SettingRow
 end
 
-local function createBtn(name, text, pos, size, color, parent)
-    local b = Instance.new("TextButton", parent); b.Name = name; b.Size = size; b.Position = pos; b.Text = text
-    b.BackgroundColor3 = color; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 10; b.ZIndex = 50
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4); return b
+print("Part 4/8 Loaded - Copy Part 5...")
+
+-- SHADERS COMPANY V0.5 - BAGIAN 5/8
+-- Graphic Module Implementation
+
+-- Fungsi Toggle Setting
+local function CreateToggleSetting(parent, title, initialState, callback)
+    local ToggleRow = Instance.new("Frame")
+    ToggleRow.Name = title .. "_Toggle"
+    ToggleRow.Parent = parent
+    ToggleRow.Size = UDim2.new(0.95, 0, 0, 40)
+    ToggleRow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    ToggleRow.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = ToggleRow
+
+    -- Label
+    local Label = Instance.new("TextLabel")
+    Label.Parent = ToggleRow
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = title
+    Label.TextColor3 = Color3.fromRGB(30, 30, 30)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
+    Label.TextSize = 13
+
+    -- Toggle Button
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Parent = ToggleRow
+    ToggleBtn.Size = UDim2.new(0.2, 0, 0.6, 0)
+    ToggleBtn.Position = UDim2.new(0.75, 0, 0.2, 0)
+    ToggleBtn.Text = initialState and "ON" or "OFF"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleBtn.BackgroundColor3 = initialState and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+    ToggleBtn.AutoButtonColor = true
+    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 4)
+    
+    local isOn = initialState
+    
+    ToggleBtn.MouseButton1Click:Connect(function()
+        isOn = not isOn
+        ToggleBtn.Text = isOn and "ON" or "OFF"
+        ToggleBtn.BackgroundColor3 = isOn and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+        callback(isOn)
+    end)
+    
+    return ToggleRow
 end
 
-local function createSearchBox(parent)
-    local s = Instance.new("TextBox", parent)
-    s.Size = UDim2.new(0.9, 0, 0, 25); s.Position = UDim2.new(0.05, 0, 0.05, 0)
-    s.BackgroundColor3 = Color3.fromRGB(40, 40, 40); s.TextColor3 = Color3.new(1, 1, 1)
-    s.PlaceholderText = "Cari Nama..."; s.Text = ""; s.Font = Enum.Font.Gotham; s.TextSize = 12
-    s.ZIndex = 50; Instance.new("UICorner", s)
-    return s
-end
-
-
--- --- UI SYSTEM ---
-local function createUI()
-    if CoreGui:FindFirstChild("TeleMasterV12") then CoreGui.TeleMasterV12:Destroy() end
-    local screenGui = Instance.new("ScreenGui", CoreGui); screenGui.Name = "TeleMasterV12"; screenGui.ResetOnSpawn = false
-
-    local main = Instance.new("Frame", screenGui); main.Name = "Main"; main.Size = UDim2.new(0, 240, 0, 400); main.Position = UDim2.new(0.05, 0, 0.2, 0); main.BackgroundColor3 = Color3.fromRGB(15, 15, 15); main.ZIndex = 10; Instance.new("UICorner", main); makeDraggable(main)
-    local stroke = Instance.new("UIStroke", main); stroke.Color = Color3.fromRGB(255, 100, 4); stroke.Thickness = 1.5
-
-    createBtn("Header", "MAGICAL,TGUN BY:Dianozan", UDim2.new(0,0,0,0), UDim2.new(1,0,0,35), Color3.fromRGB(30,30,30), main)
-    
-    local fpsL = Instance.new("TextLabel", main); fpsL.Size = UDim2.new(0.5,0,0,20); fpsL.Position = UDim2.new(0,5,0,-25); fpsL.BackgroundTransparency = 1; fpsL.Font = Enum.Font.Code; fpsL.TextColor3 = Color3.new(1,1,1); fpsL.TextXAlignment = "Left"
-    local pngL = Instance.new("TextLabel", main); pngL.Size = UDim2.new(0.5,0,0,20); pngL.Position = UDim2.new(0.5,-5,0,-25); pngL.BackgroundTransparency = 1; pngL.Font = Enum.Font.Code; pngL.TextColor3 = Color3.new(1,1,1); pngL.TextXAlignment = "Right"
-
-    local mainScroll = Instance.new("ScrollingFrame", main)
-    mainScroll.Name = "MainScroll"; mainScroll.Size = UDim2.new(1, 0, 1, -40); mainScroll.Position = UDim2.new(0, 0, 0, 40); mainScroll.BackgroundTransparency = 1; mainScroll.BorderSizePixel = 0; mainScroll.ScrollBarThickness = 4; mainScroll.CanvasSize = UDim2.new(0, 0, 0, 620); mainScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 100, 4)
-
-    local slBtn = createBtn("SL", "Lock: OFF", UDim2.new(0.05,0,0,10), UDim2.new(0.28,0,0,25), Color3.fromRGB(40,40,40), mainScroll)
-    local pvpBtn = createBtn("PVPTab", "☯️ ORBIT", UDim2.new(0.35,0,0,10), UDim2.new(0.3,0,0,25), Color3.fromRGB(100, 30, 30), mainScroll)
-    local customHubBtn = createBtn("HubBtn", "📜 HUB", UDim2.new(0.67,0,0,10), UDim2.new(0.28,0,0,25), Color3.fromRGB(120, 70, 0), mainScroll)
-    local npcBtn = createBtn("NPCTab", "📞 NPC LIST", UDim2.new(0.05,0,0,45), UDim2.new(0.43,0,0,25), Color3.fromRGB(30,80,120), mainScroll)
-    local blockBtn = createBtn("BlockTab", "🧱 BLOCK LIST", UDim2.new(0.52,0,0,45), UDim2.new(0.43,0,0,25), Color3.fromRGB(60,60,60), mainScroll)
-
-    local hUp = createBtn("HU", "↑ HEIGHT", UDim2.new(0.05,0,0,80), UDim2.new(0.43,0,0,32), Color3.fromRGB(45,45,45), mainScroll)
-    local hDn = createBtn("HD", "↓ HEIGHT", UDim2.new(0.52,0,0,80), UDim2.new(0.43,0,0,32), Color3.fromRGB(45,45,45), mainScroll)
-    local sLt = createBtn("SLt", "← LEFT", UDim2.new(0.05,0,0,117), UDim2.new(0.43,0,0,32), Color3.fromRGB(55,55,55), mainScroll)
-    local sRt = createBtn("SRt", "RIGHT →", UDim2.new(0.52,0,0,117), UDim2.new(0.43,0,0,32), Color3.fromRGB(55,55,55), mainScroll)
-    local dPl = createBtn("DP", "+ DIST", UDim2.new(0.05,0,0,154), UDim2.new(0.43,0,0,32), Color3.fromRGB(30,55,85), mainScroll)
-    local dMi = createBtn("DM", "- DIST", UDim2.new(0.52,0,0,154), UDim2.new(0.43,0,0,32), Color3.fromRGB(30,55,85), mainScroll)
-    
-    local rotToggle = createBtn("RotTog", "ROTATION: ON", UDim2.new(0.05,0,0,195), UDim2.new(0.9,0,0,30), Color3.fromRGB(50,100,50), mainScroll)
-    local rotBtn = createBtn("Rot", "⚙️ REMOTE ROTATE", UDim2.new(0.05,0,0,230), UDim2.new(0.9,0,0,32), Color3.fromRGB(70,35,110), mainScroll)
-    local flBtn = createBtn("Fling", "🔥 FLING (FORCE)", UDim2.new(0.05,0,0,270), UDim2.new(0.9,0,0,35), Color3.fromRGB(150,45,45), mainScroll)
-    
-    local wsTog = createBtn("WSTog", "WALKSPEED: OFF", UDim2.new(0.05,0,0,315), UDim2.new(0.9,0,0,30), Color3.fromRGB(40,40,40), mainScroll)
-    local wsInp = Instance.new("TextBox", mainScroll); wsInp.Size = UDim2.new(0.9,0,0,25); wsInp.Position = UDim2.new(0.05,0,0,350); wsInp.Text = "50"; wsInp.BackgroundColor3 = Color3.new(0,0,0); wsInp.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", wsInp)
-    local resBtn = createBtn("Res", "♻️ RESET", UDim2.new(0.05,0,0,385), UDim2.new(0.9,0,0,30), Color3.fromRGB(180,90,0), mainScroll)
-    local cloBtn = createBtn("Clo", "❌ CLOSE UI", UDim2.new(0.05,0,0,425), UDim2.new(0.9,0,0,30), Color3.fromRGB(40,40,40), mainScroll)
-
-    -- --- SUB FRAMES ---
-    local function createSubFrame(name)
-        local f = Instance.new("Frame", screenGui); f.Name = name; f.Size = UDim2.new(0, 200, 0, 320); f.Position = UDim2.new(0.7, 0, 0.2, 0); f.BackgroundColor3 = Color3.fromRGB(20, 20, 20); f.Visible = false; Instance.new("UICorner", f); makeDraggable(f)
-        Instance.new("UIStroke", f).Color = Color3.fromRGB(255, 100, 4)
-        local sBox = createSearchBox(f)
-        local scroll = Instance.new("ScrollingFrame", f); scroll.Size = UDim2.new(0.9,0,0.75,0); scroll.Position = UDim2.new(0.05,0,0.15,0); scroll.BackgroundTransparency = 1; scroll.CanvasSize = UDim2.new(0,0,0,0); scroll.ScrollBarThickness = 3
-        local list = Instance.new("UIListLayout", scroll); list.Padding = UDim.new(0,5)
-        local ref = createBtn("Ref", "🔄 REFRESH", UDim2.new(0.05,0,0.91,0), UDim2.new(0.9,0,0,25), Color3.fromRGB(40,60,90), f)
-        return f, scroll, sBox, ref
+-- Water splash effects
+local function setupWaterEffects(enabled)
+    if not enabled then
+        for _, effect in pairs(waterEffects) do
+            if effect then effect:Disconnect() end
+        end
+        waterEffects = {}
+        return
     end
-
-    local nFrame, nScroll, nSearch, nRef = createSubFrame("NPCFrame")
-    local bFrame, bScroll, bSearch, bRef = createSubFrame("BlockFrame")
-    local cFrame, cScroll, cSearch, cRef = createSubFrame("CustomHub")
-    cSearch:Destroy() -- Hub tak perlu search box
-
-    -- Auto Button Hub
-    for name, code in pairs(ScriptLibrary) do
-        local b = createBtn("Script", name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,30), Color3.fromRGB(45,45,45), cScroll)
-        b.MouseButton1Click:Connect(function()
-            local func = loadstring(code)
-            if func then func() end
-        end)
+    
+    -- Ripple creation
+    local function createWaterRipple(position)
+        local ripple = Instance.new("Part")
+        ripple.Size = Vector3.new(1, 0.1, 1)
+        ripple.Position = position + Vector3.new(0, 0.5, 0)
+        ripple.Anchored = true
+        ripple.CanCollide = false
+        ripple.Transparency = 0.5
+        ripple.Color = Color3.fromRGB(100, 150, 255)
+        ripple.Parent = workspace
+        
+        local tween = TweenService:Create(ripple, TweenInfo.new(1), {
+            Size = Vector3.new(3, 0.1, 3),
+            Transparency = 1
+        })
+        tween:Play()
+        tween.Completed:Connect(function() ripple:Destroy() end)
     end
-    cScroll.CanvasSize = UDim2.new(0,0,0, cScroll.UIListLayout.AbsoluteContentSize.Y)
-
-    local remote = Instance.new("Frame", screenGui); remote.Name = "Remote"; remote.Size = UDim2.new(0, 150, 0, 180); remote.Position = UDim2.new(0.3, 0, 0.4, 0); remote.BackgroundColor3 = Color3.fromRGB(20, 20, 20); remote.Visible = false; Instance.new("UICorner", remote); makeDraggable(remote)
-
-    -- --- CONTROLS LOGIC ---
-    hUp.MouseButton1Click:Connect(function() heightOffset += 2 end)
-    hDn.MouseButton1Click:Connect(function() heightOffset -= 2 end)
-    sLt.MouseButton1Click:Connect(function() sideOffset -= 2 end)
-    sRt.MouseButton1Click:Connect(function() sideOffset += 2 end)
-    dPl.MouseButton1Click:Connect(function() followDistance += 5 end)
-    dMi.MouseButton1Click:Connect(function() followDistance = math.max(2, followDistance - 5) end)
-
-    slBtn.MouseButton1Click:Connect(function() 
-        shiftLockActive = not shiftLockActive
-        slBtn.Text = "Lock: " .. (shiftLockActive and "ON" or "OFF")
-        slBtn.BackgroundColor3 = shiftLockActive and Color3.fromRGB(50, 100, 50) or Color3.fromRGB(40, 40, 40)
-    end)
-
-    pvpBtn.MouseButton1Click:Connect(function()
-        orbitActive = not orbitActive
-        pvpBtn.Text = orbitActive and "☯️ STOP" or "☯️ ORBIT"
-        pvpBtn.BackgroundColor3 = orbitActive and Color3.fromRGB(50,150,50) or Color3.fromRGB(100,30,30)
-    end)
-
-    local function populateList(scroll, searchBox, isNPC)
-        for _, c in pairs(scroll:GetChildren()) do if c:IsA("TextButton") then c:Destroy() end end
-        local query = searchBox.Text:lower()
-        for _, v in pairs(workspace:GetDescendants()) do
-            local valid = false
-            if isNPC and v:IsA("Humanoid") and v.Parent ~= player.Character and not Players:GetPlayerFromCharacter(v.Parent) then valid = v.Parent
-            elseif not isNPC and v:IsA("BasePart") and not v.Anchored and v.Name ~= "Baseplate" and not v:IsDescendantOf(player.Character) and not v.Parent:FindFirstChild("Humanoid") then valid = v end
-            if valid and valid.Name:lower():find(query) then
-                local b = createBtn("Item", valid.Name, UDim2.new(0,0,0,0), UDim2.new(1,0,0,25), Color3.fromRGB(40,40,40), scroll)
-                b.MouseButton1Click:Connect(function()
-                    local root = player.Character:FindFirstChild("HumanoidRootPart")
-                    local target = valid:IsA("Model") and (valid:FindFirstChild("HumanoidRootPart") or valid:FindFirstChild("Head")) or valid
-                    if root and target then 
-                        if target:IsA("BasePart") then target.CFrame = root.CFrame * CFrame.new(0, 0, -5)
-                        else target.Parent:SetPrimaryPartCFrame(root.CFrame * CFrame.new(0, 0, -5)) end
-                    end
-                end)
+    
+    -- Character water detection
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local connection = RunService.Heartbeat:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local root = character.HumanoidRootPart
+            if root.Position.Y < 0 then -- Simple water detection
+                createWaterRipple(root.Position)
             end
         end
-        scroll.CanvasSize = UDim2.new(0,0,0, scroll.UIListLayout.AbsoluteContentSize.Y)
-    end
-
-    nSearch:GetPropertyChangedSignal("Text"):Connect(function() populateList(nScroll, nSearch, true) end)
-    bSearch:GetPropertyChangedSignal("Text"):Connect(function() populateList(bScroll, bSearch, false) end)
-    nRef.MouseButton1Click:Connect(function() populateList(nScroll, nSearch, true) end)
-    bRef.MouseButton1Click:Connect(function() populateList(bScroll, bSearch, false) end)
-
-    npcBtn.MouseButton1Click:Connect(function() nFrame.Visible = not nFrame.Visible; bFrame.Visible = false; cFrame.Visible = false; if nFrame.Visible then populateList(nScroll, nSearch, true) end end)
-    blockBtn.MouseButton1Click:Connect(function() bFrame.Visible = not bFrame.Visible; nFrame.Visible = false; cFrame.Visible = false; if bFrame.Visible then populateList(bScroll, bSearch, false) end end)
-    customHubBtn.MouseButton1Click:Connect(function() cFrame.Visible = not cFrame.Visible; nFrame.Visible = false; bFrame.Visible = false end)
+    end)
     
-    local menuToggle = createBtn("MENU", "☰", UDim2.new(0.02,0,0.05,0), UDim2.new(0,45,0,45), Color3.fromRGB(25,25,25), screenGui)
-    Instance.new("UICorner", menuToggle).CornerRadius = UDim.new(0, 22.5); makeDraggable(menuToggle)
-    menuToggle.MouseButton1Click:Connect(function() main.Visible = not main.Visible; nFrame.Visible = false; bFrame.Visible = false; remote.Visible = false; cFrame.Visible = false end)
+    table.insert(waterEffects, connection)
+end
 
-    -- Remote Control
-    local rxP = createBtn("XP", "X+", UDim2.new(0.1,0,0.1,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
-    local rxM = createBtn("XM", "X-", UDim2.new(0.55,0,0.1,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
-    local ryP = createBtn("YP", "Y+", UDim2.new(0.1,0,0.4,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
-    local ryM = createBtn("YM", "Y-", UDim2.new(0.55,0,0.4,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
-    local rzP = createBtn("ZP", "Z+", UDim2.new(0.1,0,0.7,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
-    local rzM = createBtn("ZM", "Z-", UDim2.new(0.55,0,0.7,0), UDim2.new(0.35,0,0,35), Color3.fromRGB(55,55,55), remote)
+-- Fireflies system
+local function setupFireflies(enabled)
+    -- Cleanup
+    for _, firefly in pairs(fireflies) do
+        if firefly then firefly:Destroy() end
+    end
+    fireflies = {}
+    
+    if not enabled then return end
+    
+    for i = 1, 15 do
+        local firefly = Instance.new("Part")
+        firefly.Name = "Firefly"
+        firefly.Size = Vector3.new(0.2, 0.2, 0.2)
+        firefly.Anchored = true
+        firefly.CanCollide = false
+        firefly.Transparency = 0.3
+        firefly.Material = Enum.Material.Neon
+        firefly.Color = Color3.fromRGB(255, 255, 150)
+        firefly.Position = Vector3.new(
+            math.random(-30, 30),
+            math.random(2, 5),
+            math.random(-30, 30)
+        )
+        firefly.Parent = workspace
+        
+        table.insert(fireflies, firefly)
+        
+        -- Animation
+        local conn = RunService.Heartbeat:Connect(function(dt)
+            if firefly and firefly.Parent then
+                firefly.Position = Vector3.new(
+                    firefly.Position.X,
+                    firefly.Position.Y + math.sin(tick() * 2 + i) * 0.02,
+                    firefly.Position.Z
+                )
+                local pulse = (math.sin(tick() * 5 + i) + 1) / 2
+                firefly.Transparency = 0.3 + (pulse * 0.4)
+            else
+                conn:Disconnect()
+            end
+        end)
+    end
+end
 
-    rxP.MouseButton1Click:Connect(function() rotationX += 30 end); rxM.MouseButton1Click:Connect(function() rotationX -= 30 end)
-    ryP.MouseButton1Click:Connect(function() rotationY += 30 end); ryM.MouseButton1Click:Connect(function() rotationY -= 30 end)
-    rzP.MouseButton1Click:Connect(function() rotationZ += 30 end); rzM.MouseButton1Click:Connect(function() rotationZ -= 30 end)
-    rotBtn.MouseButton1Click:Connect(function() remote.Visible = not remote.Visible end)
+print("Part 5/8 Loaded - Copy Part 6...")
 
-    -- --- LOOP LOGIC ---
-    RunService.RenderStepped:Connect(function()
+-- SHADERS COMPANY V0.5 - BAGIAN 6/8
+-- Graphic UI Implementation
+
+-- Graphic Button Event Handler
+LMG2L["Graphic_Button"].MouseButton1Click:Connect(function()
+    local Content = LMG2L["Functions_Frame"]
+    clearContentFrame(Content)
+    
+    -- Scrolling Frame
+    local ScrollingFrame = Instance.new("ScrollingFrame")
+    ScrollingFrame.Parent = Content
+    ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+    ScrollingFrame.BackgroundTransparency = 1
+    ScrollingFrame.ScrollBarThickness = 6
+    ScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ScrollingFrame
+    UIListLayout.Padding = UDim.new(0, 10)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    task.wait(0.1)
+    
+    -- KATEGORI 1: LIGHTING & SHADOWS
+    createCategoryHeader(ScrollingFrame, "🌞 LIGHTING & SHADOWS")
+    
+    CreateGraphicSetting(ScrollingFrame, "Brightness", 1.0, 0.1, 0, 5, function(v)
+        Lighting.Brightness = v
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Shadow Quality", 0.5, 0.1, 0, 1, function(v)
+        Lighting.ShadowSoftness = v
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Ambient Light", 0.3, 0.1, 0, 1, function(v)
+        Lighting.Ambient = Color3.fromRGB(v * 255, v * 255, v * 255)
+    end)
+    
+    -- KATEGORI 2: WATER & REFLECTIONS
+    createCategoryHeader(ScrollingFrame, "💧 WATER & REFLECTIONS")
+    
+    if Terrain then
+        CreateGraphicSetting(ScrollingFrame, "Water Reflection", 0.8, 0.1, 0, 1, function(v)
+            Terrain.WaterReflectance = v
+        end)
+        
+        CreateGraphicSetting(ScrollingFrame, "Wave Intensity", 0.5, 0.1, 0, 2, function(v)
+            Terrain.WaterWaveSize = v
+        end)
+        
+        CreateGraphicSetting(ScrollingFrame, "River Flow", 0.3, 0.1, 0, 2, function(v)
+            Terrain.WaterWaveSpeed = v
+        end)
+        
+        CreateGraphicSetting(ScrollingFrame, "Water Transparency", 0.7, 0.1, 0, 1, function(v)
+            Terrain.WaterTransparency = v
+        end)
+    end
+    
+    -- KATEGORI 3: ENVIRONMENT
+    createCategoryHeader(ScrollingFrame, "🌿 ENVIRONMENT")
+    
+    CreateGraphicSetting(ScrollingFrame, "Grass Sway", 0.5, 0.1, 0, 2, function(v)
         pcall(function()
-            fpsL.Text = "FPS: "..math.floor(1/RunService.RenderStepped:Wait())
-            pngL.Text = "Ping: "..math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()).."ms"
-            if shiftLockActive and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-                local root = player.Character.HumanoidRootPart
-                local lookVector = camera.CFrame.LookVector
-                root.CFrame = CFrame.new(root.Position, root.Position + Vector3.new(lookVector.X, 0, lookVector.Z))
-            end
+            sethiddenproperty(workspace, "GlobalWind", Vector3.new(v * 3, 0, v * 1.5))
         end)
     end)
-
-    RunService.Heartbeat:Connect(function()
-        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if not root then return end
-        if movingPart and not orbitActive then
-            local targetPos = root.Position + (root.CFrame.LookVector * followDistance) + (root.CFrame.UpVector * heightOffset) + (root.CFrame.RightVector * sideOffset)
-            BP.Position = targetPos
-            BG.CFrame = CFrame.Angles(math.rad(rotationX), math.rad(rotationY), math.rad(rotationZ))
+    
+    -- KATEGORI 4: ATMOSPHERE
+    createCategoryHeader(ScrollingFrame, "🌫️ ATMOSPHERE")
+    
+    CreateGraphicSetting(ScrollingFrame, "Fog Density", 0.1, 0.1, 0, 1, function(v)
+        local atm = Lighting:FindFirstChildOfClass("Atmosphere")
+        if not atm then
+            atm = Instance.new("Atmosphere")
+            atm.Parent = Lighting
         end
+        atm.Density = v
+        atm.Offset = 0.5
+        atm.Color = Color3.fromRGB(200, 220, 255)
     end)
-
-    rotToggle.MouseButton1Click:Connect(function() 
-        rotationActive = not rotationActive
-        rotToggle.Text = "ROTATION: "..(rotationActive and "ON" or "OFF")
-        rotToggle.BackgroundColor3 = rotationActive and Color3.fromRGB(50,100,50) or Color3.fromRGB(100,50,50)
-        BG.Enabled = rotationActive
+    
+    -- KATEGORI 5: SPECIAL EFFECTS
+    createCategoryHeader(ScrollingFrame, "✨ SPECIAL EFFECTS")
+    
+    CreateToggleSetting(ScrollingFrame, "Water Splash Effects", false, setupWaterEffects)
+    
+    CreateToggleSetting(ScrollingFrame, "Wet Footprint Trails", false, function(enabled)
+        print("Footprint Trails:", enabled and "ON" or "OFF")
     end)
+    
+    CreateToggleSetting(ScrollingFrame, "Fireflies in Grass", false, setupFireflies)
+    
+    CreateToggleSetting(ScrollingFrame, "Raindrop Ripples", false, function(enabled)
+        print("Raindrop Ripples:", enabled and "ON" or "OFF")
+    end)
+    
+    -- Update canvas size
+    task.wait(0.2)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20)
+end)
 
-    flBtn.MouseButton1Click:Connect(function() if movingPart then local p = movingPart; stopMoving(); p.AssemblyLinearVelocity = camera.CFrame.LookVector * 1000 end end)
-    wsTog.MouseButton1Click:Connect(function() walkSpeedActive = not walkSpeedActive; wsTog.Text = "WALKSPEED: "..(walkSpeedActive and "ON" or "OFF"); if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = walkSpeedActive and tonumber(wsInp.Text) or 16 end end)
-    resBtn.MouseButton1Click:Connect(function() heightOffset, sideOffset, followDistance, rotationX, rotationY, rotationZ = 0, 0, 15, 0, 0, 0 end)
-    cloBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
+-- Initialize default values
+if Terrain then
+    Terrain.WaterReflectance = 0.8
+    Terrain.WaterWaveSize = 0.5
+    Terrain.WaterWaveSpeed = 0.3
+    Terrain.WaterTransparency = 0.7
 end
 
-createUI()
-giveTool()
-player.CharacterAdded:Connect(function() task.wait(0.5); giveTool() end)
+-- Setup default Atmosphere
+if not Lighting:FindFirstChildOfClass("Atmosphere") then
+    local atm = Instance.new("Atmosphere")
+    atm.Density = 0.1
+    atm.Offset = 0.5
+    atm.Color = Color3.fromRGB(200, 220, 255)
+    atm.Parent = Lighting
+end
+
+print("Part 6/8 Loaded - Copy Part 7...")
+
+-- SHADERS COMPANY V0.5 - BAGIAN 7/8
+-- Credits Module with RGB Animation
+
+-- Credits animation variables
+local creditsAnimations = {}
+local rgbOffset = 0
+local creditsActive = false
+
+-- Fungsi animasi garis bergerak
+local function createAnimatedLine(parent, position, size, direction)
+    local lineContainer = Instance.new("Frame")
+    lineContainer.Parent = parent
+    lineContainer.Position = position
+    lineContainer.Size = size
+    lineContainer.BackgroundTransparency = 1
+    lineContainer.ClipsDescendants = true
+    
+    local line = Instance.new("TextLabel")
+    line.Name = "AnimatedLine"
+    line.Parent = lineContainer
+    line.Size = UDim2.new(2, 0, 1, 0)
+    line.Position = direction == "right" and UDim2.new(-1, 0, 0, 0) or UDim2.new(0, 0, 0, 0)
+    line.BackgroundTransparency = 1
+    line.Text = "=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷=÷="
+    line.TextColor3 = Color3.fromRGB(255, 255, 255)
+    line.TextSize = 14
+    line.TextXAlignment = Enum.TextXAlignment.Center
+    line.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
+    
+    return line
+end
+
+-- Fungsi teks RGB
+local function createRGBText(parent, text, position, size)
+    local textContainer = Instance.new("Frame")
+    textContainer.Parent = parent
+    textContainer.Position = position
+    textContainer.Size = size
+    textContainer.BackgroundTransparency = 1
+    
+    local shadow = Instance.new("TextLabel")
+    shadow.Parent = textContainer
+    shadow.Size = UDim2.new(1, 2, 1, 2)
+    shadow.Position = UDim2.new(0, 1, 0, 1)
+    shadow.BackgroundTransparency = 1
+    shadow.Text = text
+    shadow.TextColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.TextSize = 14
+    shadow.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold)
+    shadow.TextXAlignment = Enum.TextXAlignment.Center
+    
+    local mainText = Instance.new("TextLabel")
+    mainText.Parent = textContainer
+    mainText.Size = UDim2.new(1, 0, 1, 0)
+    mainText.Position = UDim2.new(0, 0, 0, 0)
+    mainText.BackgroundTransparency = 1
+    mainText.Text = text
+    mainText.TextColor3 = Color3.fromRGB(255, 0, 0)
+    mainText.TextSize = 14
+    mainText.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold)
+    mainText.TextXAlignment = Enum.TextXAlignment.Center
+    
+    return mainText
+end
+
+-- Start credits animation
+local function startCreditsAnimation(lineTop, lineBottom, rgbTexts)
+    if creditsActive then return end
+    creditsActive = true
+    
+    -- Cleanup
+    for _, conn in pairs(creditsAnimations) do
+        if conn then conn:Disconnect() end
+    end
+    creditsAnimations = {}
+    
+    -- Top line animation (right)
+    local topConn = RunService.RenderStepped:Connect(function(delta)
+        if lineTop and lineTop.Parent then
+            local current = lineTop.Position
+            local newX = current.X.Offset + (50 * delta)
+            if newX > lineTop.Parent.AbsoluteSize.X then
+                newX = -lineTop.AbsoluteSize.X
+            end
+            lineTop.Position = UDim2.new(current.X.Scale, newX, current.Y.Scale, current.Y.Offset)
+        end
+    end)
+    table.insert(creditsAnimations, topConn)
+    
+    -- Bottom line animation (left)
+    local bottomConn = RunService.RenderStepped:Connect(function(delta)
+        if lineBottom and lineBottom.Parent then
+            local current = lineBottom.Position
+            local newX = current.X.Offset - (50 * delta)
+            if newX < -lineBottom.AbsoluteSize.X then
+                newX = lineBottom.Parent.AbsoluteSize.X
+            end
+            lineBottom.Position = UDim2.new(current.X.Scale, newX, current.Y.Scale, current.Y.Offset)
+        end
+    end)
+    table.insert(creditsAnimations, bottomConn)
+    
+    -- RGB color animation
+    local rgbConn = RunService.RenderStepped:Connect(function(delta)
+        rgbOffset = (rgbOffset + delta * 2) % (math.pi * 2)
+        for _, text in pairs(rgbTexts) do
+            if text and text.Parent then
+                local r = math.sin(rgbOffset) * 127 + 128
+                local g = math.sin(rgbOffset + math.pi * 2/3) * 127 + 128
+                local b = math.sin(rgbOffset + math.pi * 4/3) * 127 + 128
+                text.TextColor3 = Color3.fromRGB(r, g, b)
+            end
+        end
+    end)
+    table.insert(creditsAnimations, rgbConn)
+end
+
+-- Stop credits animation
+local function stopCreditsAnimation()
+    creditsActive = false
+    for _, conn in pairs(creditsAnimations) do
+        if conn then conn:Disconnect() end
+    end
+    creditsAnimations = {}
+end
+
+print("Part 7/8 Loaded - Copy Part 8...")
+
+-- SHADERS COMPANY V0.5 - BAGIAN 8/8
+-- Credits UI & Final Integration
+
+-- Credits UI Creation
+local function createCreditsUI()
+    local Content = LMG2L["Functions_Frame"]
+    clearContentFrame(Content)
+    
+    local ScrollingFrame = Instance.new("ScrollingFrame")
+    ScrollingFrame.Parent = Content
+    ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+    ScrollingFrame.BackgroundTransparency = 1
+    ScrollingFrame.ScrollBarThickness = 6
+    ScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ScrollingFrame
+    UIListLayout.Padding = UDim.new(0, 15)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    
+    -- Top animated line
+    local topLineFrame = Instance.new("Frame")
+    topLineFrame.Parent = ScrollingFrame
+    topLineFrame.Size = UDim2.new(0.9, 0, 0, 25)
+    topLineFrame.BackgroundTransparency = 1
+    topLineFrame.LayoutOrder = 1
+    
+    local topLine = createAnimatedLine(topLineFrame, UDim2.new(0, 0, 0.5, 0), UDim2.new(1, 0, 0, 20), "right")
+    
+    -- Credits container
+    local creditsContainer = Instance.new("Frame")
+    creditsContainer.Parent = ScrollingFrame
+    creditsContainer.Size = UDim2.new(0.9, 0, 0, 280)
+    creditsContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    creditsContainer.BorderSizePixel = 0
+    creditsContainer.LayoutOrder = 2
+    Instance.new("UICorner", creditsContainer).CornerRadius = UDim.new(0, 12)
+    
+    local creditsList = Instance.new("UIListLayout")
+    creditsList.Parent = creditsContainer
+    creditsList.Padding = UDim.new(0, 10)
+    creditsList.SortOrder = Enum.SortOrder.LayoutOrder
+    creditsList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    
+    local rgbTexts = {}
+    
+    -- Credits items
+    local creditsData = {
+        "🦖 CREDITS SCRIPT 🦖",
+        "Script By: Dianozan 🦖",
+        "Script Testing: Dianozan, Rezuko",
+        "👨🏼‍💻 Lua Code: Gemini✨ & Deepseek🐋",
+        "👨🏼‍💼 GUI Design: Dianozan🦖",
+        "🏞️ Graphic Ideas: Dianozan🦖 & Deepseek🐋",
+        "🛠️ Script Repair: DeepSeek🐋",
+        "SHADERS COMPANY V0.5"
+    }
+    
+    for i, text in ipairs(creditsData) do
+        local itemFrame = Instance.new("Frame")
+        itemFrame.Parent = creditsContainer
+        itemFrame.Size = UDim2.new(0.9, 0, 0, i == 1 and 40 or 30)
+        itemFrame.BackgroundTransparency = 1
+        itemFrame.LayoutOrder = i
+        
+        local itemText = createRGBText(itemFrame, text, UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 1, 0))
+        itemText.TextSize = i == 1 and 16 or 14
+        if i == #creditsData then
+            itemText.TextColor3 = Color3.fromRGB(0, 255, 255)
+            itemText.FontFace = Font.new("rbxasset://fonts/families/PressStart2P.json")
+        else
+            table.insert(rgbTexts, itemText)
+        end
+    end
+    
+    -- Bottom animated line
+    local bottomLineFrame = Instance.new("Frame")
+    bottomLineFrame.Parent = ScrollingFrame
+    bottomLineFrame.Size = UDim2.new(0.9, 0, 0, 25)
+    bottomLineFrame.BackgroundTransparency = 1
+    bottomLineFrame.LayoutOrder = 3
+    
+    local bottomLine = createAnimatedLine(bottomLineFrame, UDim2.new(0, 0, 0.5, 0), UDim2.new(1, 0, 0, 20), "left")
+    
+    -- Start animation
+    startCreditsAnimation(topLine, bottomLine, rgbTexts)
+    
+    task.wait(0.1)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20)
+end
+
+-- Credits button RGB animation
+local function updateCreditsButtonColor()
+    if LMG2L["Credits_Button"] and LMG2L["Credits_Button"].Parent then
+        local t = tick()
+        local r = math.sin(t * 2) * 127 + 128
+        local g = math.sin(t * 2 + math.pi * 2/3) * 127 + 128
+        local b = math.sin(t * 2 + math.pi * 4/3) * 127 + 128
+        LMG2L["Credits_Button"].TextColor3 = Color3.fromRGB(r, g, b)
+    end
+end
+
+local creditsButtonAnim = RunService.RenderStepped:Connect(updateCreditsButtonColor)
+
+-- Credits button click event
+LMG2L["Credits_Button"].MouseButton1Click:Connect(function()
+    creditsButtonAnim:Disconnect()
+    LMG2L["Credits_Button"].TextColor3 = Color3.fromRGB(255, 215, 0)
+    createCreditsUI()
+    task.wait(0.5)
+    creditsButtonAnim = RunService.RenderStepped:Connect(updateCreditsButtonColor)
+end)
+
+-- Stop animation for other buttons
+LMG2L["Graphic_Button"].MouseButton1Click:Connect(function()
+    stopCreditsAnimation()
+end)
+
+LMG2L["Color_Button"].MouseButton1Click:Connect(function()
+    stopCreditsAnimation()
+end)
+
+LMG2L["Weather_Button"].MouseButton1Click:Connect(function()
+    stopCreditsAnimation()
+end)
+
+LMG2L["Library_Button"].MouseButton1Click:Connect(function()
+    stopCreditsAnimation()
+end)
+
+-- ============================================
+-- FINAL MESSAGE
+-- ============================================
+
+print("========================================")
+print("SHADERS COMPANY V0.5 - LOADED SUCCESS!")
+print("========================================")
+print("Features:")
+print("✅ Complete GUI Frame with Draggable")
+print("✅ Graphic Module with 0.1+/- System")
+print("✅ Water Effects & Fireflies")
+print("✅ Credits Module with RGB Animation")
+print("✅ Animated Lines & Color Effects")
+print("========================================")
+print("Click 'GUI' to show/hide interface")
+print("Click 'Graphic' for visual settings")
+print("Click 'Credits' for animated credits")
+print("========================================")
