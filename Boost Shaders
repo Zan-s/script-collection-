@@ -492,7 +492,7 @@ local function CreateGraphicSetting(parent, title, startVal, step, min, max, cal
     return SettingRow
 end
 
-- Create toggle setting untuk modul grafik
+-- Create toggle setting untuk modul grafik
 local function CreateToggleSetting(parent, title, initialState, callback)
     local ToggleRow = Instance.new("Frame")
     ToggleRow.Name = title .. "_Toggle"
@@ -1067,7 +1067,7 @@ LMG2L["Graphic_Button"].MouseButton1Click:Connect(function()
         atm.Offset = 0.5
         atm.Color = Color3.fromRGB(200, 220, 255)
     end)
-    
+
 -- ========================================================
     -- KATEGORI 5: SPECIAL EFFECTS
     -- ========================================================
@@ -1289,8 +1289,8 @@ LMG2L["Graphic_Button"].MouseButton1Click:Connect(function()
             if Lighting:FindFirstChild("DepthOfField") then Lighting.DepthOfField:Destroy() end
         end
     end)
-    
-    -- ========================================================
+
+        -- ========================================================
     -- KATEGORI 12: WATER CLARITY & MAPPING
     -- ========================================================
     createCategoryHeader(ScrollingFrame, "💧 WATER & MAPPING")
