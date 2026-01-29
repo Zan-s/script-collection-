@@ -1,14 +1,76 @@
--- SHADERS COMPANY V0.5 GUI - BAHAGIAN 1
+-- SHADERS COMPANY V0.5 GUI - COMPLETE VERSION
 -- Created by mrzaidillah12
 -- Compatible with Roblox Lua Executors
 
 local LMG2L = {};
+
+-- Services untuk modul grafik
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local LocalPlayer = Players.LocalPlayer
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+-- Variables untuk sistem grafik
+local waterEffects = {}
+local fireflies = {}
+local footprintCache = {}
+local waveSystem = {enabled = false, connections = {}, waveParts = {}}
+local grassSystem = {enabled = false, grassInstances = {}, particlesEnabled = false}
+local particleSystem = {dustParticles = {}, leafParticles = {}, connections = {}}
+local lightingSystem = {sunGlare = 0, shadowDarkness = 0, waterReflection = 0, moonBrightness = 0}
+local timeSystem = {currentTime = 12, timeEnabled = false}
+local graphicSettings = {}
+
+-- Function untuk auto-scaling text
+local function addAutoTextScaling(element, minSize, maxSize)
+    local constraint = Instance.new("UITextSizeConstraint")
+    constraint.MinTextSize = minSize
+    constraint.MaxTextSize = maxSize
+    constraint.Parent = element
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingLeft = UDim.new(0, 5)
+    padding.PaddingRight = UDim.new(0, 5)
+    padding.PaddingTop = UDim.new(0, 3)
+    padding.PaddingBottom = UDim.new(0, 3)
+    padding.Parent = element
+end
+
+-- Function untuk setup auto-scaling
+local function setupFrameAutoScaling(frame)
+    local function applyToAllTextElements(parent)
+        for _, child in ipairs(parent:GetChildren()) do
+            if child:IsA("TextLabel") or child:IsA("TextButton") then
+                child.TextScaled = true
+                child.TextWrapped = true
+                
+                for _, cons in ipairs(child:GetChildren()) do
+                    if cons:IsA("UITextSizeConstraint") or cons:IsA("UIPadding") then
+                        cons:Destroy()
+                    end
+                end
+                
+                addAutoTextScaling(child, 8, 20)
+            end
+            
+            if #child:GetChildren() > 0 then
+                applyToAllTextElements(child)
+            end
+        end
+    end
+    
+    applyToAllTextElements(frame)
+end
 
 -- (1) Main ScreenGui
 LMG2L["ScreenGui_1"] = Instance.new("ScreenGui")
 LMG2L["ScreenGui_1"].Name = "ScreenGui"
 LMG2L["ScreenGui_1"].Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 LMG2L["ScreenGui_1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
+LMG2L["ScreenGui_1"]["ResetOnSpawn"] = false
 
 -- (2) Main draggable frame
 LMG2L["MainFrame"] = Instance.new("Frame")
@@ -53,7 +115,21 @@ LMG2L["FPS_Frame"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
 LMG2L["FPS_Frame"]["Size"] = UDim2.new(0.17674, 0, 0.07143, 0)
 LMG2L["FPS_Frame"]["Position"] = UDim2.new(0.74884, 0, 0.9127, 0)
 
--- (7) Functions display frame with scrolling
+-- Add FPS text label
+LMG2L["FPS_Label"] = Instance.new("TextLabel")
+LMG2L["FPS_Label"].Name = "FPS_Label"
+LMG2L["FPS_Label"].Parent = LMG2L["FPS_Frame"]
+LMG2L["FPS_Label"]["TextWrapped"] = true
+LMG2L["FPS_Label"]["BorderSizePixel"] = 0
+LMG2L["FPS_Label"]["TextSize"] = 12
+LMG2L["FPS_Label"]["TextScaled"] = true
+LMG2L["FPS_Label"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["FPS_Label"]["FontFace"] = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+LMG2L["FPS_Label"]["Size"] = UDim2.new(1, 0, 1, 0)
+LMG2L["FPS_Label"]["Text"] = "FPS: 60"
+LMG2L["FPS_Label"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
+
+-- (7) Functions display frame dengan scrolling
 LMG2L["Functions_Frame"] = Instance.new("Frame")
 LMG2L["Functions_Frame"].Name = "Functions_Frame"
 LMG2L["Functions_Frame"].Parent = LMG2L["MainFrame"]
@@ -82,6 +158,8 @@ LMG2L["Library_Button"].Name = "Library_Button"
 LMG2L["Library_Button"].Parent = LMG2L["SideMenu"]
 LMG2L["Library_Button"]["BorderSizePixel"] = 0
 LMG2L["Library_Button"]["TextSize"] = 13
+LMG2L["Library_Button"]["TextScaled"] = true
+LMG2L["Library_Button"]["TextWrapped"] = true
 LMG2L["Library_Button"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
 LMG2L["Library_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["Library_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
@@ -94,6 +172,8 @@ LMG2L["Visual_Label"].Name = "Visual_Label"
 LMG2L["Visual_Label"].Parent = LMG2L["SideMenu"]
 LMG2L["Visual_Label"]["BorderSizePixel"] = 0
 LMG2L["Visual_Label"]["TextSize"] = 14
+LMG2L["Visual_Label"]["TextScaled"] = true
+LMG2L["Visual_Label"]["TextWrapped"] = true
 LMG2L["Visual_Label"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["Visual_Label"]["FontFace"] = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 LMG2L["Visual_Label"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
@@ -110,6 +190,8 @@ LMG2L["Graphic_Button"] = Instance.new("TextButton")
 LMG2L["Graphic_Button"].Name = "Graphic_Button"
 LMG2L["Graphic_Button"].Parent = LMG2L["SideMenu"]
 LMG2L["Graphic_Button"]["TextSize"] = 11
+LMG2L["Graphic_Button"]["TextScaled"] = true
+LMG2L["Graphic_Button"]["TextWrapped"] = true
 LMG2L["Graphic_Button"]["TextColor3"] = Color3.fromRGB(0, 255, 84)
 LMG2L["Graphic_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["Graphic_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
@@ -122,6 +204,8 @@ LMG2L["Credits_Button"].Name = "Credits_Button"
 LMG2L["Credits_Button"].Parent = LMG2L["SideMenu"]
 LMG2L["Credits_Button"]["BorderSizePixel"] = 0
 LMG2L["Credits_Button"]["TextSize"] = 9
+LMG2L["Credits_Button"]["TextScaled"] = true
+LMG2L["Credits_Button"]["TextWrapped"] = true
 LMG2L["Credits_Button"]["TextColor3"] = Color3.fromRGB(28, 43, 54)
 LMG2L["Credits_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["Credits_Button"]["Size"] = UDim2.new(0.89474, 0, 0.13592, 0)
@@ -137,6 +221,8 @@ LMG2L["Color_Button"] = Instance.new("TextButton")
 LMG2L["Color_Button"].Name = "Color_Button"
 LMG2L["Color_Button"].Parent = LMG2L["SideMenu"]
 LMG2L["Color_Button"]["BorderSizePixel"] = 0
+LMG2L["Color_Button"]["TextScaled"] = true
+LMG2L["Color_Button"]["TextWrapped"] = true
 LMG2L["Color_Button"]["TextColor3"] = Color3.fromRGB(255, 0, 0)
 LMG2L["Color_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["Color_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
@@ -149,6 +235,8 @@ LMG2L["Weather_Button"].Name = "Weather_Button"
 LMG2L["Weather_Button"].Parent = LMG2L["SideMenu"]
 LMG2L["Weather_Button"]["BorderSizePixel"] = 0
 LMG2L["Weather_Button"]["TextSize"] = 11
+LMG2L["Weather_Button"]["TextScaled"] = true
+LMG2L["Weather_Button"]["TextWrapped"] = true
 LMG2L["Weather_Button"]["TextColor3"] = Color3.fromRGB(65, 237, 255)
 LMG2L["Weather_Button"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["Weather_Button"]["Size"] = UDim2.new(0.94737, 0, 0.15534, 0)
@@ -163,6 +251,20 @@ LMG2L["Ping_Frame"]["BorderSizePixel"] = 0
 LMG2L["Ping_Frame"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255)
 LMG2L["Ping_Frame"]["Size"] = UDim2.new(0.19535, 0, 0.07143, 0)
 LMG2L["Ping_Frame"]["Position"] = UDim2.new(0.24651, 0, 0.9127, 0)
+
+-- Add Ping text label
+LMG2L["Ping_Label"] = Instance.new("TextLabel")
+LMG2L["Ping_Label"].Name = "Ping_Label"
+LMG2L["Ping_Label"].Parent = LMG2L["Ping_Frame"]
+LMG2L["Ping_Label"]["TextWrapped"] = true
+LMG2L["Ping_Label"]["BorderSizePixel"] = 0
+LMG2L["Ping_Label"]["TextSize"] = 12
+LMG2L["Ping_Label"]["TextScaled"] = true
+LMG2L["Ping_Label"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
+LMG2L["Ping_Label"]["FontFace"] = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+LMG2L["Ping_Label"]["Size"] = UDim2.new(1, 0, 1, 0)
+LMG2L["Ping_Label"]["Text"] = "Ping: 100ms"
+LMG2L["Ping_Label"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
 
 -- (19) Control frame
 LMG2L["Control_Frame"] = Instance.new("Frame")
@@ -184,6 +286,8 @@ LMG2L["GUI_Toggle"].Name = "GUI_Toggle"
 LMG2L["GUI_Toggle"].Parent = LMG2L["Control_Frame"]
 LMG2L["GUI_Toggle"]["BorderSizePixel"] = 0
 LMG2L["GUI_Toggle"]["TextSize"] = 15
+LMG2L["GUI_Toggle"]["TextScaled"] = true
+LMG2L["GUI_Toggle"]["TextWrapped"] = true
 LMG2L["GUI_Toggle"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
 LMG2L["GUI_Toggle"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0)
 LMG2L["GUI_Toggle"]["Size"] = UDim2.new(0.63889, 0, 0.68966, 0)
@@ -218,6 +322,8 @@ LMG2L["Delete_Button"] = Instance.new("TextButton")
 LMG2L["Delete_Button"].Name = "Delete_Button"
 LMG2L["Delete_Button"].Parent = LMG2L["Control_Frame"]
 LMG2L["Delete_Button"]["BorderSizePixel"] = 0
+LMG2L["Delete_Button"]["TextScaled"] = true
+LMG2L["Delete_Button"]["TextWrapped"] = true
 LMG2L["Delete_Button"]["TextColor3"] = Color3.fromRGB(255, 255, 255)
 LMG2L["Delete_Button"]["BackgroundColor3"] = Color3.fromRGB(150, 0, 0)
 LMG2L["Delete_Button"]["Size"] = UDim2.new(0.88889, 0, 0.2069, 0)
@@ -228,7 +334,1061 @@ LMG2L["Delete_Button"]["Position"] = UDim2.new(0.05556, 0, 0.75862, 0)
 LMG2L["UICorner_26"] = Instance.new("UICorner")
 LMG2L["UICorner_26"].Parent = LMG2L["Delete_Button"]
 
--- Fungsi untuk membuat GUI draggable (mobile support)
+-- Apply auto-scaling ke semua elemen teks
+addAutoTextScaling(LMG2L["script_title"], 10, 20)
+addAutoTextScaling(LMG2L["Visual_Label"], 8, 16)
+addAutoTextScaling(LMG2L["Library_Button"], 8, 16)
+addAutoTextScaling(LMG2L["Graphic_Button"], 8, 16)
+addAutoTextScaling(LMG2L["Credits_Button"], 8, 16)
+addAutoTextScaling(LMG2L["Color_Button"], 8, 14)
+addAutoTextScaling(LMG2L["Weather_Button"], 8, 16)
+addAutoTextScaling(LMG2L["FPS_Label"], 8, 14)
+addAutoTextScaling(LMG2L["Ping_Label"], 8, 14)
+addAutoTextScaling(LMG2L["GUI_Toggle"], 10, 18)
+addAutoTextScaling(LMG2L["Shaders_Toggle"], 10, 18)
+addAutoTextScaling(LMG2L["Delete_Button"], 10, 16)
+
+-- Setup auto-scaling untuk seluruh GUI
+setupFrameAutoScaling(LMG2L["MainFrame"])
+setupFrameAutoScaling(LMG2L["Control_Frame"])
+
+-- ============================================================
+-- UTILITY FUNCTIONS UNTUK MODUL GRAFIK
+-- ============================================================
+
+-- Clear content frame
+local function clearContentFrame(contentFrame)
+    for _, child in pairs(contentFrame:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("TextLabel") or child:IsA("ScrollingFrame") then 
+            child:Destroy() 
+        end
+    end
+end
+
+-- Create category header untuk modul grafik
+local function createCategoryHeader(parent, title)
+    local Header = Instance.new("Frame")
+    Header.Name = title .. "_Header"
+    Header.Parent = parent
+    Header.Size = UDim2.new(0.95, 0, 0, 30)
+    Header.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Header.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Header
+    
+    local Label = Instance.new("TextLabel")
+    Label.Parent = Header
+    Label.Size = UDim2.new(1, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = title
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextSize = 16
+    Label.TextScaled = true
+    Label.TextWrapped = true
+    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    
+    addAutoTextScaling(Label, 8, 16)
+    
+    return Header
+end
+
+-- Create graphic setting (0.1+/- system)
+local function CreateGraphicSetting(parent, title, startVal, step, min, max, callback)
+    local SettingRow = Instance.new("Frame")
+    SettingRow.Name = title .. "_Row"
+    SettingRow.Parent = parent
+    SettingRow.Size = UDim2.new(0.95, 0, 0, 45)
+    SettingRow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    SettingRow.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = SettingRow
+
+    -- Label
+    local Label = Instance.new("TextLabel")
+    Label.Parent = SettingRow
+    Label.Size = UDim2.new(0.5, 0, 1, 0)
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = title
+    Label.TextColor3 = Color3.fromRGB(30, 30, 30)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
+    Label.TextSize = 13
+    Label.TextScaled = true
+    Label.TextWrapped = true
+
+    -- Value Display
+    local ValueFrame = Instance.new("Frame")
+    ValueFrame.Parent = SettingRow
+    ValueFrame.Size = UDim2.new(0.2, 0, 0.6, 0)
+    ValueFrame.Position = UDim2.new(0.55, 0, 0.2, 0)
+    ValueFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Instance.new("UICorner", ValueFrame).CornerRadius = UDim.new(0, 5)
+    
+    local ValueDisplay = Instance.new("TextLabel")
+    ValueDisplay.Parent = ValueFrame
+    ValueDisplay.Size = UDim2.new(1, 0, 1, 0)
+    ValueDisplay.BackgroundTransparency = 1
+    ValueDisplay.TextColor3 = Color3.fromRGB(0, 255, 84)
+    ValueDisplay.Text = string.format("%.1f", startVal)
+    ValueDisplay.TextSize = 14
+    ValueDisplay.TextScaled = true
+    ValueDisplay.TextWrapped = true
+    ValueDisplay.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold)
+
+    local currentVal = startVal
+
+    -- Plus Button
+    local PlusBtn = Instance.new("TextButton")
+    PlusBtn.Parent = SettingRow
+    PlusBtn.Size = UDim2.new(0.08, 0, 0.7, 0)
+    PlusBtn.Position = UDim2.new(0.88, 0, 0.15, 0)
+    PlusBtn.Text = "+"
+    PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PlusBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    PlusBtn.AutoButtonColor = true
+    PlusBtn.TextScaled = true
+    PlusBtn.TextWrapped = true
+    Instance.new("UICorner", PlusBtn).CornerRadius = UDim.new(0, 4)
+
+    -- Minus Button
+    local MinusBtn = Instance.new("TextButton")
+    MinusBtn.Parent = SettingRow
+    MinusBtn.Size = UDim2.new(0.08, 0, 0.7, 0)
+    MinusBtn.Position = UDim2.new(0.78, 0, 0.15, 0)
+    MinusBtn.Text = "-"
+    MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinusBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    MinusBtn.AutoButtonColor = true
+    MinusBtn.TextScaled = true
+    MinusBtn.TextWrapped = true
+    Instance.new("UICorner", MinusBtn).CornerRadius = UDim.new(0, 4)
+
+    -- Auto-scaling untuk semua elemen teks
+    addAutoTextScaling(Label, 8, 14)
+    addAutoTextScaling(ValueDisplay, 8, 14)
+    addAutoTextScaling(PlusBtn, 8, 14)
+    addAutoTextScaling(MinusBtn, 8, 14)
+
+    -- Click Logic
+    PlusBtn.MouseButton1Click:Connect(function()
+        currentVal = math.clamp(currentVal + step, min, max)
+        ValueDisplay.Text = string.format("%.1f", currentVal)
+        callback(currentVal)
+    end)
+
+    MinusBtn.MouseButton1Click:Connect(function()
+        currentVal = math.clamp(currentVal - step, min, max)
+        ValueDisplay.Text = string.format("%.1f", currentVal)
+        callback(currentVal)
+    end)
+    
+    return SettingRow
+end
+
+- Create toggle setting untuk modul grafik
+local function CreateToggleSetting(parent, title, initialState, callback)
+    local ToggleRow = Instance.new("Frame")
+    ToggleRow.Name = title .. "_Toggle"
+    ToggleRow.Parent = parent
+    ToggleRow.Size = UDim2.new(0.95, 0, 0, 40)
+    ToggleRow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    ToggleRow.BorderSizePixel = 0
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = ToggleRow
+
+    -- Label
+    local Label = Instance.new("TextLabel")
+    Label.Parent = ToggleRow
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = title
+    Label.TextColor3 = Color3.fromRGB(30, 30, 30)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
+    Label.TextSize = 13
+    Label.TextScaled = true
+    Label.TextWrapped = true
+
+    -- Toggle Button
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Parent = ToggleRow
+    ToggleBtn.Size = UDim2.new(0.2, 0, 0.6, 0)
+    ToggleBtn.Position = UDim2.new(0.75, 0, 0.2, 0)
+    ToggleBtn.Text = initialState and "ON" or "OFF"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleBtn.BackgroundColor3 = initialState and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+    ToggleBtn.AutoButtonColor = true
+    ToggleBtn.TextScaled = true
+    ToggleBtn.TextWrapped = true
+    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 4)
+    
+    addAutoTextScaling(Label, 8, 14)
+    addAutoTextScaling(ToggleBtn, 8, 14)
+    
+    local isOn = initialState
+    
+    ToggleBtn.MouseButton1Click:Connect(function()
+        isOn = not isOn
+        ToggleBtn.Text = isOn and "ON" or "OFF"
+        ToggleBtn.BackgroundColor3 = isOn and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+        callback(isOn)
+    end)
+    
+    return ToggleRow
+end
+
+-- ============================================================
+-- SYSTEM FUNCTIONS UNTUK MODUL GRAFIK
+-- ============================================================
+
+local function setupOceanWaveSystem()
+    for _, conn in pairs(waveSystem.connections) do
+        if conn then conn:Disconnect() end
+    end
+    waveSystem.connections = {}
+    
+    for _, part in pairs(waveSystem.waveParts) do
+        if part then part:Destroy() end
+    end
+    waveSystem.waveParts = {}
+    
+    if not waveSystem.enabled then return end
+    
+    local function createWaveSegment(position, size, speed, intensity)
+        local wave = Instance.new("Part")
+        wave.Name = "OceanWave"
+        wave.Size = Vector3.new(size, 0.5, size)
+        wave.Position = position
+        wave.Anchored = true
+        wave.CanCollide = false
+        wave.Transparency = 0.3
+        wave.Material = Enum.Material.Water
+        wave.Color = Color3.fromRGB(0, 100, 200)
+        wave.Parent = workspace
+        
+        local connection = RunService.Heartbeat:Connect(function(dt)
+            wave.Position = Vector3.new(
+                wave.Position.X + (speed * dt),
+                wave.Position.Y + math.sin(tick() * intensity) * 0.5,
+                wave.Position.Z
+            )
+            
+            if wave.Position.X > 500 then
+                wave.Position = Vector3.new(-500, wave.Position.Y, wave.Position.Z)
+            end
+        end)
+        
+        table.insert(waveSystem.waveParts, wave)
+        table.insert(waveSystem.connections, connection)
+        return wave
+    end
+    
+    for i = 1, 10 do
+        createWaveSegment(
+            Vector3.new(i * 50 - 250, 0, math.random(-100, 100)),
+            math.random(20, 50),
+            math.random(5, 15),
+            math.random(1, 3)
+        )
+    end
+end
+
+local function setupInteractiveGrass()
+    if not grassSystem.enabled then
+        for _, grass in pairs(grassSystem.grassInstances) do
+            if grass then grass:Destroy() end
+        end
+        grassSystem.grassInstances = {}
+        return
+    end
+    
+    local function createGrassBlade(position, height)
+        local grass = Instance.new("Part")
+        grass.Name = "InteractiveGrass"
+        grass.Size = Vector3.new(0.2, height, 0.2)
+        grass.Position = position
+        grass.Anchored = true
+        grass.CanCollide = false
+        grass.Transparency = 0.2
+        grass.Color = Color3.fromRGB(34, 139, 34)
+        grass.Material = Enum.Material.Grass
+        grass.Parent = workspace
+        
+        if grassSystem.particlesEnabled then
+            local connection = RunService.Heartbeat:Connect(function(dt)
+                grass.CFrame = CFrame.new(grass.Position) * 
+                    CFrame.Angles(0, math.sin(tick() + position.X) * 0.1, 0)
+            end)
+            table.insert(waveSystem.connections, connection)
+        end
+        
+        table.insert(grassSystem.grassInstances, grass)
+        return grass
+    end
+    
+    for x = -50, 50, 5 do
+        for z = -50, 50, 5 do
+            if math.random(1, 3) == 1 then
+                createGrassBlade(
+                    Vector3.new(x, 0, z),
+                    grassSystem.grassHeight or math.random(1, 3)
+                )
+            end
+        end
+    end
+end
+
+local function updateLightingSystem()
+    if lightingSystem.sunGlare > 0 then
+        local sunRays = Lighting:FindFirstChild("SunRaysEffect") or Instance.new("SunRaysEffect")
+        sunRays.Intensity = lightingSystem.sunGlare * 0.1
+        sunRays.Spread = 0.5
+        sunRays.Parent = Lighting
+    end
+    
+    if lightingSystem.shadowDarkness > 0 then
+        Lighting.GlobalShadows = true
+        Lighting.ShadowSoftness = 0.5 + (lightingSystem.shadowDarkness * 0.1)
+    end
+    
+    if lightingSystem.waterReflection > 0 then
+        for i = 1, math.floor(lightingSystem.waterReflection * 5) do
+            local glitter = Instance.new("Part")
+            glitter.Name = "WaterGlitter"
+            glitter.Size = Vector3.new(0.5, 0.1, 0.5)
+            glitter.Position = Vector3.new(
+                math.random(-100, 100),
+                0.5,
+                math.random(-100, 100)
+            )
+            glitter.Anchored = true
+            glitter.CanCollide = false
+            glitter.Transparency = 0.3
+            glitter.Material = Enum.Material.Neon
+            glitter.Color = Color3.fromRGB(255, 255, 200)
+            glitter.Parent = workspace
+            
+            local connection = RunService.Heartbeat:Connect(function(dt)
+                glitter.Transparency = 0.3 + (math.sin(tick() + i) * 0.3)
+            end)
+            table.insert(waveSystem.connections, connection)
+            table.insert(waveSystem.waveParts, glitter)
+        end
+    end
+    
+    if lightingSystem.moonBrightness > 0 then
+        Lighting.Ambient = Color3.fromRGB(
+            lightingSystem.moonBrightness * 5,
+            lightingSystem.moonBrightness * 5,
+            lightingSystem.moonBrightness * 5
+        )
+        Lighting.OutdoorAmbient = Color3.fromRGB(
+            lightingSystem.moonBrightness * 3,
+            lightingSystem.moonBrightness * 3,
+            lightingSystem.moonBrightness * 3
+        )
+    end
+end
+
+local function createDustEffect(position, intensity)
+    for i = 1, math.floor(intensity * 5) do
+        local dust = Instance.new("Part")
+        dust.Name = "DustParticle"
+        dust.Size = Vector3.new(0.2, 0.2, 0.2)
+        dust.Position = position + Vector3.new(
+            math.random(-1, 1),
+            math.random(1, 3),
+            math.random(-1, 1)
+        )
+        dust.Anchored = false
+        dust.CanCollide = false
+        dust.Transparency = 0.7
+        dust.Color = Color3.fromRGB(150, 150, 100)
+        dust.Material = Enum.Material.Sand
+        dust.Parent = workspace
+        
+        dust.Velocity = Vector3.new(
+            math.random(-5, 5),
+            math.random(5, 10),
+            math.random(-5, 5)
+        )
+        
+        game:GetService("Debris"):AddItem(dust, 2)
+        table.insert(particleSystem.dustParticles, dust)
+    end
+end
+
+local function createLeafParticles(intensity)
+    local leafColors = {
+        Color3.fromRGB(139, 69, 19),
+        Color3.fromRGB(255, 165, 0),
+        Color3.fromRGB(255, 255, 0),
+        Color3.fromRGB(34, 139, 34)
+    }
+    
+    for i = 1, math.floor(intensity * 10) do
+        local leaf = Instance.new("Part")
+        leaf.Name = "FallingLeaf"
+        leaf.Size = Vector3.new(0.5, 0.05, 0.5)
+        leaf.Position = Vector3.new(
+            math.random(-100, 100),
+            math.random(20, 30),
+            math.random(-100, 100)
+        )
+        leaf.Anchored = false
+        leaf.CanCollide = false
+        leaf.Transparency = 0.3
+        leaf.Color = leafColors[math.random(1, #leafColors)]
+        leaf.Material = Enum.Material.LeafyGrass
+        leaf.Parent = workspace
+        
+        leaf.Velocity = Vector3.new(
+            math.random(-2, 2),
+            math.random(-5, -2),
+            math.random(-2, 2)
+        )
+        
+        local spin = Instance.new("BodyAngularVelocity")
+        spin.AngularVelocity = Vector3.new(0, math.random(2, 5), 0)
+        spin.MaxTorque = Vector3.new(0, 1000, 0)
+        spin.Parent = leaf
+        
+        table.insert(particleSystem.leafParticles, leaf)
+    end
+end
+
+local function updateTimeOfDay(timeValue)
+    if not timeSystem.timeEnabled then return end
+    
+    local timeMap = {
+        ["1pagi"] = 6,
+        ["sunrise"] = 6,
+        ["morning"] = 8,
+        ["noon"] = 12,
+        ["afternoon"] = 15,
+        ["evening"] = 18,
+        ["dusk"] = 19,
+        ["night"] = 21,
+        ["midnight"] = 0
+    }
+    
+    local hour = timeMap[timeValue:lower()] or tonumber(timeValue)
+    if hour then
+        Lighting.ClockTime = hour
+        timeSystem.currentTime = hour
+        
+        if hour >= 6 and hour < 18 then
+            Lighting.Brightness = 2
+            Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        else
+            Lighting.Brightness = 0.5
+            Lighting.OutdoorAmbient = Color3.fromRGB(50, 50, 50)
+            lightingSystem.moonBrightness = 5
+        end
+    end
+end
+
+local function setupWaterEffects(enabled)
+    if not enabled then
+        for _, effect in pairs(waterEffects) do
+            if effect then effect:Disconnect() end
+        end
+        waterEffects = {}
+        return
+    end
+    
+    local function createWaterRipple(position)
+        local ripple = Instance.new("Part")
+        ripple.Size = Vector3.new(1, 0.1, 1)
+        ripple.Position = position + Vector3.new(0, 0.5, 0)
+        ripple.Anchored = true
+        ripple.CanCollide = false
+        ripple.Transparency = 0.5
+        ripple.Color = Color3.fromRGB(100, 150, 255)
+        ripple.Parent = workspace
+        
+        local tween = TweenService:Create(ripple, TweenInfo.new(1), {
+            Size = Vector3.new(3, 0.1, 3),
+            Transparency = 1
+        })
+        tween:Play()
+        tween.Completed:Connect(function() ripple:Destroy() end)
+    end
+    
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local connection = RunService.Heartbeat:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local root = character.HumanoidRootPart
+            if root.Position.Y < 0 then
+                createWaterRipple(root.Position)
+            end
+        end
+    end)
+    
+    table.insert(waterEffects, connection)
+end
+
+local function setupFireflies(enabled)
+    for _, firefly in pairs(fireflies) do
+        if firefly then firefly:Destroy() end
+    end
+    fireflies = {}
+    
+    if not enabled then return end
+    
+    for i = 1, 15 do
+        local firefly = Instance.new("Part")
+        firefly.Name = "Firefly"
+        firefly.Size = Vector3.new(0.2, 0.2, 0.2)
+        firefly.Anchored = true
+        firefly.CanCollide = false
+        firefly.Transparency = 0.3
+        firefly.Material = Enum.Material.Neon
+        firefly.Color = Color3.fromRGB(255, 255, 150)
+        firefly.Position = Vector3.new(
+            math.random(-30, 30),
+            math.random(2, 5),
+            math.random(-30, 30)
+        )
+        firefly.Parent = workspace
+        
+        table.insert(fireflies, firefly)
+        
+        local conn = RunService.Heartbeat:Connect(function(dt)
+            if firefly and firefly.Parent then
+                firefly.Position = Vector3.new(
+                    firefly.Position.X,
+                    firefly.Position.Y + math.sin(tick() * 2 + i) * 0.02,
+                    firefly.Position.Z
+                )
+                local pulse = (math.sin(tick() * 5 + i) + 1) / 2
+                firefly.Transparency = 0.3 + (pulse * 0.4)
+            else
+                conn:Disconnect()
+            end
+        end)
+    end
+end
+
+local function setupCharacterInteractions()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+    
+    humanoid.StateChanged:Connect(function(oldState, newState)
+        if newState == Enum.HumanoidStateType.Freefall then
+            if particleSystem.dustIntensity and particleSystem.dustIntensity > 0 then
+                local rootPart = char:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    createDustEffect(rootPart.Position, particleSystem.dustIntensity)
+                end
+            end
+        end
+    end)
+    
+    local function onCharacterStep()
+        if grassSystem.enabled and grassSystem.particlesEnabled then
+            local rootPart = char:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                for i = 1, 3 do
+                    local grassParticle = Instance.new("Part")
+                    grassParticle.Name = "GrassParticle"
+                    grassParticle.Size = Vector3.new(0.1, 0.1, 0.1)
+                    grassParticle.Position = rootPart.Position + Vector3.new(
+                        math.random(-1, 1),
+                        0.5,
+                        math.random(-1, 1)
+                    )
+                    grassParticle.Anchored = false
+                    grassParticle.CanCollide = false
+                    grassParticle.Transparency = 0.5
+                    grassParticle.Color = Color3.fromRGB(34, 139, 34)
+                    grassParticle.Material = Enum.Material.Grass
+                    grassParticle.Parent = workspace
+                    
+                    grassParticle.Velocity = Vector3.new(
+                        math.random(-2, 2),
+                        math.random(2, 5),
+                        math.random(-2, 2)
+                    )
+                    
+                    game:GetService("Debris"):AddItem(grassParticle, 1)
+                end
+            end
+        end
+    end
+    
+    humanoid.Running:Connect(onCharacterStep)
+end
+
+local function cleanupAllEffects()
+    waveSystem.enabled = false
+    for _, conn in pairs(waveSystem.connections) do
+        if conn then conn:Disconnect() end
+    end
+    waveSystem.connections = {}
+    
+    for _, part in pairs(waveSystem.waveParts) do
+        if part then part:Destroy() end
+    end
+    waveSystem.waveParts = {}
+    
+    grassSystem.enabled = false
+    for _, grass in pairs(grassSystem.grassInstances) do
+        if grass then grass:Destroy() end
+    end
+    grassSystem.grassInstances = {}
+    
+    for _, dust in pairs(particleSystem.dustParticles) do
+        if dust then dust:Destroy() end
+    end
+    particleSystem.dustParticles = {}
+    
+    for _, leaf in pairs(particleSystem.leafParticles) do
+        if leaf then leaf:Destroy() end
+    end
+    particleSystem.leafParticles = {}
+    
+    for _, conn in pairs(particleSystem.connections) do
+        if conn then conn:Disconnect() end
+    end
+    particleSystem.connections = {}
+    
+    local effectsToRemove = {
+        "OceanWave", "InteractiveGrass", "WaterGlitter", 
+        "DustParticle", "FallingLeaf", "MapGrass", 
+        "LightGlitter", "Firefly", "GrassParticle"
+    }
+    
+    for _, obj in pairs(workspace:GetChildren()) do
+        for _, effectName in pairs(effectsToRemove) do
+            if obj.Name == effectName then
+                obj:Destroy()
+            end
+        end
+    end
+end
+
+-- ============================================================
+-- GRAPHIC BUTTON EVENT HANDLER (MAIN FUNCTION)
+-- ============================================================
+
+LMG2L["Graphic_Button"].MouseButton1Click:Connect(function()
+    local Content = LMG2L["Functions_Frame"]
+    clearContentFrame(Content)
+    
+    -- Create Scrolling Frame
+    local ScrollingFrame = Instance.new("ScrollingFrame")
+    ScrollingFrame.Parent = Content
+    ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+    ScrollingFrame.BackgroundTransparency = 1
+    ScrollingFrame.ScrollBarThickness = 6
+    ScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ScrollingFrame
+    UIListLayout.Padding = UDim.new(0, 10)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    task.wait(0.1)
+    
+    -- ========================================================
+    -- KATEGORI 1: LIGHTING & SHADOWS
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🌞 LIGHTING & SHADOWS")
+    
+    CreateGraphicSetting(ScrollingFrame, "Brightness", 1.0, 0.1, 0, 5, function(v)
+        Lighting.Brightness = v
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Shadow Quality", 0.5, 0.1, 0, 1, function(v)
+        Lighting.ShadowSoftness = v
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Ambient Light", 0.3, 0.1, 0, 1, function(v)
+        Lighting.Ambient = Color3.fromRGB(v * 255, v * 255, v * 255)
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 2: WATER & REFLECTIONS
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "💧 WATER & REFLECTIONS")
+    
+    if Terrain then
+        CreateGraphicSetting(ScrollingFrame, "Water Reflection", 0.8, 0.1, 0, 1, function(v)
+            Terrain.WaterReflectance = v
+        end)
+        
+        CreateGraphicSetting(ScrollingFrame, "Wave Intensity", 0.5, 0.1, 0, 2, function(v)
+            Terrain.WaterWaveSize = v
+        end)
+        
+        CreateGraphicSetting(ScrollingFrame, "River Flow", 0.3, 0.1, 0, 2, function(v)
+            Terrain.WaterWaveSpeed = v
+        end)
+        
+        CreateGraphicSetting(ScrollingFrame, "Water Transparency", 0.7, 0.1, 0, 1, function(v)
+            Terrain.WaterTransparency = v
+        end)
+    end
+    
+    -- ========================================================
+    -- KATEGORI 3: ENVIRONMENT
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🌿 ENVIRONMENT")
+    
+    CreateGraphicSetting(ScrollingFrame, "Grass Sway", 0.5, 0.1, 0, 2, function(v)
+        pcall(function()
+            sethiddenproperty(workspace, "GlobalWind", Vector3.new(v * 3, 0, v * 1.5))
+        end)
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 4: ATMOSPHERE
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🌫️ ATMOSPHERE")
+    
+    CreateGraphicSetting(ScrollingFrame, "Fog Density", 0.1, 0.1, 0, 1, function(v)
+        local atm = Lighting:FindFirstChildOfClass("Atmosphere")
+        if not atm then
+            atm = Instance.new("Atmosphere")
+            atm.Parent = Lighting
+        end
+        atm.Density = v
+        atm.Offset = 0.5
+        atm.Color = Color3.fromRGB(200, 220, 255)
+    end)
+    
+-- ========================================================
+    -- KATEGORI 5: SPECIAL EFFECTS
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "✨ SPECIAL EFFECTS")
+    
+    CreateToggleSetting(ScrollingFrame, "Water Splash Effects", false, setupWaterEffects)
+    
+    CreateToggleSetting(ScrollingFrame, "Wet Footprint Trails", false, function(enabled)
+        print("Footprint Trails:", enabled and "ON" or "OFF")
+    end)
+    
+    CreateToggleSetting(ScrollingFrame, "Fireflies in Grass", false, setupFireflies)
+    
+    CreateToggleSetting(ScrollingFrame, "Raindrop Ripples", false, function(enabled)
+        print("Raindrop Ripples:", enabled and "ON" or "OFF")
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 6: OCEAN WAVES SYSTEM
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🌊 OCEAN WAVES SYSTEM")
+    
+    CreateToggleSetting(ScrollingFrame, "Extreme Ocean Waves", false, function(enabled)
+        waveSystem.enabled = enabled
+        setupOceanWaveSystem()
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Wave Strength", 0.2, 0.2, 0.2, 10.0, function(v)
+        for _, wave in pairs(waveSystem.waveParts) do
+            if wave.Name == "OceanWave" then
+                wave.Size = Vector3.new(wave.Size.X, v * 0.5, wave.Size.Z)
+            end
+        end
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Wave Speed", 0.2, 0.2, 0.2, 10.0, function(v)
+        waveSystem.waveSpeed = v
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Wave Animation", 0.2, 0.2, 0.2, 10.0, function(v)
+        waveSystem.waveAnimation = v
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 7: INTERACTIVE GRASS
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🌿 INTERACTIVE GRASS")
+    
+    CreateToggleSetting(ScrollingFrame, "Grass Push Effect", false, function(enabled)
+        grassSystem.enabled = enabled
+        setupInteractiveGrass()
+    end)
+    
+    CreateToggleSetting(ScrollingFrame, "Grass Particles", false, function(enabled)
+        grassSystem.particlesEnabled = enabled
+        grassSystem.enabled = enabled
+        setupInteractiveGrass()
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Grass Height", 1, 1, 1, 20, function(v)
+        grassSystem.grassHeight = v
+        setupInteractiveGrass()
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 8: LIGHTING & REFLECTIONS
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "☀️ LIGHTING & REFLECTIONS")
+    
+    CreateGraphicSetting(ScrollingFrame, "Sun Glare Intensity", 0.2, 0.2, 0.2, 10.0, function(v)
+        lightingSystem.sunGlare = v
+        updateLightingSystem()
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Shadow Darkness", 0.2, 0.2, 0.2, 5.0, function(v)
+        lightingSystem.shadowDarkness = v
+        updateLightingSystem()
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Water Reflection Glitter", 0.2, 0.2, 0.2, 10.0, function(v)
+        lightingSystem.waterReflection = v
+        updateLightingSystem()
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 9: WIND & ENVIRONMENT
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🍃 WIND & ENVIRONMENT")
+    
+    CreateGraphicSetting(ScrollingFrame, "Leaf Wind Force", 0.2, 0.2, 0.2, 10.0, function(v)
+        for _, leaf in pairs(particleSystem.leafParticles) do
+            if leaf and leaf.Parent then
+                leaf.Velocity = Vector3.new(leaf.Velocity.X * v, leaf.Velocity.Y, leaf.Velocity.Z * v)
+            end
+        end
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Jump Dust Intensity", 0.2, 0.2, 0.2, 10.0, function(v)
+        particleSystem.dustIntensity = v
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Light Source Boost", 0.2, 0.2, 0.2, 10.0, function(v)
+        for _, light in pairs(workspace:GetDescendants()) do
+            if light:IsA("PointLight") or light:IsA("SpotLight") then
+                light.Brightness = light.Brightness * v
+            end
+        end
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 10: AUTUMN & PARTICLES
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "🍂 AUTUMN & PARTICLES")
+    
+    CreateToggleSetting(ScrollingFrame, "Falling Leaves", false, function(enabled)
+        if enabled then
+            createLeafParticles(5)
+        else
+            for _, leaf in pairs(particleSystem.leafParticles) do
+                if leaf then leaf:Destroy() end
+            end
+            particleSystem.leafParticles = {}
+        end
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Leaf Quantity", 0.2, 0.2, 0.2, 10.0, function(v)
+        particleSystem.leafQuantity = v
+        createLeafParticles(v)
+    end)
+    
+    CreateToggleSetting(ScrollingFrame, "Shiny Floor Effect", false, function(enabled)
+        for _, part in pairs(workspace:GetDescendants()) do
+            if part:IsA("Part") and part.Material == Enum.Material.SmoothPlastic then
+                part.Material = enabled and Enum.Material.SmoothPlastic or Enum.Material.Plastic
+                part.Reflectance = enabled and 0.3 or 0
+            end
+        end
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 11: TIME & QUALITY
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "⏰ TIME & QUALITY")
+    
+    -- Time input field
+    local timeInputFrame = Instance.new("Frame")
+    timeInputFrame.Parent = ScrollingFrame
+    timeInputFrame.Size = UDim2.new(0.95, 0, 0, 50)
+    timeInputFrame.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    timeInputFrame.BorderSizePixel = 0
+    Instance.new("UICorner", timeInputFrame).CornerRadius = UDim.new(0, 8)
+    
+    local timeLabel = Instance.new("TextLabel")
+    timeLabel.Parent = timeInputFrame
+    timeLabel.Size = UDim2.new(0.4, 0, 1, 0)
+    timeLabel.Position = UDim2.new(0.05, 0, 0, 0)
+    timeLabel.BackgroundTransparency = 1
+    timeLabel.Text = "Custom Time:"
+    timeLabel.TextColor3 = Color3.fromRGB(30, 30, 30)
+    timeLabel.TextSize = 13
+    timeLabel.TextScaled = true
+    timeLabel.TextWrapped = true
+    timeLabel.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
+    timeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local timeTextBox = Instance.new("TextBox")
+    timeTextBox.Parent = timeInputFrame
+    timeTextBox.Size = UDim2.new(0.4, 0, 0.6, 0)
+    timeTextBox.Position = UDim2.new(0.45, 0, 0.2, 0)
+    timeTextBox.PlaceholderText = "e.g., 8morning, 21night"
+    timeTextBox.Text = ""
+    timeTextBox.TextSize = 12
+    timeTextBox.TextScaled = true
+    timeTextBox.TextWrapped = true
+    timeTextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", timeTextBox).CornerRadius = UDim.new(0, 4)
+    
+    local timeButton = Instance.new("TextButton")
+    timeButton.Parent = timeInputFrame
+    timeButton.Size = UDim2.new(0.1, 0, 0.6, 0)
+    timeButton.Position = UDim2.new(0.85, 0, 0.2, 0)
+    timeButton.Text = "Set"
+    timeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    timeButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+    timeButton.AutoButtonColor = true
+    timeButton.TextScaled = true
+    timeButton.TextWrapped = true
+    Instance.new("UICorner", timeButton).CornerRadius = UDim.new(0, 4)
+    
+    -- Auto-scaling untuk time elements
+    addAutoTextScaling(timeLabel, 8, 14)
+    addAutoTextScaling(timeButton, 8, 14)
+    
+    timeButton.MouseButton1Click:Connect(function()
+        updateTimeOfDay(timeTextBox.Text)
+    end)
+    
+    -- Quality settings
+    CreateGraphicSetting(ScrollingFrame, "Detail Quality", 1, 0.5, 0.2, 25.0, function(v)
+        settings().Rendering.QualityLevel = math.floor(v * 2)
+        game:GetService("Particles").MaxCount = math.floor(v * 100)
+    end)
+    
+    CreateToggleSetting(ScrollingFrame, "Snapdragon Shaders", false, function(enabled)
+        if enabled then
+            local bloom = Lighting:FindFirstChild("Bloom") or Instance.new("BloomEffect")
+            bloom.Intensity = 0.3
+            bloom.Size = 32
+            bloom.Parent = Lighting
+            
+            local dof = Lighting:FindFirstChild("DepthOfField") or Instance.new("DepthOfFieldEffect")
+            dof.FarIntensity = 0.5
+            dof.NearIntensity = 0.5
+            dof.Parent = Lighting
+            
+            settings().Rendering.EagerBulkExecution = true
+        else
+            if Lighting:FindFirstChild("Bloom") then Lighting.Bloom:Destroy() end
+            if Lighting:FindFirstChild("DepthOfField") then Lighting.DepthOfField:Destroy() end
+        end
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 12: WATER CLARITY & MAPPING
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "💧 WATER & MAPPING")
+    
+    CreateGraphicSetting(ScrollingFrame, "Water Clarity", 0.2, 0.2, 0.2, 10.0, function(v)
+        if Terrain then
+            Terrain.WaterTransparency = 1 - (v * 0.08)
+            Terrain.WaterReflectance = v * 0.1
+        end
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Moon Brightness", 0.5, 0.5, 0.5, 15.0, function(v)
+        lightingSystem.moonBrightness = v
+        updateLightingSystem()
+    end)
+    
+    CreateToggleSetting(ScrollingFrame, "Grass Map Fill", false, function(enabled)
+        if enabled then
+            for x = -100, 100, 3 do
+                for z = -100, 100, 3 do
+                    if math.random(1, 2) == 1 then
+                        local grass = Instance.new("Part")
+                        grass.Name = "MapGrass"
+                        grass.Size = Vector3.new(0.3, math.random(1, 5), 0.3)
+                        grass.Position = Vector3.new(x, 0, z)
+                        grass.Anchored = true
+                        grass.CanCollide = false
+                        grass.Transparency = 0.1
+                        grass.Color = Color3.fromRGB(34, 139, 34)
+                        grass.Material = Enum.Material.Grass
+                        grass.Parent = workspace
+                    end
+                end
+            end
+        else
+            for _, obj in pairs(workspace:GetChildren()) do
+                if obj.Name == "MapGrass" then obj:Destroy() end
+            end
+        end
+    end)
+    
+    -- ========================================================
+    -- KATEGORI 13: VISUAL PARTICLES
+    -- ========================================================
+    createCategoryHeader(ScrollingFrame, "✨ VISUAL PARTICLES")
+    
+    CreateToggleSetting(ScrollingFrame, "Light Glitter Particles", false, function(enabled)
+        if enabled then
+            for i = 1, 30 do
+                local glitter = Instance.new("Part")
+                glitter.Name = "LightGlitter"
+                glitter.Size = Vector3.new(0.1, 0.1, 0.1)
+                glitter.Position = Vector3.new(
+                    math.random(-50, 50),
+                    math.random(2, 10),
+                    math.random(-50, 50)
+                )
+                glitter.Anchored = true
+                glitter.CanCollide = false
+                glitter.Transparency = 0.4
+                glitter.Material = Enum.Material.Neon
+                glitter.Color = Color3.fromRGB(255, 255, 150)
+                glitter.Parent = workspace
+                
+                local connection = RunService.Heartbeat:Connect(function()
+                    glitter.Transparency = 0.4 + (math.sin(tick() + i) * 0.4)
+                    glitter.Position = Vector3.new(
+                        glitter.Position.X,
+                        glitter.Position.Y + math.sin(tick() + i) * 0.02,
+                        glitter.Position.Z
+                    )
+                end)
+                table.insert(waveSystem.connections, connection)
+                table.insert(waveSystem.waveParts, glitter)
+            end
+        else
+            for _, obj in pairs(workspace:GetChildren()) do
+                if obj.Name == "LightGlitter" then obj:Destroy() end
+            end
+        end
+    end)
+    
+    CreateGraphicSetting(ScrollingFrame, "Glitter Density", 0.2, 0.2, 0.2, 10.0, function(v)
+        particleSystem.glitterDensity = v
+    end)
+    
+    -- Update canvas size dengan auto-scaling
+    task.wait(0.1)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20)
+    
+    -- Setup auto-scaling untuk semua elemen dalam ScrollingFrame
+    setupFrameAutoScaling(ScrollingFrame)
+end)
+
+-- ============================================================
+-- FUNGSI DRAGGABLE GUI
+-- ============================================================
+
 local function makeDraggable(frame)
     local dragToggle = nil
     local dragSpeed = 0.25
@@ -287,441 +1447,41 @@ LMG2L["Shaders_Toggle"].MouseButton1Click:Connect(function()
     end
 end)
 
--- Fungsi delete GUI
+-- Fungsi delete GUI dengan cleanup effects
 LMG2L["Delete_Button"].MouseButton1Click:Connect(function()
+    cleanupAllEffects()
     LMG2L["ScreenGui_1"]:Destroy()
 end)
 
-print("SHADERS COMPANY V0.5 GUI Loaded Successfully!")
-print("Click the 'GUI' button to show/hide the main interface")
-
--- SHADERS COMPANY V0.5 GUI - BAHAGIAN 2 (GRAPHIC MODULE)
--- Copy dan execute SELEPAS BAHAGIAN 1
-
--- ============================================================================
--- GRAPHIC MODULE - Visual Enhancement System
--- ============================================================================
-
--- Services
-local Lighting = game:GetService("Lighting")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Terrain = workspace:FindFirstChildOfClass("Terrain")
-local LocalPlayer = Players.LocalPlayer
-
--- Variables untuk effects
-local waterEffects = {}
-local firefliesEnabled = false
-local fireflies = {}
-local graphicSettings = {}
-
--- Fungsi untuk bersihkan Content Frame
-local function clearContentFrame(contentFrame)
-    for _, child in pairs(contentFrame:GetChildren()) do
-        if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("TextLabel") or child:IsA("ScrollingFrame") then 
-            child:Destroy() 
+-- Function to update FPS display
+local function updateFPS()
+    while LMG2L["ScreenGui_1"] and LMG2L["ScreenGui_1"].Parent do
+        local fps = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
+        if LMG2L["FPS_Label"] then
+            LMG2L["FPS_Label"].Text = "FPS: " .. fps
         end
+        wait(1)
     end
 end
 
--- Fungsi kategori header
-local function createCategoryHeader(parent, title)
-    local Header = Instance.new("Frame")
-    Header.Name = title .. "_Header"
-    Header.Parent = parent
-    Header.Size = UDim2.new(0.95, 0, 0, 30)
-    Header.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Header.BorderSizePixel = 0
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 6)
-    Corner.Parent = Header
-    
-    local Label = Instance.new("TextLabel")
-    Label.Parent = Header
-    Label.Size = UDim2.new(1, 0, 1, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = title
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.TextSize = 16
-    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold)
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Position = UDim2.new(0.05, 0, 0, 0)
-    
-    return Header
+-- Function to update Ping display
+local function updatePing()
+    while LMG2L["ScreenGui_1"] and LMG2L["ScreenGui_1"].Parent do
+        if LMG2L["Ping_Label"] then
+            LMG2L["Ping_Label"].Text = "Ping: " .. game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue() .. "ms"
+        end
+        wait(2)
+    end
 end
 
--- Fungsi Pembina Baris Tetapan (Diletakkan dalam kotak putih)
-local function CreateGraphicSetting(parent, title, startVal, step, min, max, callback)
-    local SettingRow = Instance.new("Frame")
-    SettingRow.Name = title .. "_Row"
-    SettingRow.Parent = parent
-    SettingRow.Size = UDim2.new(0.95, 0, 0, 45)
-    SettingRow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-    SettingRow.BorderSizePixel = 0
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = SettingRow
+-- Start updating displays
+spawn(updateFPS)
+spawn(updatePing)
 
-    -- Judul Tetapan
-    local Label = Instance.new("TextLabel")
-    Label.Parent = SettingRow
-    Label.Size = UDim2.new(0.5, 0, 1, 0)
-    Label.Position = UDim2.new(0.05, 0, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = title
-    Label.TextColor3 = Color3.fromRGB(30, 30, 30)
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
-    Label.TextSize = 13
-    Label.TextWrapped = true
+-- Setup character interactions
+setupCharacterInteractions()
 
-    -- Nilai Semasa Frame
-    local ValueFrame = Instance.new("Frame")
-    ValueFrame.Parent = SettingRow
-    ValueFrame.Size = UDim2.new(0.2, 0, 0.6, 0)
-    ValueFrame.Position = UDim2.new(0.55, 0, 0.2, 0)
-    ValueFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Instance.new("UICorner", ValueFrame).CornerRadius = UDim.new(0, 5)
-    
-    local ValueDisplay = Instance.new("TextLabel")
-    ValueDisplay.Parent = ValueFrame
-    ValueDisplay.Size = UDim2.new(1, 0, 1, 0)
-    ValueDisplay.BackgroundTransparency = 1
-    ValueDisplay.TextColor3 = Color3.fromRGB(0, 255, 84)
-    ValueDisplay.Text = string.format("%.1f", startVal)
-    ValueDisplay.TextSize = 14
-    ValueDisplay.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold)
-
-    local currentVal = startVal
-
-    -- Tombol [+]
-    local PlusBtn = Instance.new("TextButton")
-    PlusBtn.Parent = SettingRow
-    PlusBtn.Size = UDim2.new(0.08, 0, 0.7, 0)
-    PlusBtn.Position = UDim2.new(0.88, 0, 0.15, 0)
-    PlusBtn.Text = "+"
-    PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    PlusBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    PlusBtn.AutoButtonColor = true
-    local PlusCorner = Instance.new("UICorner", PlusBtn)
-    PlusCorner.CornerRadius = UDim.new(0, 4)
-
-    -- Tombol [-]
-    local MinusBtn = Instance.new("TextButton")
-    MinusBtn.Parent = SettingRow
-    MinusBtn.Size = UDim2.new(0.08, 0, 0.7, 0)
-    MinusBtn.Position = UDim2.new(0.78, 0, 0.15, 0)
-    MinusBtn.Text = "-"
-    MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MinusBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-    MinusBtn.AutoButtonColor = true
-    local MinusCorner = Instance.new("UICorner", MinusBtn)
-    MinusCorner.CornerRadius = UDim.new(0, 4)
-
-    -- Logik Klik
-    PlusBtn.MouseButton1Click:Connect(function()
-        currentVal = math.clamp(currentVal + step, min, max)
-        ValueDisplay.Text = string.format("%.1f", currentVal)
-        callback(currentVal)
-    end)
-
-    MinusBtn.MouseButton1Click:Connect(function()
-        currentVal = math.clamp(currentVal - step, min, max)
-        ValueDisplay.Text = string.format("%.1f", currentVal)
-        callback(currentVal)
-    end)
-    
-    return SettingRow
-end
-
--- Fungsi untuk Toggle Setting (ON/OFF)
-local function CreateToggleSetting(parent, title, initialState, callback)
-    local ToggleRow = Instance.new("Frame")
-    ToggleRow.Name = title .. "_Toggle"
-    ToggleRow.Parent = parent
-    ToggleRow.Size = UDim2.new(0.95, 0, 0, 40)
-    ToggleRow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-    ToggleRow.BorderSizePixel = 0
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = ToggleRow
-
-    -- Judul
-    local Label = Instance.new("TextLabel")
-    Label.Parent = ToggleRow
-    Label.Size = UDim2.new(0.6, 0, 1, 0)
-    Label.Position = UDim2.new(0.05, 0, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = title
-    Label.TextColor3 = Color3.fromRGB(30, 30, 30)
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json")
-    Label.TextSize = 13
-
-    -- Toggle Button
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Parent = ToggleRow
-    ToggleBtn.Size = UDim2.new(0.2, 0, 0.6, 0)
-    ToggleBtn.Position = UDim2.new(0.75, 0, 0.2, 0)
-    ToggleBtn.Text = initialState and "ON" or "OFF"
-    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleBtn.BackgroundColor3 = initialState and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-    ToggleBtn.AutoButtonColor = true
-    
-    local ToggleCorner = Instance.new("UICorner", ToggleBtn)
-    ToggleCorner.CornerRadius = UDim.new(0, 4)
-    
-    local isOn = initialState
-    
-    ToggleBtn.MouseButton1Click:Connect(function()
-        isOn = not isOn
-        ToggleBtn.Text = isOn and "ON" or "OFF"
-        ToggleBtn.BackgroundColor3 = isOn and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-        callback(isOn)
-    end)
-    
-    return ToggleRow
-end
-
--- Fungsi untuk water splash effects
-local function setupWaterEffects()
-    -- Cleanup previous effects
-    for _, effect in pairs(waterEffects) do
-        if effect then effect:Disconnect() end
-    end
-    waterEffects = {}
-    
-    -- Function untuk buat ripples di air
-    local function createWaterRipple(position)
-        local ripple = Instance.new("Part")
-        ripple.Size = Vector3.new(1, 0.1, 1)
-        ripple.Position = Vector3.new(position.X, position.Y + 0.5, position.Z)
-        ripple.Anchored = true
-        ripple.CanCollide = false
-        ripple.Transparency = 0.5
-        ripple.BrickColor = BrickColor.new("Bright blue")
-        ripple.Parent = workspace
-        
-        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local tween = TweenService:Create(ripple, tweenInfo, {
-            Size = Vector3.new(3, 0.1, 3),
-            Transparency = 1
-        })
-        tween:Play()
-        
-        tween.Completed:Connect(function()
-            ripple:Destroy()
-        end)
-    end
-    
-    -- Detect ketika player masuk air
-    local function onCharacterAdded(character)
-        local humanoid = character:WaitForChild("Humanoid")
-        
-        -- Track movement in water
-        local connection = RunService.Heartbeat:Connect(function()
-            if humanoid and humanoid.Health > 0 then
-                local rootPart = character:FindFirstChild("HumanoidRootPart")
-                if rootPart then
-                    local position = rootPart.Position
-                    local terrain = workspace:FindFirstChildOfClass("Terrain")
-                    
-                    if terrain then
-                        local waterLevel = 0
-                        if position.Y < waterLevel then
-                            createWaterRipple(position)
-                        end
-                    end
-                end
-            end
-        end)
-        
-        table.insert(waterEffects, connection)
-    end
-    
-    if LocalPlayer.Character then
-        onCharacterAdded(LocalPlayer.Character)
-    end
-    LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
-end
-
--- Fungsi untuk fireflies
-local function setupFireflies(enabled)
-    firefliesEnabled = enabled
-    
-    -- Cleanup existing fireflies
-    for _, firefly in pairs(fireflies) do
-        if firefly then firefly:Destroy() end
-    end
-    fireflies = {}
-    
-    if not enabled then return end
-    
-    -- Spawn fireflies in grassy areas
-    local function spawnFireflies()
-        for i = 1, 20 do
-            local firefly = Instance.new("Part")
-            firefly.Name = "Firefly"
-            firefly.Size = Vector3.new(0.2, 0.2, 0.2)
-            firefly.CanCollide = false
-            firefly.Anchored = true
-            firefly.Transparency = 0.3
-            firefly.Material = Enum.Material.Neon
-            firefly.Color = Color3.fromRGB(255, 255, 150)
-            firefly.Parent = workspace
-            
-            firefly.Position = Vector3.new(
-                math.random(-50, 50),
-                math.random(2, 5),
-                math.random(-50, 50)
-            )
-            
-            table.insert(fireflies, firefly)
-            
-            local connection
-            connection = RunService.Heartbeat:Connect(function(dt)
-                if firefly and firefly.Parent then
-                    local offset = math.sin(tick() + i) * 0.5
-                    firefly.Position = Vector3.new(
-                        firefly.Position.X,
-                        firefly.Position.Y + math.sin(tick() * 2 + i) * 0.02,
-                        firefly.Position.Z
-                    )
-                    
-                    local pulse = (math.sin(tick() * 5 + i) + 1) / 2
-                    firefly.Transparency = 0.3 + (pulse * 0.4)
-                else
-                    connection:Disconnect()
-                end
-            end)
-        end
-    end
-    
-    spawnFireflies()
-end
-
--- APABILA TOMBOL GRAPHIC DITEKAN:
-LMG2L["Graphic_Button"].MouseButton1Click:Connect(function()
-    local Content = LMG2L["Functions_Frame"]
-    
-    -- Bersihkan isi kotak putih sebelum muat yang baru
-    clearContentFrame(Content)
-    
-    -- Tambahkan ScrollingFrame untuk content yang banyak
-    local ScrollingFrame = Instance.new("ScrollingFrame")
-    ScrollingFrame.Parent = Content
-    ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
-    ScrollingFrame.BackgroundTransparency = 1
-    ScrollingFrame.ScrollBarThickness = 6
-    ScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-    
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Parent = ScrollingFrame
-    UIListLayout.Padding = UDim.new(0, 10)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    
-    task.wait(0.1)
-    
-    -- KATEGORI 1: LIGHTING & SHADOWS
-    createCategoryHeader(ScrollingFrame, "🌞 LIGHTING & SHADOWS")
-    
-    CreateGraphicSetting(ScrollingFrame, "Brightness", 1.0, 0.1, 0, 5, function(v)
-        Lighting.Brightness = v
-    end)
-    
-    CreateGraphicSetting(ScrollingFrame, "Shadow Quality", 0.5, 0.1, 0, 1, function(v)
-        Lighting.ShadowSoftness = v
-    end)
-    
-    CreateGraphicSetting(ScrollingFrame, "Ambient Light", 0.3, 0.1, 0, 1, function(v)
-        Lighting.Ambient = Color3.fromRGB(v * 255, v * 255, v * 255)
-    end)
-    
-    -- KATEGORI 2: WATER & REFLECTIONS
-    createCategoryHeader(ScrollingFrame, "💧 WATER & REFLECTIONS")
-    
-    CreateGraphicSetting(ScrollingFrame, "Water Reflection", 0.8, 0.1, 0, 1, function(v)
-        if Terrain then
-            Terrain.WaterReflectance = v
-        end
-    end)
-    
-    CreateGraphicSetting(ScrollingFrame, "Wave Intensity", 0.5, 0.1, 0, 2, function(v)
-        if Terrain then
-            Terrain.WaterWaveSize = v
-        end
-    end)
-    
-    CreateGraphicSetting(ScrollingFrame, "River Flow", 0.3, 0.1, 0, 2, function(v)
-        if Terrain then
-            Terrain.WaterWaveSpeed = v
-        end
-    end)
-    
-    CreateGraphicSetting(ScrollingFrame, "Water Transparency", 0.7, 0.1, 0, 1, function(v)
-        if Terrain then
-            Terrain.WaterTransparency = v
-        end
-    end)
-    
-    -- KATEGORI 3: ENVIRONMENT ANIMATION
-    createCategoryHeader(ScrollingFrame, "🌿 ENVIRONMENT")
-    
-    CreateGraphicSetting(ScrollingFrame, "Grass Sway", 0.5, 0.1, 0, 2, function(v)
-        pcall(function()
-            sethiddenproperty(workspace, "GlobalWind", Vector3.new(v * 3, 0, v * 1.5))
-        end)
-    end)
-    
-    -- KATEGORI 4: ATMOSPHERE & EFFECTS
-    createCategoryHeader(ScrollingFrame, "🌫️ ATMOSPHERE")
-    
-    CreateGraphicSetting(ScrollingFrame, "Fog Density", 0.1, 0.1, 0, 1, function(v)
-        local atm = Lighting:FindFirstChildOfClass("Atmosphere")
-        if not atm then
-            atm = Instance.new("Atmosphere")
-            atm.Parent = Lighting
-        end
-        atm.Density = v
-        atm.Offset = 0.5
-        atm.Color = Color3.fromRGB(200, 220, 255)
-    end)
-    
-    -- KATEGORI 5: SPECIAL EFFECTS (TOGGLE)
-    createCategoryHeader(ScrollingFrame, "✨ SPECIAL EFFECTS")
-    
-    CreateToggleSetting(ScrollingFrame, "Water Splash Effects", false, function(enabled)
-        if enabled then
-            setupWaterEffects()
-        else
-            for _, effect in pairs(waterEffects) do
-                if effect then effect:Disconnect() end
-            end
-            waterEffects = {}
-        end
-    end)
-    
-    CreateToggleSetting(ScrollingFrame, "Wet Footprint Trails", false, function(enabled)
-        print("Wet Footprint Trails:", enabled and "Enabled" or "Disabled")
-    end)
-    
-    CreateToggleSetting(ScrollingFrame, "Fireflies in Grass", false, function(enabled)
-        setupFireflies(enabled)
-    end)
-    
-    CreateToggleSetting(ScrollingFrame, "Raindrop Ripples", false, function(enabled)
-        print("Raindrop Ripples:", enabled and "Enabled" or "Disabled")
-    end)
-    
-    task.wait(0.2)
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20)
-end)
-
--- Initialize default values
+-- Setup default values untuk terrain
 if Terrain then
     Terrain.WaterReflectance = 0.8
     Terrain.WaterWaveSize = 0.5
@@ -729,9 +1489,8 @@ if Terrain then
     Terrain.WaterTransparency = 0.7
 end
 
--- Setup Atmosphere jika belum ada
-local existingAtmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
-if not existingAtmosphere then
+-- Setup default Atmosphere
+if not Lighting:FindFirstChildOfClass("Atmosphere") then
     local atm = Instance.new("Atmosphere")
     atm.Density = 0.1
     atm.Offset = 0.5
@@ -739,5 +1498,10 @@ if not existingAtmosphere then
     atm.Parent = Lighting
 end
 
-print("Graphic Module Loaded Successfully!")
-print("Click 'Graphic' button to access visual settings")
+print("========================================")
+print("SHADERS COMPANY V0.5 GUI LOADED SUCCESSFULLY!")
+print("Auto-text scaling enabled for all devices")
+print("Graphic Module: 13 Categories, 40+ Settings")
+print("Click the 'GUI' button to show/hide the main interface")
+print("Click 'Graphic' button for advanced visual settings")
+print("========================================")
