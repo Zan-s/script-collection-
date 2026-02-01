@@ -1,0 +1,169 @@
+-- 1. WAIT FOR GAME TO LOAD
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+-- 2. MAIN VARIABLES
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local folderName = "PaintBuckets"
+
+local tpSpeed = 0.25
+local farmActive = true 
+local scriptRunning = true -- Kill switch for the script
+local stopTime = tick() -- Timer for 10-minute idle check
+
+-- 3. TWEEN NOTIFICATION FUNCTION (With Button Support)
+local function createNotification(msg, color, showButtons)
+    if game:GetService("CoreGui"):FindFirstChild("FarmNotify") then
+        game:GetService("CoreGui")["FarmNotify"]:Destroy()
+    end
+
+    local sg = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    sg.Name = "FarmNotify"
+    
+    local frame = Instance.new("Frame", sg)
+    frame.Size = UDim2.new(0, 380, 0, showButtons and 70 or 45)
+    frame.Position = UDim2.new(0.5, -190, 1, 50) 
+    frame.BackgroundColor3 = color or Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 0
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    
+    local text = Instance.new("TextLabel", frame)
+    text.Size = UDim2.new(1, 0, showButtons and 0.6 or 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = msg
+    text.TextColor3 = Color3.new(1, 1, 1)
+    text.Font = Enum.Font.SourceSansBold
+    text.TextSize = 13
+    text.TextWrapped = true
+
+    if showButtons then
+        local btnFrame = Instance.new("Frame", frame)
+        btnFrame.Size = UDim2.new(1, 0, 0.4, 0)
+        btnFrame.Position = UDim2.new(0, 0, 0.6, 0)
+        btnFrame.BackgroundTransparency = 1
+
+        local function createBtn(txt, pos, colorBtn)
+            local b = Instance.new("TextButton", btnFrame)
+            b.Size = UDim2.new(0.4, 0, 0.8, 0)
+            b.Position = pos
+            b.Text = txt
+            b.BackgroundColor3 = colorBtn
+            b.TextColor3 = Color3.new(1, 1, 1)
+            b.Font = Enum.Font.SourceSansBold
+            b.TextSize = 18
+            Instance.new("UICorner", b)
+            return b
+        end
+
+        local yes = createBtn("✅", UDim2.new(0.05, 0, 0, 0), Color3.fromRGB(0, 150, 0))
+        local no = createBtn("❎", UDim2.new(0.55, 0, 0, 0), Color3.fromRGB(150, 0, 0))
+
+        yes.MouseButton1Click:Connect(function()
+            scriptRunning = false
+            farmActive = false
+            sg:Destroy()
+            warn("Script execution terminated by user.")
+        end)
+
+        no.MouseButton1Click:Connect(function()
+            sg:Destroy()
+        end)
+    end
+    
+    frame:TweenPosition(UDim2.new(0.5, -190, 0.9, -20), "Out", "Quart", 0.5, true)
+    
+    if not showButtons then
+        task.delay(8, function()
+            if frame then
+                frame:TweenPosition(UDim2.new(0.5, -190, 1, 50), "In", "Quart", 0.5, true)
+                task.wait(0.5)
+                if sg then sg:Destroy() end
+            end
+        end)
+    end
+end
+
+-- 4. MAIN FARMING FUNCTION
+local function startAggressiveFarm()
+    local folder = workspace:FindFirstChild(folderName)
+    if not folder then return end
+
+    while farmActive and scriptRunning do
+        local buckets = folder:GetChildren()
+        local foundAnything = false
+
+        for _, bucket in pairs(buckets) do
+            if not farmActive or not scriptRunning then break end
+            local hitbox = bucket:FindFirstChild("HitBox")
+            local char = player.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if hitbox and root then
+                foundAnything = true
+                root.CFrame = hitbox.CFrame
+                task.wait(tpSpeed)
+            end
+        end
+        if not foundAnything or not farmActive then break end
+        task.wait(1)
+    end
+
+    if farmActive and scriptRunning then
+        createNotification("Server cleared. Rejoining...", Color3.fromRGB(30, 30, 30))
+        task.wait(2)
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+    end
+end
+
+-- 5. SAFETY CHECK (FRIEND LIST CHECK)
+if not (function()
+    local s = 0
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and not player:IsFriendsWith(p.UserId) then s = s + 1 end
+    end
+    return s == 0
+end)() then
+    createNotification("Public Server detected. Script Disabled.", Color3.fromRGB(150, 0, 0))
+    return
+end
+
+-- 6. CHAT COMMANDS
+player.Chatted:Connect(function(msg)
+    if not scriptRunning then return end
+    local cmd = msg:upper()
+    if cmd == "!STOP" and farmActive then
+        farmActive = false
+        stopTime = tick() -- Start idle timer
+        createNotification("FARM STOPPED! You can type !START to continue", Color3.fromRGB(150, 0, 0))
+    elseif cmd == "!START" and not farmActive then
+        farmActive = true
+        createNotification("FARM RESTARTED! Type !STOP to pause.", Color3.fromRGB(0, 120, 0))
+        task.spawn(startAggressiveFarm)
+    elseif cmd == "!DELETE" then
+        createNotification("Are you serious about deleting this script?", Color3.fromRGB(50, 50, 50), true)
+    end
+end)
+
+-- 7. IDLE TIMER (10 MINUTES)
+task.spawn(function()
+    while scriptRunning do
+        if not farmActive then
+            local duration = tick() - stopTime
+            if duration >= 600 then -- 10 minutes = 600 seconds
+                createNotification("You can DELETE this script by typing !DELETE", Color3.fromRGB(80, 80, 80))
+                stopTime = tick() -- Reset timer to prevent notification spam
+            end
+        end
+        task.wait(10)
+    end
+end)
+
+-- 8. ANTI-AFK & INITIAL EXECUTION
+player.Idled:Connect(function()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
+
+createNotification("Private session verified. Type !STOP to pause.", Color3.fromRGB(0, 120, 0))
+task.spawn(startAggressiveFarm)
