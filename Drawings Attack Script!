@@ -167,7 +167,3 @@ end)
 
 createNotification("Private session verified. Type !STOP to pause.", Color3.fromRGB(0, 120, 0))
 task.spawn(startAggressiveFarm)
-
-
-This script was built by: Dianozan
-I will delete this script if something happens that is not desirable from my point of view
