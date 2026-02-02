@@ -98,7 +98,7 @@ local function notify(status)
     end)
 end
 
--- 5. LOGIK UPDATE UI
+-- 5. LOGIK UPDATE UI (VERSI FIX: AUTO-NAME IF NO IMAGE)
 local function updateGearFrame()
     local char = player.Character
     if not char then return end
@@ -140,23 +140,40 @@ local function updateGearFrame()
         if not tool then continue end
 
         local slot = Instance.new("TextButton")
-        slot.Size = UDim2.fromOffset(55, 55)
+        slot.Size = UDim2.fromOffset(60, 60) -- Dibesarkan sedikit untuk muat teks
         slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or ((tool.Parent == char) and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35))
         slot.Text = ""
         slot.Parent = scrollFrame
         Instance.new("UICorner", slot).CornerRadius = UDim.new(0, 10)
 
-        local icon = Instance.new("ImageLabel")
-        icon.Size = UDim2.fromScale(0.7, 0.7)
-        icon.Position = UDim2.fromScale(0.5, 0.5)
-        icon.AnchorPoint = Vector2.new(0.5, 0.5)
-        icon.BackgroundTransparency = 1
-        icon.Image = (tool.TextureId ~= "") and tool.TextureId or "rbxassetid://12543411130"
-        icon.Parent = slot
+        -- SEMAKAN IMEJ VS NAMA
+        if tool.TextureId ~= "" then
+            -- JIKA ADA GAMBAR
+            local icon = Instance.new("ImageLabel")
+            icon.Size = UDim2.fromScale(0.7, 0.7)
+            icon.Position = UDim2.fromScale(0.5, 0.5)
+            icon.AnchorPoint = Vector2.new(0.5, 0.5)
+            icon.BackgroundTransparency = 1
+            icon.Image = tool.TextureId
+            icon.Parent = slot
+        else
+            -- JIKA TIADA GAMBAR (GUNA NAMA TOOL)
+            local nameTag = Instance.new("TextLabel")
+            nameTag.Size = UDim2.fromScale(0.9, 0.9)
+            nameTag.Position = UDim2.fromScale(0.5, 0.5)
+            nameTag.AnchorPoint = Vector2.new(0.5, 0.5)
+            nameTag.BackgroundTransparency = 1
+            nameTag.TextColor3 = Color3.fromRGB(255, 255, 255)
+            nameTag.Font = Enum.Font.GothamBold
+            nameTag.TextSize = 10 -- Saiz kecil supaya muat dalam kotak
+            nameTag.TextWrapped = true
+            nameTag.Text = tool.Name:upper()
+            nameTag.Parent = slot
+        end
 
         slot.Activated:Connect(function()
             local now = tick()
-            if (now - lastClickTime) < 0.25 then -- Double Tap detection
+            if (now - lastClickTime) < 0.25 then 
                 isSwapMode = not isSwapMode
                 firstSelection = nil
                 sendPrivateRGB(isSwapMode and "Swap Mode ON" or "Swap Mode OFF")
@@ -188,6 +205,7 @@ local function updateGearFrame()
     end
 end
 
+  
 -- 6. PENGURUSAN RE-SPAWN & LISTENERS
 local function setupListeners()
     local character = player.Character or player.CharacterAdded:Wait()
