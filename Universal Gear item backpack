@@ -98,7 +98,7 @@ local function notify(status)
     end)
 end
 
--- 5. LOGIK UPDATE UI (VERSI FIX: AUTO-NAME IF NO IMAGE)
+-- 5. LOGIK UPDATE UI (VERSI RGB GLOW: NOMBOR SLOT + AUTO-NAME + EQUIPPED EFFECT)
 local function updateGearFrame()
     local char = player.Character
     if not char then return end
@@ -120,57 +120,88 @@ local function updateGearFrame()
     collect(backpack)
     collect(char)
 
-    -- Simpan tool baru ke order
     for _, name in ipairs(foundNames) do
         local exists = false
         for _, savedName in ipairs(savedOrder) do if savedName == name then exists = true break end end
         if not exists then table.insert(savedOrder, name) end
     end
 
-    -- Buang tool yang sudah tiada
     for i = #savedOrder, 1, -1 do
         if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
     end
 
-    -- Refresh UI Buttons
+    -- Bersihkan UI sebelum refresh
     for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
 
     for index, toolName in ipairs(savedOrder) do
         local tool = currentTools[toolName]
         if not tool then continue end
 
+        local isEquipped = (tool.Parent == char) -- Semak jika sedang dipegang
+
         local slot = Instance.new("TextButton")
-        slot.Size = UDim2.fromOffset(60, 60) -- Dibesarkan sedikit untuk muat teks
-        slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or ((tool.Parent == char) and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35))
+        slot.Size = UDim2.fromOffset(60, 60)
+        slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or (isEquipped and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(35, 35, 35))
         slot.Text = ""
         slot.Parent = scrollFrame
         Instance.new("UICorner", slot).CornerRadius = UDim.new(0, 10)
 
-        -- SEMAKAN IMEJ VS NAMA
+        -- 1. EFEK RGB GLOWING OUTLINE (Hanya jika Equipped)
+        if isEquipped then
+            local stroke = Instance.new("UIStroke")
+            stroke.Thickness = 2.5
+            stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            stroke.Parent = slot
+            
+            -- Pusingan warna RGB perlahan
+            local connection
+            connection = RunService.RenderStepped:Connect(function()
+                if not slot or not slot.Parent then 
+                    connection:Disconnect() 
+                    return 
+                end
+                stroke.Color = Color3.fromHSV(tick() * 0.2 % 1, 0.8, 1) -- Speed 0.2 (Perlahan)
+            end)
+        end
+
+        -- 2. TAMBAH NOMBOR SLOT
+        local slotNum = Instance.new("TextLabel")
+        slotNum.Size = UDim2.fromOffset(20, 20)
+        slotNum.Position = UDim2.new(0, 5, 0, 2)
+        slotNum.BackgroundTransparency = 1
+        slotNum.Text = tostring(index)
+        slotNum.TextColor3 = isEquipped and Color3.new(1,1,1) or Color3.fromRGB(200, 200, 200)
+        slotNum.TextTransparency = isEquipped and 0 or 0.5
+        slotNum.Font = Enum.Font.GothamBold
+        slotNum.TextSize = 12
+        slotNum.TextXAlignment = Enum.TextXAlignment.Left
+        slotNum.Parent = slot
+
+        -- 3. SEMAKAN IMEJ VS NAMA TOOL
         if tool.TextureId ~= "" then
-            -- JIKA ADA GAMBAR
             local icon = Instance.new("ImageLabel")
-            icon.Size = UDim2.fromScale(0.7, 0.7)
-            icon.Position = UDim2.fromScale(0.5, 0.5)
+            icon.Size = UDim2.fromScale(0.65, 0.65)
+            icon.Position = UDim2.fromScale(0.5, 0.55)
             icon.AnchorPoint = Vector2.new(0.5, 0.5)
             icon.BackgroundTransparency = 1
             icon.Image = tool.TextureId
+            icon.ImageColor3 = isEquipped and Color3.new(1,1,1) or Color3.fromRGB(200,200,200)
             icon.Parent = slot
         else
-            -- JIKA TIADA GAMBAR (GUNA NAMA TOOL)
             local nameTag = Instance.new("TextLabel")
-            nameTag.Size = UDim2.fromScale(0.9, 0.9)
-            nameTag.Position = UDim2.fromScale(0.5, 0.5)
+            nameTag.Size = UDim2.fromScale(0.85, 0.6)
+            nameTag.Position = UDim2.fromScale(0.5, 0.6)
             nameTag.AnchorPoint = Vector2.new(0.5, 0.5)
             nameTag.BackgroundTransparency = 1
-            nameTag.TextColor3 = Color3.fromRGB(255, 255, 255)
-            nameTag.Font = Enum.Font.GothamBold
-            nameTag.TextSize = 10 -- Saiz kecil supaya muat dalam kotak
+            nameTag.TextColor3 = isEquipped and Color3.new(1,1,1) or Color3.fromRGB(200, 200, 200)
+            nameTag.Font = Enum.Font.SourceSansBold
+            nameTag.TextSize = 10
             nameTag.TextWrapped = true
             nameTag.Text = tool.Name:upper()
             nameTag.Parent = slot
         end
 
+        -- LOGIK CLICK
         slot.Activated:Connect(function()
             local now = tick()
             if (now - lastClickTime) < 0.25 then 
