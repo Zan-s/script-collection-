@@ -2,26 +2,26 @@ local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui") -- Tambah CoreGui
+local CoreGui = game:GetService("CoreGui")
 
 local player = Players.LocalPlayer
 local savedOrder = {} 
 local isSwapMode = false
 local firstSelection = nil
-local lastClickTime = 0
+local isHidden = false
+local isSystemActive = false
 
 -- 1. SOROK BACKPACK ASAL
 task.spawn(function()
     while true do
         pcall(function()
-            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, not isSystemActive)
         end)
-        task.wait(2)
+        task.wait(1)
     end
 end)
 
--- 2. SETUP UI UTAMA (Guna CoreGui)
--- Jika sudah ada UI lama, buang dulu supaya tak bertindih (anti-double run)
+-- 2. SETUP UI UTAMA
 if CoreGui:FindFirstChild("PersistentHotbar") then
     CoreGui.PersistentHotbar:Destroy()
 end
@@ -29,19 +29,20 @@ end
 local gui = Instance.new("ScreenGui")
 gui.Name = "PersistentHotbar"
 gui.ResetOnSpawn = false 
-gui.DisplayOrder = 999 -- Pastikan hotbar sentiasa di atas UI lain
-gui.Parent = CoreGui -- <--- TUKAR KE CORE GUI
+gui.Enabled = false 
+gui.Parent = CoreGui 
 
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Name = "MainScroll"
-scrollFrame.AutomaticSize = Enum.AutomaticSize.X
 scrollFrame.Size = UDim2.new(0, 0, 0, 75)
 scrollFrame.Position = UDim2.new(0.5, 0, 1, -100)
 scrollFrame.AnchorPoint = Vector2.new(0.5, 0)
 scrollFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 scrollFrame.BackgroundTransparency = 0.4
-scrollFrame.ScrollBarThickness = 0
+scrollFrame.ScrollBarThickness = 4 -- Nipis untuk nampak moden
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
 scrollFrame.Parent = gui
 
 Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 12)
@@ -50,8 +51,43 @@ layout.FillDirection = Enum.FillDirection.Horizontal
 layout.Padding = UDim.new(0, 8)
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 Instance.new("UIPadding", scrollFrame).PaddingLeft = UDim.new(0, 10)
+Instance.new("UIPadding", scrollFrame).PaddingRight = UDim.new(0, 10)
 
--- 3. FUNGSI PRIVATE RGB CHAT
+-- CONTAINER TOMBOL
+local btnContainer = Instance.new("Frame")
+btnContainer.Size = UDim2.fromOffset(130, 25)
+btnContainer.Position = UDim2.new(0.5, 0, 1, -15)
+btnContainer.AnchorPoint = Vector2.new(0.5, 1)
+btnContainer.BackgroundTransparency = 1
+btnContainer.Parent = gui
+
+local btnLayout = Instance.new("UIListLayout", btnContainer)
+btnLayout.FillDirection = Enum.FillDirection.Horizontal
+btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+btnLayout.Padding = UDim.new(0, 5)
+
+local hideBtn = Instance.new("TextButton")
+hideBtn.Size = UDim2.fromOffset(60, 20)
+hideBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+hideBtn.BackgroundTransparency = 0.2
+hideBtn.Text = "HIDE"
+hideBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hideBtn.Font = Enum.Font.GothamBold
+hideBtn.TextSize = 10
+Instance.new("UICorner", hideBtn).CornerRadius = UDim.new(0, 4)
+hideBtn.Parent = btnContainer
+
+local editBtn = Instance.new("TextButton")
+editBtn.Size = UDim2.fromOffset(60, 20)
+editBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+editBtn.BackgroundTransparency = 0.2
+editBtn.Text = "EDIT"
+editBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+editBtn.Font = Enum.Font.GothamBold
+editBtn.TextSize = 10
+Instance.new("UICorner", editBtn).CornerRadius = UDim.new(0, 4)
+editBtn.Parent = btnContainer
+
 local function sendPrivateRGB(text)
     pcall(function()
         StarterGui:SetCore("ChatMakeSystemMessage", {
@@ -63,49 +99,28 @@ local function sendPrivateRGB(text)
     end)
 end
 
--- 4. FUNGSI NOTIFIKASI
-local function notify(status)
-    local notifFrame = Instance.new("Frame")
-    notifFrame.Size = UDim2.fromOffset(220, 50)
-    notifFrame.Position = UDim2.new(1.2, 0, 0.1, 0)
-    notifFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    notifFrame.Parent = gui
-    Instance.new("UICorner", notifFrame).CornerRadius = UDim.new(0, 8)
-    
-    local stroke = Instance.new("UIStroke", notifFrame)
-    stroke.Thickness = 3
-    
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.fromScale(1, 1)
-    textLabel.BackgroundTransparency = 1
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.Font = Enum.Font.GothamBold
-    textLabel.Text = status == "ON" and "SWAP MODE: ACTIVE" or "SWAP MODE: INACTIVE"
-    textLabel.Parent = notifFrame
+hideBtn.MouseButton1Click:Connect(function()
+    isHidden = not isHidden
+    if isHidden then
+        scrollFrame:TweenPosition(UDim2.new(0.5, 0, 1, 30), "Out", "Quart", 0.4, true)
+        btnContainer:TweenPosition(UDim2.new(0.5, 0, 1, -5), "Out", "Quart", 0.4, true)
+        editBtn.Visible = false
+        hideBtn.Text = "SHOW"
+    else
+        scrollFrame:TweenPosition(UDim2.new(0.5, 0, 1, -100), "Out", "Back", 0.4, true)
+        btnContainer:TweenPosition(UDim2.new(0.5, 0, 1, -15), "Out", "Back", 0.4, true)
+        editBtn.Visible = true
+        hideBtn.Text = "HIDE"
+    end
+end)
 
-    local rgbConn = RunService.RenderStepped:Connect(function()
-        stroke.Color = Color3.fromHSV(tick() % 3 / 3, 1, 1)
-    end)
-
-    notifFrame:TweenPosition(UDim2.new(1, -240, 0.1, 0), "Out", "Back", 0.5, true)
-    task.delay(5, function()
-        if notifFrame and notifFrame.Parent then
-            notifFrame:TweenPosition(UDim2.new(1.2, 0, 0.1, 0), "In", "Quad", 0.5, true, function()
-                rgbConn:Disconnect()
-                notifFrame:Destroy()
-            end)
-        end
-    end)
-end
-
--- 5. LOGIK UPDATE UI (VERSI RGB GLOW: NOMBOR SLOT + AUTO-NAME + EQUIPPED EFFECT)
+-- 5. LOGIK UTAMA DENGAN AUTO-SCROLL
 local function updateGearFrame()
     local char = player.Character
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
     local backpack = player:FindFirstChild("Backpack")
-    if not backpack then return end
-
+    if not char or not backpack then return end
+    
+    local hum = char:FindFirstChildOfClass("Humanoid")
     local currentTools = {}
     local foundNames = {}
 
@@ -120,25 +135,52 @@ local function updateGearFrame()
     collect(backpack)
     collect(char)
 
+    -- LOGIK AKTIF (>3 ITEM)
+    if #foundNames > 3 then
+        if not isSystemActive then
+            isSystemActive = true
+            gui.Enabled = true
+            sendPrivateRGB("Unlimited Slot Active!")
+        end
+    else
+        if isSystemActive then
+            isSystemActive = false
+            gui.Enabled = false
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+        end
+        return 
+    end
+
+    -- Kemas kini susunan
     for _, name in ipairs(foundNames) do
         local exists = false
         for _, savedName in ipairs(savedOrder) do if savedName == name then exists = true break end end
         if not exists then table.insert(savedOrder, name) end
     end
-
     for i = #savedOrder, 1, -1 do
         if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
     end
 
-    -- Bersihkan UI sebelum refresh
-    for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    -- LOGIK AUTO-SCROLL (>8 ITEM)
+    local totalItems = #savedOrder
+    if totalItems > 8 then
+        scrollFrame.AutomaticSize = Enum.AutomaticSize.None
+        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 20, 0, 75) -- Lock saiz pada 8 slot
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X + 20, 0, 0)
+        scrollFrame.ScrollingEnabled = true
+        scrollFrame.ScrollBarThickness = 4
+    else
+        scrollFrame.AutomaticSize = Enum.AutomaticSize.X
+        scrollFrame.ScrollingEnabled = false
+        scrollFrame.ScrollBarThickness = 0
+    end
 
+    -- Bina Slot
+    for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
     for index, toolName in ipairs(savedOrder) do
         local tool = currentTools[toolName]
         if not tool then continue end
-
-        local isEquipped = (tool.Parent == char) -- Semak jika sedang dipegang
-
+        local isEquipped = (tool.Parent == char)
         local slot = Instance.new("TextButton")
         slot.Size = UDim2.fromOffset(60, 60)
         slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or (isEquipped and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(35, 35, 35))
@@ -146,38 +188,30 @@ local function updateGearFrame()
         slot.Parent = scrollFrame
         Instance.new("UICorner", slot).CornerRadius = UDim.new(0, 10)
 
-        -- 1. EFEK RGB GLOWING OUTLINE (Hanya jika Equipped)
-        if isEquipped then
+        if isEquipped and not isSwapMode then
             local stroke = Instance.new("UIStroke")
             stroke.Thickness = 2.5
             stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             stroke.Parent = slot
-            
-            -- Pusingan warna RGB perlahan
-            local connection
-            connection = RunService.RenderStepped:Connect(function()
-                if not slot or not slot.Parent then 
-                    connection:Disconnect() 
-                    return 
+            task.spawn(function()
+                while isEquipped and slot.Parent do
+                    stroke.Color = Color3.fromHSV(tick() * 0.2 % 1, 0.8, 1)
+                    task.wait()
                 end
-                stroke.Color = Color3.fromHSV(tick() * 0.2 % 1, 0.8, 1) -- Speed 0.2 (Perlahan)
             end)
         end
 
-        -- 2. TAMBAH NOMBOR SLOT
         local slotNum = Instance.new("TextLabel")
         slotNum.Size = UDim2.fromOffset(20, 20)
         slotNum.Position = UDim2.new(0, 5, 0, 2)
         slotNum.BackgroundTransparency = 1
         slotNum.Text = tostring(index)
-        slotNum.TextColor3 = isEquipped and Color3.new(1,1,1) or Color3.fromRGB(200, 200, 200)
-        slotNum.TextTransparency = isEquipped and 0 or 0.5
+        slotNum.TextColor3 = Color3.new(1,1,1)
+        slotNum.TextTransparency = 0.5
         slotNum.Font = Enum.Font.GothamBold
         slotNum.TextSize = 12
-        slotNum.TextXAlignment = Enum.TextXAlignment.Left
         slotNum.Parent = slot
 
-        -- 3. SEMAKAN IMEJ VS NAMA TOOL
         if tool.TextureId ~= "" then
             local icon = Instance.new("ImageLabel")
             icon.Size = UDim2.fromScale(0.65, 0.65)
@@ -185,7 +219,6 @@ local function updateGearFrame()
             icon.AnchorPoint = Vector2.new(0.5, 0.5)
             icon.BackgroundTransparency = 1
             icon.Image = tool.TextureId
-            icon.ImageColor3 = isEquipped and Color3.new(1,1,1) or Color3.fromRGB(200,200,200)
             icon.Parent = slot
         else
             local nameTag = Instance.new("TextLabel")
@@ -193,7 +226,7 @@ local function updateGearFrame()
             nameTag.Position = UDim2.fromScale(0.5, 0.6)
             nameTag.AnchorPoint = Vector2.new(0.5, 0.5)
             nameTag.BackgroundTransparency = 1
-            nameTag.TextColor3 = isEquipped and Color3.new(1,1,1) or Color3.fromRGB(200, 200, 200)
+            nameTag.TextColor3 = Color3.new(1,1,1)
             nameTag.Font = Enum.Font.SourceSansBold
             nameTag.TextSize = 10
             nameTag.TextWrapped = true
@@ -201,62 +234,42 @@ local function updateGearFrame()
             nameTag.Parent = slot
         end
 
-        -- LOGIK CLICK
         slot.Activated:Connect(function()
-            local now = tick()
-            if (now - lastClickTime) < 0.25 then 
-                isSwapMode = not isSwapMode
-                firstSelection = nil
-                sendPrivateRGB(isSwapMode and "Swap Mode ON" or "Swap Mode OFF")
-                notify(isSwapMode and "ON" or "OFF")
-                updateGearFrame()
-                lastClickTime = 0
+            if isSwapMode then
+                if not firstSelection then
+                    firstSelection = index
+                    updateGearFrame()
+                else
+                    local temp = savedOrder[firstSelection]
+                    savedOrder[firstSelection] = savedOrder[index]
+                    savedOrder[index] = temp
+                    firstSelection = nil
+                    updateGearFrame()
+                end
             else
-                lastClickTime = now
-                task.delay(0.26, function()
-                    if tick() - lastClickTime >= 0.25 then
-                        if isSwapMode then
-                            if not firstSelection then
-                                firstSelection = index
-                                updateGearFrame()
-                            else
-                                local temp = savedOrder[firstSelection]
-                                savedOrder[firstSelection] = savedOrder[index]
-                                savedOrder[index] = temp
-                                firstSelection = nil
-                                updateGearFrame()
-                            end
-                        else
-                            if tool.Parent == char then hum:UnequipTools() else hum:EquipTool(tool) end
-                        end
-                    end
-                end)
+                if tool.Parent == char then hum:UnequipTools() else hum:EquipTool(tool) end
             end
         end)
     end
 end
 
-  
--- 6. PENGURUSAN RE-SPAWN & LISTENERS
+editBtn.MouseButton1Click:Connect(function()
+    isSwapMode = not isSwapMode
+    firstSelection = nil
+    editBtn.BackgroundColor3 = isSwapMode and Color3.fromRGB(255, 85, 85) or Color3.fromRGB(30, 30, 30)
+    editBtn.Text = isSwapMode and "SAVING..." or "EDIT"
+    updateGearFrame()
+end)
+
 local function setupListeners()
     local character = player.Character or player.CharacterAdded:Wait()
     local backpack = player:WaitForChild("Backpack")
-
-    -- Membersihkan sambungan lama jika karakter respawn
-    local connections = {}
-    
-    local function connect()
-        table.insert(connections, backpack.ChildAdded:Connect(updateGearFrame))
-        table.insert(connections, backpack.ChildRemoved:Connect(updateGearFrame))
-        table.insert(connections, character.ChildAdded:Connect(updateGearFrame))
-        table.insert(connections, character.ChildRemoved:Connect(updateGearFrame))
-    end
-    
-    connect()
+    backpack.ChildAdded:Connect(updateGearFrame)
+    backpack.ChildRemoved:Connect(updateGearFrame)
+    character.ChildAdded:Connect(updateGearFrame)
+    character.ChildRemoved:Connect(updateGearFrame)
     updateGearFrame()
 end
 
 player.CharacterAdded:Connect(setupListeners)
 setupListeners()
-
-sendPrivateRGB("Hotbar CoreGui Loaded!")
