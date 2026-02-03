@@ -10,6 +10,7 @@ local isSwapMode = false
 local firstSelection = nil
 local isHidden = false
 local isSystemActive = false
+local searchFilter = "" 
 
 -- 1. SOROK BACKPACK ASAL
 task.spawn(function()
@@ -54,7 +55,26 @@ layout.VerticalAlignment = Enum.VerticalAlignment.Center
 Instance.new("UIPadding", scrollFrame).PaddingLeft = UDim.new(0, 10)
 Instance.new("UIPadding", scrollFrame).PaddingRight = UDim.new(0, 10)
 
--- 3. BUTTON CONTROLS
+-- 3. SEARCH BAR (Dialihkan ke sebelah Tombol Hide dengan Jarak)
+local searchBox = Instance.new("TextBox")
+searchBox.Name = "SearchBar"
+searchBox.Size = UDim2.fromOffset(110, 20)
+-- Diletakkan sedikit ke kiri dari tengah (posisi tombol HIDE)
+searchBox.Position = UDim2.new(0.5, -115, 1, -15) 
+searchBox.AnchorPoint = Vector2.new(1, 1) -- Anchor kanan supaya gap konsisten
+searchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+searchBox.BackgroundTransparency = 0.3
+searchBox.TextColor3 = Color3.new(1, 1, 1)
+searchBox.PlaceholderText = "SEARCH..."
+searchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+searchBox.Font = Enum.Font.GothamBold
+searchBox.TextSize = 10
+searchBox.ClearTextOnFocus = false
+searchBox.Visible = false
+searchBox.Parent = gui
+Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
+
+-- 4. BUTTON CONTROLS (Tengah)
 local btnContainer = Instance.new("Frame")
 btnContainer.Size = UDim2.fromOffset(200, 25)
 btnContainer.Position = UDim2.new(0.5, 0, 1, -15)
@@ -85,7 +105,7 @@ local hideBtn = createBtn("HIDE")
 local pickupBtn = createBtn("PICKUP", Color3.fromRGB(0, 170, 127))
 local editBtn = createBtn("EDIT")
 
--- 4. LOGIK PICKUP
+-- 5. LOGIK PICKUP
 local function createFloatingPickup(target, isPrompt)
     local floatGui = Instance.new("ScreenGui")
     floatGui.Name = "FloatingPickup"
@@ -140,7 +160,7 @@ pickupBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 5. LOGIK UTAMA (DENGAN RESET ON DEATH)
+-- 6. UPDATE FRAME LOGIC
 local function updateGearFrame()
     local char = player.Character
     local backpack = player:FindFirstChild("Backpack")
@@ -153,21 +173,20 @@ local function updateGearFrame()
     for _, t in pairs(backpack:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
     for _, t in pairs(char:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
 
-    -- LOGIK AKTIF (>3 ITEM)
     if #foundNames > 3 then
         if not isSystemActive then 
             isSystemActive = true
             scrollFrame.Visible = not isHidden 
+            searchBox.Visible = not isHidden
         end
     else
-        -- KEMBALI KE ASAL JIKA ITEM <= 3
         isSystemActive = false
         scrollFrame.Visible = false
-        scrollFrame.Size = UDim2.new(0, 0, 0, 75) -- Reset saiz UI
+        searchBox.Visible = false
+        scrollFrame.Size = UDim2.new(0, 0, 0, 75)
         return 
     end
 
-    -- SYNC ORDER (KEKALKAN SUSUNAN)
     for _, name in ipairs(foundNames) do
         local exists = false
         for _, savedName in ipairs(savedOrder) do if savedName == name then exists = true break end end
@@ -177,27 +196,17 @@ local function updateGearFrame()
         if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
     end
 
-    -- AUTO-SCROLL LOGIC (>8 ITEM)
-    if #savedOrder > 8 then
-        scrollFrame.AutomaticSize = Enum.AutomaticSize.None
-        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 20, 0, 75)
-        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X + 20, 0, 0)
-        scrollFrame.ScrollingEnabled = true
-        scrollFrame.ScrollBarThickness = 4
-    else
-        scrollFrame.AutomaticSize = Enum.AutomaticSize.X
-        scrollFrame.ScrollingEnabled = false
-        scrollFrame.ScrollBarThickness = 0
-    end
-
-    -- RE-RENDER SLOTS
     for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
     
+    local visibleCount = 0
     for index, toolName in ipairs(savedOrder) do
+        if searchFilter ~= "" and not string.find(toolName:lower(), searchFilter:lower()) then continue end
+        
         local tool = currentTools[toolName]
         if not tool then continue end
-        local isEquipped = (tool.Parent == char)
+        visibleCount = visibleCount + 1
         
+        local isEquipped = (tool.Parent == char)
         local slot = Instance.new("TextButton")
         slot.Size = UDim2.fromOffset(60, 60)
         slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or (isEquipped and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(35, 35, 35))
@@ -217,7 +226,6 @@ local function updateGearFrame()
             end)
         end
 
-        -- SLOT NUMBER
         local slotNum = Instance.new("TextLabel")
         slotNum.Size = UDim2.fromOffset(20, 20)
         slotNum.Position = UDim2.new(0, 5, 0, 2)
@@ -230,7 +238,6 @@ local function updateGearFrame()
         slotNum.ZIndex = 3
         slotNum.Parent = slot
 
-        -- IMAGE / TEXT LOGIC
         if tool.TextureId ~= "" then
             local icon = Instance.new("ImageLabel")
             icon.Size = UDim2.fromScale(0.75, 0.75)
@@ -266,32 +273,43 @@ local function updateGearFrame()
             end
         end)
     end
+
+    if visibleCount > 8 then
+        scrollFrame.AutomaticSize = Enum.AutomaticSize.None
+        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 20, 0, 75)
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X + 20, 0, 0)
+        scrollFrame.ScrollingEnabled = true
+    else
+        scrollFrame.AutomaticSize = Enum.AutomaticSize.X
+        scrollFrame.ScrollingEnabled = false
+    end
 end
 
--- 6. RESPOND TO EVENTS
+-- 7. EVENT LISTENERS
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    searchFilter = searchBox.Text
+    updateGearFrame()
+end)
+
 local function setupListeners()
-    -- RESET SEMUA DATA APABILA MATI
     savedOrder = {}
     isSystemActive = false
     scrollFrame.Visible = false
-    scrollFrame.Size = UDim2.new(0, 0, 0, 75)
-    
+    searchBox.Visible = false
     local char = player.Character or player.CharacterAdded:Wait()
     local bp = player:WaitForChild("Backpack")
-    
     bp.ChildAdded:Connect(updateGearFrame)
     bp.ChildRemoved:Connect(updateGearFrame)
     char.ChildAdded:Connect(updateGearFrame)
     char.ChildRemoved:Connect(updateGearFrame)
-    
-    task.wait(0.2) -- Tunggu sekejap untuk item backpack baru load
+    task.wait(0.2)
     updateGearFrame()
 end
 
--- CONTROLS
 hideBtn.MouseButton1Click:Connect(function()
     isHidden = not isHidden
     scrollFrame.Visible = (not isHidden) and isSystemActive
+    searchBox.Visible = (not isHidden) and isSystemActive 
     hideBtn.Text = isHidden and "SHOW" or "HIDE"
 end)
 
