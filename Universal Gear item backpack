@@ -10,6 +10,7 @@ local isSwapMode = false
 local firstSelection = nil
 local isHidden = false
 local isSystemActive = false
+local isAdvancedOn = false
 local searchFilter = "" 
 
 -- 1. SOROK BACKPACK ASAL
@@ -40,7 +41,7 @@ scrollFrame.Position = UDim2.new(0.5, 0, 1, -100)
 scrollFrame.AnchorPoint = Vector2.new(0.5, 0)
 scrollFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 scrollFrame.BackgroundTransparency = 0.4
-scrollFrame.ScrollBarThickness = 4
+scrollFrame.ScrollBarThickness = 2
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
@@ -52,16 +53,18 @@ local layout = Instance.new("UIListLayout", scrollFrame)
 layout.FillDirection = Enum.FillDirection.Horizontal
 layout.Padding = UDim.new(0, 8)
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
-Instance.new("UIPadding", scrollFrame).PaddingLeft = UDim.new(0, 10)
-Instance.new("UIPadding", scrollFrame).PaddingRight = UDim.new(0, 10)
 
--- 3. SEARCH BAR (Dialihkan ke sebelah Tombol Hide dengan Jarak)
+-- PENAMBAHAN RUANG (GAP) KIRI & KANAN
+local uipadding = Instance.new("UIPadding", scrollFrame)
+uipadding.PaddingLeft = UDim.new(0, 12)
+uipadding.PaddingRight = UDim.new(0, 12)
+
+-- 3. SEARCH BAR
 local searchBox = Instance.new("TextBox")
 searchBox.Name = "SearchBar"
 searchBox.Size = UDim2.fromOffset(110, 20)
--- Diletakkan sedikit ke kiri dari tengah (posisi tombol HIDE)
-searchBox.Position = UDim2.new(0.5, -115, 1, -15) 
-searchBox.AnchorPoint = Vector2.new(1, 1) -- Anchor kanan supaya gap konsisten
+searchBox.Position = UDim2.new(0.5, -135, 1, -15) 
+searchBox.AnchorPoint = Vector2.new(1, 1)
 searchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 searchBox.BackgroundTransparency = 0.3
 searchBox.TextColor3 = Color3.new(1, 1, 1)
@@ -74,9 +77,9 @@ searchBox.Visible = false
 searchBox.Parent = gui
 Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
 
--- 4. BUTTON CONTROLS (Tengah)
+-- 4. BUTTON CONTROLS (Tengah - 4 Tombol)
 local btnContainer = Instance.new("Frame")
-btnContainer.Size = UDim2.fromOffset(200, 25)
+btnContainer.Size = UDim2.fromOffset(265, 25)
 btnContainer.Position = UDim2.new(0.5, 0, 1, -15)
 btnContainer.AnchorPoint = Vector2.new(0.5, 1)
 btnContainer.BackgroundTransparency = 1
@@ -104,6 +107,7 @@ end
 local hideBtn = createBtn("HIDE")
 local pickupBtn = createBtn("PICKUP", Color3.fromRGB(0, 170, 127))
 local editBtn = createBtn("EDIT")
+local advancedBtn = createBtn("ADVANCED", Color3.fromRGB(170, 0, 0))
 
 -- 5. LOGIK PICKUP
 local function createFloatingPickup(target, isPrompt)
@@ -126,7 +130,7 @@ local function createFloatingPickup(target, isPrompt)
                 local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(part.Position)
                 fBtn.Visible = onScreen
                 if onScreen then fBtn.Position = UDim2.fromOffset(pos.X - 25, pos.Y - 25) end
-            end
+            else break end
             task.wait()
         end
         floatGui:Destroy()
@@ -173,7 +177,7 @@ local function updateGearFrame()
     for _, t in pairs(backpack:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
     for _, t in pairs(char:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
 
-    if #foundNames > 3 then
+    if #foundNames > 0 then
         if not isSystemActive then 
             isSystemActive = true
             scrollFrame.Visible = not isHidden 
@@ -183,7 +187,6 @@ local function updateGearFrame()
         isSystemActive = false
         scrollFrame.Visible = false
         searchBox.Visible = false
-        scrollFrame.Size = UDim2.new(0, 0, 0, 75)
         return 
     end
 
@@ -201,7 +204,6 @@ local function updateGearFrame()
     local visibleCount = 0
     for index, toolName in ipairs(savedOrder) do
         if searchFilter ~= "" and not string.find(toolName:lower(), searchFilter:lower()) then continue end
-        
         local tool = currentTools[toolName]
         if not tool then continue end
         visibleCount = visibleCount + 1
@@ -274,10 +276,13 @@ local function updateGearFrame()
         end)
     end
 
+    -- FIX RUANG KANAN (PADDING)
+    task.wait()
+    local contentWidth = layout.AbsoluteContentSize.X + 24
     if visibleCount > 8 then
         scrollFrame.AutomaticSize = Enum.AutomaticSize.None
-        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 20, 0, 75)
-        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X + 20, 0, 0)
+        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 24, 0, 75)
+        scrollFrame.CanvasSize = UDim2.new(0, contentWidth, 0, 0)
         scrollFrame.ScrollingEnabled = true
     else
         scrollFrame.AutomaticSize = Enum.AutomaticSize.X
@@ -288,6 +293,42 @@ end
 -- 7. EVENT LISTENERS
 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     searchFilter = searchBox.Text
+    updateGearFrame()
+end)
+
+advancedBtn.MouseButton1Click:Connect(function()
+    isAdvancedOn = not isAdvancedOn
+    advancedBtn.BackgroundColor3 = isAdvancedOn and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(170, 0, 0)
+    if isAdvancedOn then
+        pcall(function()
+            -- loadstring(game:HttpGet("LINK_HERE"))()
+            print("Advanced Script: ON")
+        end)
+    end
+end)
+
+hideBtn.MouseButton1Click:Connect(function()
+    isHidden = not isHidden
+    hideBtn.Text = isHidden and "SHOW" or "HIDE"
+    scrollFrame.Visible = (not isHidden) and isSystemActive
+    searchBox.Visible = (not isHidden) and isSystemActive 
+    pickupBtn.Visible = not isHidden
+    editBtn.Visible = not isHidden
+    advancedBtn.Visible = not isHidden
+end)
+
+editBtn.MouseButton1Click:Connect(function()
+    if not isSystemActive then return end
+    isSwapMode = not isSwapMode
+    firstSelection = nil
+    if isSwapMode then
+        editBtn.Visible = false
+        task.delay(5, function()
+            isSwapMode = false
+            editBtn.Visible = true
+            updateGearFrame()
+        end)
+    end
     updateGearFrame()
 end)
 
@@ -305,22 +346,6 @@ local function setupListeners()
     task.wait(0.2)
     updateGearFrame()
 end
-
-hideBtn.MouseButton1Click:Connect(function()
-    isHidden = not isHidden
-    scrollFrame.Visible = (not isHidden) and isSystemActive
-    searchBox.Visible = (not isHidden) and isSystemActive 
-    hideBtn.Text = isHidden and "SHOW" or "HIDE"
-end)
-
-editBtn.MouseButton1Click:Connect(function()
-    if not isSystemActive then return end
-    isSwapMode = not isSwapMode
-    firstSelection = nil
-    editBtn.BackgroundColor3 = isSwapMode and Color3.fromRGB(255, 85, 85) or Color3.fromRGB(30, 30, 30)
-    editBtn.Text = isSwapMode and "SAVING..." or "EDIT"
-    updateGearFrame()
-end)
 
 player.CharacterAdded:Connect(setupListeners)
 setupListeners()
