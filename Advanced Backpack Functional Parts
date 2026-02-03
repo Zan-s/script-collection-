@@ -1,0 +1,83 @@
+-- HP Bar Module for Persistent Hotbar
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local gui = CoreGui:FindFirstChild("PersistentHotbar")
+
+if not gui then return end
+
+-- 1. Create HP Container (Letak di atas MainScroll)
+local hpContainer = Instance.new("Frame")
+hpContainer.Name = "HPContainer"
+hpContainer.Size = UDim2.new(0, 300, 0, 35) -- Lebar selaras dengan Hotbar
+hpContainer.Position = UDim2.new(0.5, 0, 1, -145) -- Di atas Hotbar
+hpContainer.AnchorPoint = Vector2.new(0.5, 1)
+hpContainer.BackgroundTransparency = 1
+hpContainer.Parent = gui
+
+-- 2. HP Background (Bar Kelabu)
+local barBack = Instance.new("Frame")
+barBack.Size = UDim2.new(1, 0, 0, 12)
+barBack.Position = UDim2.new(0, 0, 1, 0)
+barBack.AnchorPoint = Vector2.new(0, 1)
+barBack.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+barBack.Parent = hpContainer
+Instance.new("UICorner", barBack).CornerRadius = UDim.new(0, 6)
+
+-- 3. Actual HP Fill (Bar Berwarna)
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(1, 0, 1, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+barFill.Parent = barBack
+Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 6)
+
+-- 4. Text Labels (Persen & Jumlah HP)
+local hpText = Instance.new("TextLabel")
+hpText.Size = UDim2.new(1, 0, 0, 15)
+hpText.Position = UDim2.new(0, 0, 0, 0)
+hpText.BackgroundTransparency = 1
+hpText.TextColor3 = Color3.new(1, 1, 1)
+hpText.Font = Enum.Font.GothamBold
+hpText.TextSize = 12
+hpText.Text = "100% | 100/100"
+hpText.Parent = hpContainer
+
+-- 5. Logic Real-Time Update
+local function updateHP()
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    
+    if hum then
+        local health = math.clamp(hum.Health, 0, hum.MaxHealth)
+        local maxHealth = hum.MaxHealth
+        local percentage = math.floor((health / maxHealth) * 100)
+        
+        -- Update Lebar Bar (Smooth Transition)
+        barFill:TweenSize(UDim2.new(health/maxHealth, 0, 1, 0), "Out", "Quad", 0.3, true)
+        
+        -- Update Teks
+        hpText.Text = string.format("%d%% | %d/%d", percentage, math.floor(health), math.floor(maxHealth))
+        
+        -- Update Warna Mengikut Tahap Darah
+        if percentage > 70 then
+            barFill.BackgroundColor3 = Color3.fromRGB(0, 255, 127) -- Hijau
+        elseif percentage > 40 then
+            barFill.BackgroundColor3 = Color3.fromRGB(255, 220, 0) -- Kuning
+        elseif percentage > 20 then
+            barFill.BackgroundColor3 = Color3.fromRGB(255, 130, 0) -- Oren
+        else
+            barFill.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- Merah
+        end
+    end
+end
+
+-- Jalankan Update setiap kali darah berubah
+RunService.RenderStepped:Connect(updateHP)
+
+-- Sembunyikan jika Hotbar di-HIDE
+hpContainer.Visible = gui.MainScroll.Visible
+gui.MainScroll:GetPropertyChangedSignal("Visible"):Connect(function()
+    hpContainer.Visible = gui.MainScroll.Visible
+end)
