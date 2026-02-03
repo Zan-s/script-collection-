@@ -107,7 +107,7 @@ local pickupBtn = createBtn("PICKUP", Color3.fromRGB(170, 0, 0))
 local editBtn = createBtn("EDIT")
 
 
--- 5. LOGIK PICKUP (DIBAIKI UNTUK PENGESANAN LEBIH LUAS)
+-- 5. LOGIK PICKUP (VERSI UNTUK GAME MODEN 2025/2026)
 local function createFloatingPickup(target, gearName, isPrompt)
     if activePopups[target] then return end
     activePopups[target] = true
@@ -120,21 +120,21 @@ local function createFloatingPickup(target, gearName, isPrompt)
     
     local holdBtn = Instance.new("TextButton")
     holdBtn.Name = "HoldBtn"
-    holdBtn.Size = UDim2.fromOffset(45, 45)
+    holdBtn.Size = UDim2.fromOffset(50, 50) -- Besarkan sikit untuk Mobile
     holdBtn.Position = UDim2.new(0.5, 0, 0, 0)
     holdBtn.AnchorPoint = Vector2.new(0.5, 0)
     holdBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     holdBtn.Text = "HOLD"
     holdBtn.TextColor3 = Color3.new(1, 1, 1)
     holdBtn.Font = Enum.Font.GothamBold
-    holdBtn.TextSize = 10
+    holdBtn.TextSize = 12
     holdBtn.Parent = container
     Instance.new("UICorner", holdBtn).CornerRadius = UDim.new(1, 0)
     Instance.new("UIStroke", holdBtn).Color = Color3.new(1,1,1)
 
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Size = UDim2.new(1, 0, 0, 25)
-    nameLabel.Position = UDim2.new(0.5, 0, 0, 48)
+    nameLabel.Position = UDim2.new(0.5, 0, 0, 55)
     nameLabel.AnchorPoint = Vector2.new(0.5, 0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = "[" .. gearName:upper() .. "]"
@@ -144,26 +144,27 @@ local function createFloatingPickup(target, gearName, isPrompt)
     nameLabel.Parent = container
 
     task.spawn(function()
-        while isPickupActive and target and target.Parent and container.Parent do
+        while isPickupActive and target and container.Parent do
             local char = player.Character
             local root = char and char:FindFirstChild("HumanoidRootPart")
             if not root then break end
-            
             if hasItem(gearName) then break end
 
-            -- Cari posisi part untuk letak UI
-            local part = nil
-            if isPrompt then
-                part = target.Parent:IsA("BasePart") and target.Parent or target.Parent:FindFirstChildWhichIsA("BasePart")
+            -- Cari lokasi visual untuk tombol
+            local targetPart = nil
+            if target:IsA("BasePart") then
+                targetPart = target
+            elseif target:IsA("ProximityPrompt") or target:IsA("ClickDetector") then
+                targetPart = target.Parent
             elseif target:IsA("Tool") then
-                part = target:FindFirstChild("Handle")
+                targetPart = target:FindFirstChild("Handle") or target:FindFirstChildWhichIsA("BasePart")
             end
 
-            if part then
-                local dist = (root.Position - part.Position).Magnitude
-                if dist > 15 then break end -- Jarak maksimum tombol hilang
+            if targetPart then
+                local dist = (root.Position - targetPart.Position).Magnitude
+                if dist > 15 then break end
                 
-                local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(part.Position)
+                local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(targetPart.Position)
                 container.Visible = onScreen
                 if onScreen then 
                     container.Position = UDim2.fromOffset(pos.X - 50, pos.Y - 40) 
@@ -176,65 +177,69 @@ local function createFloatingPickup(target, gearName, isPrompt)
     end)
 
     holdBtn.MouseButton1Click:Connect(function()
-        if isPrompt then
+        if target:IsA("ProximityPrompt") then
+            -- Trigger untuk game moden (Seringkali perlukan Begin & End)
             target:InputHoldBegin()
             task.wait(target.HoldDuration + 0.1)
             target:InputHoldEnd()
+        elseif target:IsA("ClickDetector") then
+            fireclickdetector(target)
         else
+            -- Touch Interest (Pickup fizikal)
             local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") and target:FindFirstChild("Handle") then
-                firetouchinterest(char.HumanoidRootPart, target.Handle, 0)
-                task.wait()
-                firetouchinterest(char.HumanoidRootPart, target.Handle, 1)
+            local handle = target:IsA("Tool") and target:FindFirstChild("Handle") or target
+            if char and char:FindFirstChild("HumanoidRootPart") and handle then
+                firetouchinterest(char.HumanoidRootPart, handle, 0)
+                task.wait(0.1)
+                firetouchinterest(char.HumanoidRootPart, handle, 1)
             end
         end
         container:Destroy()
     end)
 end
 
--- SCAN LOOP (LEBIH AGRESIF UNTUK GEAR SEPERTI BAT)
+-- SCAN LOOP (VERSI RAYCAST & SPHERE OVERLAP)
 task.spawn(function()
     while true do
         if isPickupActive and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local root = player.Character.HumanoidRootPart
             
-            -- Kita guna GetPartBoundsInRadius supaya lebih laju dan tepat dikesan
-            local region = OverlapParams.new()
-            region.FilterType = Enum.RaycastFilterType.Exclude
-            region.FilterDescendantsInstances = {player.Character}
+            -- Scan semua objek dalam lingkungan 12 stud
+            local params = OverlapParams.new()
+            params.FilterType = Enum.RaycastFilterType.Exclude
+            params.FilterDescendantsInstances = {player.Character}
             
-            local nearbyParts = workspace:GetPartBoundsInRadius(root.Position, 12)
+            local objects = workspace:GetPartBoundsInRadius(root.Position, 12, params)
             
-            for _, part in pairs(nearbyParts) do
+            for _, part in pairs(objects) do
                 if not isPickupActive then break end
                 
-                local gearName = ""
-                local isPrompt = false
-                local targetObj = nil
+                local foundTarget = nil
+                local name = part.Name
 
-                -- 1. Cek jika part ada ProximityPrompt (Untuk item yang boleh di HOLD)
+                -- 1. Cek ProximityPrompt (Utama untuk game moden)
                 local prompt = part:FindFirstChildWhichIsA("ProximityPrompt") or part.Parent:FindFirstChildWhichIsA("ProximityPrompt")
-                
                 if prompt then
-                    gearName = part.Name
-                    isPrompt = true
-                    targetObj = prompt
-                -- 2. Cek jika part adalah sebahagian daripada Tool (Pickup biasa)
+                    foundTarget = prompt
+                    name = part.Name
+                -- 2. Cek Tool di tanah
                 elseif part.Parent:IsA("Tool") then
-                    gearName = part.Parent.Name
-                    targetObj = part.Parent
+                    foundTarget = part.Parent
+                    name = part.Parent.Name
+                -- 3. Cek ClickDetector
+                elseif part:FindFirstChildWhichIsA("ClickDetector") then
+                    foundTarget = part:FindFirstChildWhichIsA("ClickDetector")
                 end
 
-                if targetObj and gearName ~= "" then
-                    if not hasItem(gearName) then
-                        createFloatingPickup(targetObj, gearName, isPrompt)
-                    end
+                if foundTarget and not hasItem(name) then
+                    createFloatingPickup(foundTarget, name, foundTarget:IsA("ProximityPrompt"))
                 end
             end
         end
-        task.wait(0.5)
+        task.wait(0.4) -- Scan lebih kerap (Game baru perlukan respon laju)
     end
 end)
+
 
 -- 6. HOTBAR LOGIC (DIPULIHKAN 100% KE ASAL)
 local function updateGearFrame()
