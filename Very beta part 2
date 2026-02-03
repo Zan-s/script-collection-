@@ -1,0 +1,409 @@
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local savedOrder = {} 
+local isSwapMode = false
+local firstSelection = nil
+local isHidden = false
+local isSystemActive = false
+local searchFilter = "" 
+
+local isPickupActive = false
+local activePopups = {} 
+
+-- 1. FUNGSI PEMERIKSAAN ITEM
+local function hasItem(itemName)
+    local char = player.Character
+    local bp = player:FindFirstChild("Backpack")
+    if char and char:FindFirstChild(itemName) then return true end
+    if bp and bp:FindFirstChild(itemName) then return true end
+    return false
+end
+
+-- 2. SETUP UI UTAMA
+if CoreGui:FindFirstChild("PersistentHotbar") then
+    CoreGui.PersistentHotbar:Destroy()
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "PersistentHotbar"
+gui.ResetOnSpawn = false 
+gui.Enabled = true 
+gui.Parent = CoreGui 
+
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Name = "MainScroll"
+scrollFrame.Size = UDim2.new(0, 0, 0, 75)
+scrollFrame.Position = UDim2.new(0.5, 0, 1, -100)
+scrollFrame.AnchorPoint = Vector2.new(0.5, 0)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+scrollFrame.BackgroundTransparency = 0.4
+scrollFrame.ScrollBarThickness = 4
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
+scrollFrame.Visible = false
+scrollFrame.Parent = gui
+
+Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 12)
+local layout = Instance.new("UIListLayout", scrollFrame)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.Padding = UDim.new(0, 8)
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+Instance.new("UIPadding", scrollFrame).PaddingLeft = UDim.new(0, 10)
+Instance.new("UIPadding", scrollFrame).PaddingRight = UDim.new(0, 10)
+
+-- 3. SEARCH BAR
+local searchBox = Instance.new("TextBox")
+searchBox.Name = "SearchBar"
+searchBox.Size = UDim2.fromOffset(110, 20)
+searchBox.Position = UDim2.new(0.5, -115, 1, -15) 
+searchBox.AnchorPoint = Vector2.new(1, 1)
+searchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+searchBox.BackgroundTransparency = 0.3
+searchBox.TextColor3 = Color3.new(1, 1, 1)
+searchBox.PlaceholderText = "SEARCH..."
+searchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+searchBox.Font = Enum.Font.GothamBold
+searchBox.TextSize = 10
+searchBox.ClearTextOnFocus = false
+searchBox.Visible = false
+searchBox.Parent = gui
+Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
+
+-- 4. BUTTON CONTROLS
+local btnContainer = Instance.new("Frame")
+btnContainer.Size = UDim2.fromOffset(200, 25)
+btnContainer.Position = UDim2.new(0.5, 0, 1, -15)
+btnContainer.AnchorPoint = Vector2.new(0.5, 1)
+btnContainer.BackgroundTransparency = 1
+btnContainer.Parent = gui
+
+local btnLayout = Instance.new("UIListLayout", btnContainer)
+btnLayout.FillDirection = Enum.FillDirection.Horizontal
+btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+btnLayout.Padding = UDim.new(0, 5)
+
+local function createBtn(text, color)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.fromOffset(60, 20)
+    b.BackgroundColor3 = color or Color3.fromRGB(30, 30, 30)
+    b.BackgroundTransparency = 0.2
+    b.Text = text
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 10
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+    b.Parent = btnContainer
+    return b
+end
+
+local hideBtn = createBtn("HIDE")
+local pickupBtn = createBtn("PICKUP", Color3.fromRGB(170, 0, 0))
+local editBtn = createBtn("EDIT")
+
+
+-- 5. LOGIK PICKUP (DIBAIKI UNTUK PENGESANAN LEBIH LUAS)
+local function createFloatingPickup(target, gearName, isPrompt)
+    if activePopups[target] then return end
+    activePopups[target] = true
+
+    local container = Instance.new("Frame")
+    container.Name = "AutoPickupBtn"
+    container.Size = UDim2.fromOffset(100, 80)
+    container.BackgroundTransparency = 1
+    container.Parent = CoreGui
+    
+    local holdBtn = Instance.new("TextButton")
+    holdBtn.Name = "HoldBtn"
+    holdBtn.Size = UDim2.fromOffset(45, 45)
+    holdBtn.Position = UDim2.new(0.5, 0, 0, 0)
+    holdBtn.AnchorPoint = Vector2.new(0.5, 0)
+    holdBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    holdBtn.Text = "HOLD"
+    holdBtn.TextColor3 = Color3.new(1, 1, 1)
+    holdBtn.Font = Enum.Font.GothamBold
+    holdBtn.TextSize = 10
+    holdBtn.Parent = container
+    Instance.new("UICorner", holdBtn).CornerRadius = UDim.new(1, 0)
+    Instance.new("UIStroke", holdBtn).Color = Color3.new(1,1,1)
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0, 25)
+    nameLabel.Position = UDim2.new(0.5, 0, 0, 48)
+    nameLabel.AnchorPoint = Vector2.new(0.5, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = "[" .. gearName:upper() .. "]"
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.Font = Enum.Font.GothamBlack
+    nameLabel.TextSize = 14
+    nameLabel.Parent = container
+
+    task.spawn(function()
+        while isPickupActive and target and target.Parent and container.Parent do
+            local char = player.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then break end
+            
+            if hasItem(gearName) then break end
+
+            -- Cari posisi part untuk letak UI
+            local part = nil
+            if isPrompt then
+                part = target.Parent:IsA("BasePart") and target.Parent or target.Parent:FindFirstChildWhichIsA("BasePart")
+            elseif target:IsA("Tool") then
+                part = target:FindFirstChild("Handle")
+            end
+
+            if part then
+                local dist = (root.Position - part.Position).Magnitude
+                if dist > 15 then break end -- Jarak maksimum tombol hilang
+                
+                local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(part.Position)
+                container.Visible = onScreen
+                if onScreen then 
+                    container.Position = UDim2.fromOffset(pos.X - 50, pos.Y - 40) 
+                end
+            else break end
+            task.wait()
+        end
+        activePopups[target] = nil
+        container:Destroy()
+    end)
+
+    holdBtn.MouseButton1Click:Connect(function()
+        if isPrompt then
+            target:InputHoldBegin()
+            task.wait(target.HoldDuration + 0.1)
+            target:InputHoldEnd()
+        else
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and target:FindFirstChild("Handle") then
+                firetouchinterest(char.HumanoidRootPart, target.Handle, 0)
+                task.wait()
+                firetouchinterest(char.HumanoidRootPart, target.Handle, 1)
+            end
+        end
+        container:Destroy()
+    end)
+end
+
+-- SCAN LOOP (LEBIH AGRESIF UNTUK GEAR SEPERTI BAT)
+task.spawn(function()
+    while true do
+        if isPickupActive and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local root = player.Character.HumanoidRootPart
+            
+            -- Kita guna GetPartBoundsInRadius supaya lebih laju dan tepat dikesan
+            local region = OverlapParams.new()
+            region.FilterType = Enum.RaycastFilterType.Exclude
+            region.FilterDescendantsInstances = {player.Character}
+            
+            local nearbyParts = workspace:GetPartBoundsInRadius(root.Position, 12)
+            
+            for _, part in pairs(nearbyParts) do
+                if not isPickupActive then break end
+                
+                local gearName = ""
+                local isPrompt = false
+                local targetObj = nil
+
+                -- 1. Cek jika part ada ProximityPrompt (Untuk item yang boleh di HOLD)
+                local prompt = part:FindFirstChildWhichIsA("ProximityPrompt") or part.Parent:FindFirstChildWhichIsA("ProximityPrompt")
+                
+                if prompt then
+                    gearName = part.Name
+                    isPrompt = true
+                    targetObj = prompt
+                -- 2. Cek jika part adalah sebahagian daripada Tool (Pickup biasa)
+                elseif part.Parent:IsA("Tool") then
+                    gearName = part.Parent.Name
+                    targetObj = part.Parent
+                end
+
+                if targetObj and gearName ~= "" then
+                    if not hasItem(gearName) then
+                        createFloatingPickup(targetObj, gearName, isPrompt)
+                    end
+                end
+            end
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- 6. HOTBAR LOGIC (DIPULIHKAN 100% KE ASAL)
+local function updateGearFrame()
+    local char = player.Character
+    local backpack = player:FindFirstChild("Backpack")
+    if not char or not backpack then return end
+    
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local currentTools = {}
+    local foundNames = {}
+
+    for _, t in pairs(backpack:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
+    for _, t in pairs(char:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
+
+    if #foundNames > 3 then
+        if not isSystemActive then 
+            isSystemActive = true
+            scrollFrame.Visible = not isHidden 
+            searchBox.Visible = not isHidden
+        end
+    else
+        isSystemActive = false
+        scrollFrame.Visible = false
+        searchBox.Visible = false
+        scrollFrame.Size = UDim2.new(0, 0, 0, 75)
+        return 
+    end
+
+    for _, name in ipairs(foundNames) do
+        local exists = false
+        for _, savedName in ipairs(savedOrder) do if savedName == name then exists = true break end end
+        if not exists then table.insert(savedOrder, name) end
+    end
+    for i = #savedOrder, 1, -1 do
+        if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
+    end
+
+    for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    
+    local visibleCount = 0
+    for index, toolName in ipairs(savedOrder) do
+        if searchFilter ~= "" and not string.find(toolName:lower(), searchFilter:lower()) then continue end
+        local tool = currentTools[toolName]
+        if not tool then continue end
+        visibleCount = visibleCount + 1
+        
+        local isEquipped = (tool.Parent == char)
+        local slot = Instance.new("TextButton")
+        slot.Size = UDim2.fromOffset(60, 60)
+        slot.BackgroundColor3 = isSwapMode and ((firstSelection == index) and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(35, 55, 75)) or (isEquipped and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(35, 35, 35))
+        slot.Text = ""
+        slot.Parent = scrollFrame
+        Instance.new("UICorner", slot).CornerRadius = UDim.new(0, 10)
+
+        if isEquipped and not isSwapMode then
+            local stroke = Instance.new("UIStroke", slot)
+            stroke.Thickness = 2.5
+            stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            task.spawn(function()
+                while isEquipped and slot.Parent do
+                    stroke.Color = Color3.fromHSV(tick() * 0.2 % 1, 0.8, 1)
+                    task.wait()
+                end
+            end)
+        end
+
+        local slotNum = Instance.new("TextLabel")
+        slotNum.Size = UDim2.fromOffset(20, 20)
+        slotNum.Position = UDim2.new(0, 5, 0, 2)
+        slotNum.BackgroundTransparency = 1
+        slotNum.Text = tostring(index)
+        slotNum.TextColor3 = Color3.new(1,1,1)
+        slotNum.TextTransparency = 0.5
+        slotNum.Font = Enum.Font.GothamBold
+        slotNum.TextSize = 12
+        slotNum.Parent = slot
+
+        if tool.TextureId ~= "" then
+            local icon = Instance.new("ImageLabel")
+            icon.Size = UDim2.fromScale(0.75, 0.75)
+            icon.Position = UDim2.fromScale(0.5, 0.5)
+            icon.AnchorPoint = Vector2.new(0.5, 0.5)
+            icon.BackgroundTransparency = 1
+            icon.Image = tool.TextureId
+            icon.ZIndex = 2
+            icon.Parent = slot
+        else
+            local nameTag = Instance.new("TextLabel")
+            nameTag.Size = UDim2.fromScale(0.85, 0.6)
+            nameTag.Position = UDim2.fromScale(0.5, 0.5)
+            nameTag.AnchorPoint = Vector2.new(0.5, 0.5)
+            nameTag.BackgroundTransparency = 1
+            nameTag.TextColor3 = Color3.new(1,1,1)
+            nameTag.Font = Enum.Font.SourceSansBold
+            nameTag.TextSize = 10
+            nameTag.TextWrapped = true
+            nameTag.Text = tool.Name:upper()
+            nameTag.ZIndex = 2
+            nameTag.Parent = slot
+        end
+
+        slot.Activated:Connect(function()
+            if isSwapMode then
+                if not firstSelection then firstSelection = index; updateGearFrame() else
+                    local temp = savedOrder[firstSelection]; savedOrder[firstSelection] = savedOrder[index]; savedOrder[index] = temp
+                    firstSelection = nil; updateGearFrame()
+                end
+            else
+                if tool.Parent == char then hum:UnequipTools() else hum:EquipTool(tool) end
+            end
+        end)
+    end
+
+    if visibleCount > 8 then
+        scrollFrame.AutomaticSize = Enum.AutomaticSize.None
+        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 20, 0, 75)
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X + 20, 0, 0)
+        scrollFrame.ScrollingEnabled = true
+    else
+        scrollFrame.AutomaticSize = Enum.AutomaticSize.X
+        scrollFrame.ScrollingEnabled = false
+    end
+end
+
+-- 7. EVENTS & LISTENERS
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    searchFilter = searchBox.Text
+    updateGearFrame()
+end)
+
+local function setupListeners()
+    savedOrder = {}
+    isSystemActive = false
+    scrollFrame.Visible = false
+    searchBox.Visible = false
+    local char = player.Character or player.CharacterAdded:Wait()
+    local bp = player:WaitForChild("Backpack")
+    bp.ChildAdded:Connect(updateGearFrame)
+    bp.ChildRemoved:Connect(updateGearFrame)
+    char.ChildAdded:Connect(updateGearFrame)
+    char.ChildRemoved:Connect(updateGearFrame)
+    task.wait(0.2)
+    updateGearFrame()
+end
+
+hideBtn.MouseButton1Click:Connect(function()
+    isHidden = not isHidden
+    scrollFrame.Visible = (not isHidden) and isSystemActive
+    searchBox.Visible = (not isHidden) and isSystemActive 
+    hideBtn.Text = isHidden and "SHOW" or "HIDE"
+end)
+
+pickupBtn.MouseButton1Click:Connect(function()
+    isPickupActive = not isPickupActive
+    pickupBtn.BackgroundColor3 = isPickupActive and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(170, 0, 0)
+    if not isPickupActive then
+        for _, v in pairs(CoreGui:GetChildren()) do if v.Name == "AutoPickupBtn" then v:Destroy() end end
+        activePopups = {}
+    end
+end)
+
+editBtn.MouseButton1Click:Connect(function()
+    if not isSystemActive then return end
+    isSwapMode = not isSwapMode
+    firstSelection = nil
+    editBtn.BackgroundColor3 = isSwapMode and Color3.fromRGB(255, 85, 85) or Color3.fromRGB(30, 30, 30)
+    editBtn.Text = isSwapMode and "SAVING..." or "EDIT"
+    updateGearFrame()
+end)
+
+player.CharacterAdded:Connect(setupListeners)
+setupListeners()
