@@ -301,7 +301,7 @@ advancedBtn.MouseButton1Click:Connect(function()
     advancedBtn.BackgroundColor3 = isAdvancedOn and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(170, 0, 0)
     if isAdvancedOn then
         pcall(function()
-            -- loadstring(game:HttpGet("LINK_HERE"))()
+            -- loadstring(game:HttpGet("https://raw.githubusercontent.com/Zan-s/script-collection-/refs/heads/main/Advanced%20Backpack%20Functional%20Parts"))()
             print("Advanced Script: ON")
         end)
     end
