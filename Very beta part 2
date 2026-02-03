@@ -12,10 +12,7 @@ local isHidden = false
 local isSystemActive = false
 local searchFilter = "" 
 
-local isPickupActive = false
-local activePopups = {} 
-
--- 1. FUNGSI PEMERIKSAAN ITEM
+-- 1. FUNGSI PEMERIKSAAN ITEM (Supaya tak pickup item yang dah ada)
 local function hasItem(itemName)
     local char = player.Character
     local bp = player:FindFirstChild("Backpack")
@@ -24,7 +21,7 @@ local function hasItem(itemName)
     return false
 end
 
--- 2. SETUP UI UTAMA
+-- 2. SETUP UI UTAMA (Persistent Hotbar)
 if CoreGui:FindFirstChild("PersistentHotbar") then
     CoreGui.PersistentHotbar:Destroy()
 end
@@ -44,8 +41,6 @@ scrollFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 scrollFrame.BackgroundTransparency = 0.4
 scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
 scrollFrame.Visible = false
 scrollFrame.Parent = gui
 
@@ -57,7 +52,7 @@ layout.VerticalAlignment = Enum.VerticalAlignment.Center
 Instance.new("UIPadding", scrollFrame).PaddingLeft = UDim.new(0, 10)
 Instance.new("UIPadding", scrollFrame).PaddingRight = UDim.new(0, 10)
 
--- 3. SEARCH BAR
+-- 3. SEARCH BAR & TOMBOL KAWALAN
 local searchBox = Instance.new("TextBox")
 searchBox.Name = "SearchBar"
 searchBox.Size = UDim2.fromOffset(110, 20)
@@ -67,15 +62,12 @@ searchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 searchBox.BackgroundTransparency = 0.3
 searchBox.TextColor3 = Color3.new(1, 1, 1)
 searchBox.PlaceholderText = "SEARCH..."
-searchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
 searchBox.Font = Enum.Font.GothamBold
 searchBox.TextSize = 10
-searchBox.ClearTextOnFocus = false
 searchBox.Visible = false
 searchBox.Parent = gui
 Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
 
--- 4. BUTTON CONTROLS
 local btnContainer = Instance.new("Frame")
 btnContainer.Size = UDim2.fromOffset(200, 25)
 btnContainer.Position = UDim2.new(0.5, 0, 1, -15)
@@ -103,145 +95,96 @@ local function createBtn(text, color)
 end
 
 local hideBtn = createBtn("HIDE")
-local pickupBtn = createBtn("PICKUP", Color3.fromRGB(170, 0, 0))
+local pickupBtn = createBtn("PICKUP", Color3.fromRGB(0, 170, 127))
 local editBtn = createBtn("EDIT")
 
+-- 4. FUNGSI PICKUP (LOGIK ASAL YANG ANDA MAHU)
+local function createFloatingPickup(target, isPrompt, itemName)
+    if CoreGui:FindFirstChild("FloatingPickup_" .. itemName) then return end
 
--- 5. LOGIK PICKUP (VERSI UNTUK GAME MODEN 2025/2026)
-local function createFloatingPickup(target, gearName, isPrompt)
-    if activePopups[target] then return end
-    activePopups[target] = true
-
-    local container = Instance.new("Frame")
-    container.Name = "AutoPickupBtn"
-    container.Size = UDim2.fromOffset(100, 80)
-    container.BackgroundTransparency = 1
-    container.Parent = CoreGui
+    local floatGui = Instance.new("ScreenGui")
+    floatGui.Name = "FloatingPickup_" .. itemName
+    floatGui.Parent = CoreGui
     
-    local holdBtn = Instance.new("TextButton")
-    holdBtn.Name = "HoldBtn"
-    holdBtn.Size = UDim2.fromOffset(50, 50) -- Besarkan sikit untuk Mobile
-    holdBtn.Position = UDim2.new(0.5, 0, 0, 0)
-    holdBtn.AnchorPoint = Vector2.new(0.5, 0)
-    holdBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    holdBtn.Text = "HOLD"
-    holdBtn.TextColor3 = Color3.new(1, 1, 1)
-    holdBtn.Font = Enum.Font.GothamBold
-    holdBtn.TextSize = 12
-    holdBtn.Parent = container
-    Instance.new("UICorner", holdBtn).CornerRadius = UDim.new(1, 0)
-    Instance.new("UIStroke", holdBtn).Color = Color3.new(1,1,1)
-
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1, 0, 0, 25)
-    nameLabel.Position = UDim2.new(0.5, 0, 0, 55)
-    nameLabel.AnchorPoint = Vector2.new(0.5, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = "[" .. gearName:upper() .. "]"
-    nameLabel.TextColor3 = Color3.new(1, 1, 1)
-    nameLabel.Font = Enum.Font.GothamBlack
-    nameLabel.TextSize = 14
-    nameLabel.Parent = container
+    local fBtn = Instance.new("TextButton")
+    fBtn.Size = UDim2.fromOffset(55, 55)
+    fBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    fBtn.BackgroundTransparency = 0.3
+    fBtn.Text = isPrompt and "HOLD\n"..itemName:upper() or "GET\n"..itemName:upper()
+    fBtn.Font = Enum.Font.GothamBold
+    fBtn.TextSize = 8
+    fBtn.TextColor3 = Color3.new(0,0,0)
+    fBtn.Parent = floatGui
+    Instance.new("UICorner", fBtn).CornerRadius = UDim.new(1, 0)
+    local stroke = Instance.new("UIStroke", fBtn)
+    stroke.Thickness = 3
+    stroke.Color = Color3.fromRGB(0, 255, 127)
 
     task.spawn(function()
-        while isPickupActive and target and container.Parent do
-            local char = player.Character
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            if not root then break end
-            if hasItem(gearName) then break end
+        while target and target.Parent and floatGui.Parent do
+            if hasItem(itemName) then break end
+            
+            -- Cari kedudukan visual objek
+            local targetPart = isPrompt and target.Parent or (target:IsA("Tool") and target:FindFirstChild("Handle") or target)
+            if not targetPart or not targetPart:IsA("BasePart") then break end
+            
+            local dist = (player.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
+            if dist > 15 then break end
 
-            -- Cari lokasi visual untuk tombol
-            local targetPart = nil
-            if target:IsA("BasePart") then
-                targetPart = target
-            elseif target:IsA("ProximityPrompt") or target:IsA("ClickDetector") then
-                targetPart = target.Parent
-            elseif target:IsA("Tool") then
-                targetPart = target:FindFirstChild("Handle") or target:FindFirstChildWhichIsA("BasePart")
+            local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(targetPart.Position)
+            if onScreen then
+                fBtn.Visible = true
+                fBtn.Position = UDim2.fromOffset(pos.X - 27, pos.Y - 27)
+            else
+                fBtn.Visible = false
             end
-
-            if targetPart then
-                local dist = (root.Position - targetPart.Position).Magnitude
-                if dist > 15 then break end
-                
-                local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(targetPart.Position)
-                container.Visible = onScreen
-                if onScreen then 
-                    container.Position = UDim2.fromOffset(pos.X - 50, pos.Y - 40) 
-                end
-            else break end
             task.wait()
         end
-        activePopups[target] = nil
-        container:Destroy()
+        floatGui:Destroy()
     end)
 
-    holdBtn.MouseButton1Click:Connect(function()
-        if target:IsA("ProximityPrompt") then
-            -- Trigger untuk game moden (Seringkali perlukan Begin & End)
+    fBtn.MouseButton1Click:Connect(function()
+        if isPrompt then
             target:InputHoldBegin()
             task.wait(target.HoldDuration + 0.1)
             target:InputHoldEnd()
-        elseif target:IsA("ClickDetector") then
-            fireclickdetector(target)
         else
-            -- Touch Interest (Pickup fizikal)
             local char = player.Character
             local handle = target:IsA("Tool") and target:FindFirstChild("Handle") or target
             if char and char:FindFirstChild("HumanoidRootPart") and handle then
                 firetouchinterest(char.HumanoidRootPart, handle, 0)
-                task.wait(0.1)
+                task.wait()
                 firetouchinterest(char.HumanoidRootPart, handle, 1)
             end
         end
-        container:Destroy()
+        floatGui:Destroy()
     end)
 end
 
--- SCAN LOOP (VERSI RAYCAST & SPHERE OVERLAP)
-task.spawn(function()
-    while true do
-        if isPickupActive and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local root = player.Character.HumanoidRootPart
-            
-            -- Scan semua objek dalam lingkungan 12 stud
-            local params = OverlapParams.new()
-            params.FilterType = Enum.RaycastFilterType.Exclude
-            params.FilterDescendantsInstances = {player.Character}
-            
-            local objects = workspace:GetPartBoundsInRadius(root.Position, 12, params)
-            
-            for _, part in pairs(objects) do
-                if not isPickupActive then break end
-                
-                local foundTarget = nil
-                local name = part.Name
+-- LOGIK CLICK TOMBOL PICKUP (SCAN workspace.PickItem)
+pickupBtn.MouseButton1Click:Connect(function()
+    local pickFolder = workspace:FindFirstChild("PickItem")
+    if not pickFolder then return end
 
-                -- 1. Cek ProximityPrompt (Utama untuk game moden)
-                local prompt = part:FindFirstChildWhichIsA("ProximityPrompt") or part.Parent:FindFirstChildWhichIsA("ProximityPrompt")
-                if prompt then
-                    foundTarget = prompt
-                    name = part.Name
-                -- 2. Cek Tool di tanah
-                elseif part.Parent:IsA("Tool") then
-                    foundTarget = part.Parent
-                    name = part.Parent.Name
-                -- 3. Cek ClickDetector
-                elseif part:FindFirstChildWhichIsA("ClickDetector") then
-                    foundTarget = part:FindFirstChildWhichIsA("ClickDetector")
-                end
+    for _, obj in pairs(pickFolder:GetDescendants()) do
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if not root then break end
 
-                if foundTarget and not hasItem(name) then
-                    createFloatingPickup(foundTarget, name, foundTarget:IsA("ProximityPrompt"))
-                end
+        if obj:IsA("ProximityPrompt") then
+            local dist = (root.Position - obj.Parent.Position).Magnitude
+            if dist < 12 and not hasItem(obj.Parent.Name) then 
+                createFloatingPickup(obj, true, obj.Parent.Name) 
+            end
+        elseif obj:IsA("Tool") and obj:FindFirstChild("Handle") then
+            local dist = (root.Position - obj.Handle.Position).Magnitude
+            if dist < 12 and not hasItem(obj.Name) then 
+                createFloatingPickup(obj, false, obj.Name) 
             end
         end
-        task.wait(0.4) -- Scan lebih kerap (Game baru perlukan respon laju)
     end
 end)
 
-
--- 6. HOTBAR LOGIC (DIPULIHKAN 100% KE ASAL)
+-- 5. HOTBAR LOGIC (BAHAGIAN 6 ASAL ANDA - DIPULIHKAN SEPENUHNYA)
 local function updateGearFrame()
     local char = player.Character
     local backpack = player:FindFirstChild("Backpack")
@@ -364,41 +307,18 @@ local function updateGearFrame()
     end
 end
 
--- 7. EVENTS & LISTENERS
+
+-- 6. EVENTS & LISTENERS
 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     searchFilter = searchBox.Text
     updateGearFrame()
 end)
-
-local function setupListeners()
-    savedOrder = {}
-    isSystemActive = false
-    scrollFrame.Visible = false
-    searchBox.Visible = false
-    local char = player.Character or player.CharacterAdded:Wait()
-    local bp = player:WaitForChild("Backpack")
-    bp.ChildAdded:Connect(updateGearFrame)
-    bp.ChildRemoved:Connect(updateGearFrame)
-    char.ChildAdded:Connect(updateGearFrame)
-    char.ChildRemoved:Connect(updateGearFrame)
-    task.wait(0.2)
-    updateGearFrame()
-end
 
 hideBtn.MouseButton1Click:Connect(function()
     isHidden = not isHidden
     scrollFrame.Visible = (not isHidden) and isSystemActive
     searchBox.Visible = (not isHidden) and isSystemActive 
     hideBtn.Text = isHidden and "SHOW" or "HIDE"
-end)
-
-pickupBtn.MouseButton1Click:Connect(function()
-    isPickupActive = not isPickupActive
-    pickupBtn.BackgroundColor3 = isPickupActive and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(170, 0, 0)
-    if not isPickupActive then
-        for _, v in pairs(CoreGui:GetChildren()) do if v.Name == "AutoPickupBtn" then v:Destroy() end end
-        activePopups = {}
-    end
 end)
 
 editBtn.MouseButton1Click:Connect(function()
@@ -409,6 +329,16 @@ editBtn.MouseButton1Click:Connect(function()
     editBtn.Text = isSwapMode and "SAVING..." or "EDIT"
     updateGearFrame()
 end)
+
+local function setupListeners()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local bp = player:WaitForChild("Backpack")
+    bp.ChildAdded:Connect(updateGearFrame)
+    bp.ChildRemoved:Connect(updateGearFrame)
+    char.ChildAdded:Connect(updateGearFrame)
+    char.ChildRemoved:Connect(updateGearFrame)
+    updateGearFrame()
+end
 
 player.CharacterAdded:Connect(setupListeners)
 setupListeners()
