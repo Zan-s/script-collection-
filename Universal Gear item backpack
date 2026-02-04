@@ -46,6 +46,7 @@ scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollFrame.ScrollingDirection = Enum.ScrollingDirection.X
 scrollFrame.Visible = false
+scrollFrame.BorderSizePixel = 0
 scrollFrame.Parent = gui
 
 Instance.new("UICorner", scrollFrame).CornerRadius = UDim.new(0, 12)
@@ -54,16 +55,15 @@ layout.FillDirection = Enum.FillDirection.Horizontal
 layout.Padding = UDim.new(0, 8)
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- PENAMBAHAN RUANG (GAP) KIRI & KANAN
 local uipadding = Instance.new("UIPadding", scrollFrame)
 uipadding.PaddingLeft = UDim.new(0, 12)
 uipadding.PaddingRight = UDim.new(0, 12)
 
--- 3. SEARCH BAR
+-- 3. SEARCH BAR (Kedudukan Bawah Y=0)
 local searchBox = Instance.new("TextBox")
 searchBox.Name = "SearchBar"
 searchBox.Size = UDim2.fromOffset(110, 20)
-searchBox.Position = UDim2.new(0.5, -135, 1, -15) 
+searchBox.Position = UDim2.new(0.5, -135, 1, 0) 
 searchBox.AnchorPoint = Vector2.new(1, 1)
 searchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 searchBox.BackgroundTransparency = 0.3
@@ -77,10 +77,10 @@ searchBox.Visible = false
 searchBox.Parent = gui
 Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 4)
 
--- 4. BUTTON CONTROLS (Tengah - 4 Tombol)
+-- 4. BUTTON CONTROLS (Kedudukan Bawah Y=0)
 local btnContainer = Instance.new("Frame")
 btnContainer.Size = UDim2.fromOffset(265, 25)
-btnContainer.Position = UDim2.new(0.5, 0, 1, -15)
+btnContainer.Position = UDim2.new(0.5, 0, 1, 0)
 btnContainer.AnchorPoint = Vector2.new(0.5, 1)
 btnContainer.BackgroundTransparency = 1
 btnContainer.Parent = gui
@@ -109,7 +109,7 @@ local pickupBtn = createBtn("PICKUP", Color3.fromRGB(0, 170, 127))
 local editBtn = createBtn("EDIT")
 local advancedBtn = createBtn("ADVANCED", Color3.fromRGB(170, 0, 0))
 
--- 5. LOGIK PICKUP
+-- 5. LOGIK PICKUP (DIKEMBALIKAN)
 local function createFloatingPickup(target, isPrompt)
     local floatGui = Instance.new("ScreenGui")
     floatGui.Name = "FloatingPickup"
@@ -164,7 +164,7 @@ pickupBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 6. UPDATE FRAME LOGIC
+-- 6. UPDATE FRAME LOGIC (DENGAN FIX SAIZ)
 local function updateGearFrame()
     local char = player.Character
     local backpack = player:FindFirstChild("Backpack")
@@ -177,26 +177,23 @@ local function updateGearFrame()
     for _, t in pairs(backpack:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
     for _, t in pairs(char:GetChildren()) do if t:IsA("Tool") then currentTools[t.Name] = t; table.insert(foundNames, t.Name) end end
 
-    if #foundNames > 0 then
-        if not isSystemActive then 
-            isSystemActive = true
-            scrollFrame.Visible = not isHidden 
-            searchBox.Visible = not isHidden
-        end
-    else
-        isSystemActive = false
-        scrollFrame.Visible = false
-        searchBox.Visible = false
-        return 
+    for i = #savedOrder, 1, -1 do
+        if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
     end
-
     for _, name in ipairs(foundNames) do
         local exists = false
         for _, savedName in ipairs(savedOrder) do if savedName == name then exists = true break end end
         if not exists then table.insert(savedOrder, name) end
     end
-    for i = #savedOrder, 1, -1 do
-        if not currentTools[savedOrder[i]] then table.remove(savedOrder, i) end
+
+    if #savedOrder > 0 then
+        isSystemActive = true
+        scrollFrame.Visible = not isHidden
+        searchBox.Visible = not isHidden
+    else
+        isSystemActive = false
+        scrollFrame.Visible = false
+        searchBox.Visible = false
     end
 
     for _, child in pairs(scrollFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
@@ -216,6 +213,7 @@ local function updateGearFrame()
         slot.Parent = scrollFrame
         Instance.new("UICorner", slot).CornerRadius = UDim.new(0, 10)
 
+        -- RGB Stroke untuk item yang sedang dipegang
         if isEquipped and not isSwapMode then
             local stroke = Instance.new("UIStroke", slot)
             stroke.Thickness = 2.5
@@ -237,9 +235,9 @@ local function updateGearFrame()
         slotNum.TextTransparency = 0.5
         slotNum.Font = Enum.Font.GothamBold
         slotNum.TextSize = 12
-        slotNum.ZIndex = 3
         slotNum.Parent = slot
 
+        -- Icon Senjata
         if tool.TextureId ~= "" then
             local icon = Instance.new("ImageLabel")
             icon.Size = UDim2.fromScale(0.75, 0.75)
@@ -247,7 +245,6 @@ local function updateGearFrame()
             icon.AnchorPoint = Vector2.new(0.5, 0.5)
             icon.BackgroundTransparency = 1
             icon.Image = tool.TextureId
-            icon.ZIndex = 2
             icon.Parent = slot
         else
             local nameTag = Instance.new("TextLabel")
@@ -260,15 +257,20 @@ local function updateGearFrame()
             nameTag.TextSize = 10
             nameTag.TextWrapped = true
             nameTag.Text = tool.Name:upper()
-            nameTag.ZIndex = 2
             nameTag.Parent = slot
         end
 
         slot.Activated:Connect(function()
             if isSwapMode then
-                if not firstSelection then firstSelection = index; updateGearFrame() else
-                    local temp = savedOrder[firstSelection]; savedOrder[firstSelection] = savedOrder[index]; savedOrder[index] = temp
-                    firstSelection = nil; updateGearFrame()
+                if not firstSelection then 
+                    firstSelection = index
+                    updateGearFrame() 
+                else
+                    local temp = savedOrder[firstSelection]
+                    savedOrder[firstSelection] = savedOrder[index]
+                    savedOrder[index] = temp
+                    firstSelection = nil
+                    updateGearFrame()
                 end
             else
                 if tool.Parent == char then hum:UnequipTools() else hum:EquipTool(tool) end
@@ -276,17 +278,24 @@ local function updateGearFrame()
         end)
     end
 
-    -- FIX RUANG KANAN (PADDING)
-    task.wait()
-    local contentWidth = layout.AbsoluteContentSize.X + 24
-    if visibleCount > 8 then
-        scrollFrame.AutomaticSize = Enum.AutomaticSize.None
-        scrollFrame.Size = UDim2.new(0, (60 * 8) + (8 * 9) + 24, 0, 75)
-        scrollFrame.CanvasSize = UDim2.new(0, contentWidth, 0, 0)
-        scrollFrame.ScrollingEnabled = true
+    -- FIX PENGIRAAN SAIZ (MENGELAKKAN RUANG KOSONG)
+    task.wait(0.05)
+    local paddingTotal = 24 
+    local totalItemWidth = (visibleCount * 60) + ((visibleCount - 1) * 8)
+    local finalWidth = totalItemWidth + paddingTotal
+
+    if visibleCount > 0 then
+        if visibleCount > 8 then
+            scrollFrame.Size = UDim2.new(0, (8 * 60) + (7 * 8) + paddingTotal, 0, 75)
+            scrollFrame.CanvasSize = UDim2.new(0, finalWidth, 0, 0)
+            scrollFrame.ScrollingEnabled = true
+        else
+            scrollFrame.Size = UDim2.new(0, finalWidth, 0, 75)
+            scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+            scrollFrame.ScrollingEnabled = false
+        end
     else
-        scrollFrame.AutomaticSize = Enum.AutomaticSize.X
-        scrollFrame.ScrollingEnabled = false
+        scrollFrame.Size = UDim2.new(0, 0, 0, 75)
     end
 end
 
@@ -296,22 +305,10 @@ searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     updateGearFrame()
 end)
 
-advancedBtn.MouseButton1Click:Connect(function()
-    isAdvancedOn = not isAdvancedOn
-    advancedBtn.BackgroundColor3 = isAdvancedOn and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(170, 0, 0)
-    if isAdvancedOn then
-        pcall(function()
-            -- loadstring(game:HttpGet("https://raw.githubusercontent.com/Zan-s/script-collection-/refs/heads/main/Advanced%20Backpack%20Functional%20Parts"))()
-            print("Advanced Script: ON")
-        end)
-    end
-end)
-
 hideBtn.MouseButton1Click:Connect(function()
     isHidden = not isHidden
     hideBtn.Text = isHidden and "SHOW" or "HIDE"
-    scrollFrame.Visible = (not isHidden) and isSystemActive
-    searchBox.Visible = (not isHidden) and isSystemActive 
+    updateGearFrame()
     pickupBtn.Visible = not isHidden
     editBtn.Visible = not isHidden
     advancedBtn.Visible = not isHidden
@@ -321,29 +318,25 @@ editBtn.MouseButton1Click:Connect(function()
     if not isSystemActive then return end
     isSwapMode = not isSwapMode
     firstSelection = nil
-    if isSwapMode then
-        editBtn.Visible = false
-        task.delay(5, function()
-            isSwapMode = false
-            editBtn.Visible = true
-            updateGearFrame()
-        end)
-    end
+    -- Tukar warna butang untuk tahu mod sedang aktif
+    editBtn.BackgroundColor3 = isSwapMode and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(30, 30, 30)
     updateGearFrame()
 end)
 
+advancedBtn.MouseButton1Click:Connect(function()
+    isAdvancedOn = not isAdvancedOn
+    advancedBtn.BackgroundColor3 = isAdvancedOn and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(170, 0, 0)
+end)
+
 local function setupListeners()
-    savedOrder = {}
-    isSystemActive = false
-    scrollFrame.Visible = false
-    searchBox.Visible = false
     local char = player.Character or player.CharacterAdded:Wait()
     local bp = player:WaitForChild("Backpack")
+    
     bp.ChildAdded:Connect(updateGearFrame)
     bp.ChildRemoved:Connect(updateGearFrame)
     char.ChildAdded:Connect(updateGearFrame)
     char.ChildRemoved:Connect(updateGearFrame)
-    task.wait(0.2)
+    
     updateGearFrame()
 end
 
