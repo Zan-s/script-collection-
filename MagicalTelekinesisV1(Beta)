@@ -80,8 +80,8 @@ local function togglePartMove(part)
         
         -- === LOGIK GETARAN (EFFEK BERAT) ===
         -- Apabila mula angkat, kurangkan damping untuk cipta getaran kuat
-        BP.D = 10  -- Getaran posisi yang agresif
-        BG.D = 5  -- Getaran putaran (struggle)
+        BP.D = 5  -- Getaran posisi yang agresif
+        BG.D = 3  -- Getaran putaran (struggle)
         
         task.spawn(function()
             local currentPart = movingPart
