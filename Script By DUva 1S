@@ -77,7 +77,7 @@
 ‎local headOnlyCheckbox = Instance.new("TextButton")
 ‎headOnlyCheckbox.Size = UDim2.new(1, -20, 0, 30)
 ‎headOnlyCheckbox.Position = UDim2.new(0, 10, 0, 130)
-‎headOnlyCheckbox.Text = "Apenas Cabeça: Não"
+‎headOnlyCheckbox.Text = "Apenas Cabeça: No-Off"
 ‎headOnlyCheckbox.BackgroundColor3 = Color3.new(0.4, 0.4, 0.4)
 ‎headOnlyCheckbox.TextColor3 = Color3.new(1, 1, 1)
 ‎headOnlyCheckbox.Parent = contentFrame
@@ -86,7 +86,7 @@
 ‎local noCollisionCheckbox = Instance.new("TextButton")
 ‎noCollisionCheckbox.Size = UDim2.new(1, -20, 0, 30)
 ‎noCollisionCheckbox.Position = UDim2.new(0, 10, 0, 170)
-‎noCollisionCheckbox.Text = "Sem Colisão: Não"
+‎noCollisionCheckbox.Text = "Yes Colisão: NO"
 ‎noCollisionCheckbox.BackgroundColor3 = Color3.new(0.4, 0.4, 0.4)
 ‎noCollisionCheckbox.TextColor3 = Color3.new(1, 1, 1)
 ‎noCollisionCheckbox.Parent = contentFrame
@@ -171,7 +171,7 @@
 ‎-- Controle do checkbox "Sem Colisão"
 ‎noCollisionCheckbox.MouseButton1Click:Connect(function()
 ‎    noCollision = not noCollision
-‎    noCollisionCheckbox.Text = noCollision and "Sem Colisão: Sim" or "Sem Colisão: Não"
+‎    noCollisionCheckbox.Text = noCollision and "Sem Colisão: Yes" or "Sem Colisão: No"
 ‎end)
 ‎
 ‎-- Controle do botão de minimizar
